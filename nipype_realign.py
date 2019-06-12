@@ -4,6 +4,7 @@
 # 3. go through each type and feed them into a realignment function
 # 4. save output
 
+import os
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
@@ -74,5 +75,9 @@ realign_wf.base_dir = working_dir + '/workflow')
 realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id'),
                                               ('ute_type', 'ute_type')]),
-                    (selectfiles, gunzip, [('qutece', 'in_files'
+                    (selectfiles, gunzip, [('qutece', 'in_files')])])
+
+realign_wf.connect([(gunzip, intrascan_realign,
+                    [('out_file', 'in_files')])])
+
 
