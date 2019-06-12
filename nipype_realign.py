@@ -9,6 +9,8 @@ import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
+import nipype.interfaces.utility as utl
+import nipype.interfaces.io as nio
 from nipype.algorithms.misc import Gunzip #need to unzip for spm
 
 subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
