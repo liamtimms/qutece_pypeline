@@ -19,7 +19,6 @@ from nipype.algorithms.misc import Gunzip #need to unzip for spm
 
 subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
 session_list = ['Precon', 'Postcon', 'Blood']
-ute_list = ['hr', 'fast-tast-rest'] # ignoring scans without prescan norm for now
 
 # Gunzip - unzip scans for SPM to be able to use them
 gunzip = eng.MapNode(Gunzip(), name="gunzip", iterfield=['in_file'])
@@ -29,11 +28,10 @@ gunzip = eng.MapNode(Gunzip(), name="gunzip", iterfield=['in_file'])
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
                   name="infosource")
 infosource.iterables = [('subject_id', subject_list),
-                        ('session_id', session_list),
-                        ('ute_type', ute_list)]
+                        ('session_id', session_list)]
 
 templates = {'qutece': os.path.join('sub-{subject_id}/ses-{session_id}/qutece/',
-                     'sub-{subject_id}_ses-{session_id}_{ute_type}_run-*_UTE.nii.gz')}
+                     'sub-{subject_id}_ses-{session_id}_hr_run-*_UTE.nii.gz')}
 
 selectfiles = eng.Node(nio.SelectFiles(templates,
                                base_directory=working_dir,
@@ -65,7 +63,7 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
 
 
 # Use the following DataSink output substitutions
-substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'), ('ute_type','')]
+substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
 subjFolders = [('sub-%s_session_id_%s' % (sub, ses), 'sub-%s/ses-%s' % (sub, ses))
                for ses in session_list
                for sub in subject_list]
@@ -79,8 +77,7 @@ realign_wf = eng.Workflow(name = 'Intrascan_Realign')
 realign_wf.base_dir = working_dir + '/workflow'
 
 realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                              ('session_id', 'session_id'),
-                                              ('ute_type', 'ute_type')]),
+                                              ('session_id', 'session_id')]
                     (selectfiles, gunzip, [('qutece', 'in_files')])])
 
 realign_wf.connect([(gunzip, intrascan_realign, [('out_file', 'in_files')])])
