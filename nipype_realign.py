@@ -83,7 +83,8 @@ realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('ute_type', 'ute_type')]),
                     (selectfiles, gunzip, [('qutece', 'in_files')])])
 
-realign_wf.connect([(gunzip, intrascan_realign,
-                    [('out_file', 'in_files')])])
+realign_wf.connect([(gunzip, intrascan_realign, [('out_file', 'in_files')])])
 
-
+realign_wf.connect([(intrascan_realign, datasink,
+                     [('realigned_files', 'realign.@con'),
+                      ('mean_image', 'realignmean.@con')])])
