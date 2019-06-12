@@ -13,6 +13,10 @@ import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 from nipype.algorithms.misc import Gunzip #need to unzip for spm
 
+# must define working_dir
+
+# working_dir =
+
 subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
 session_list = ['Precon', 'Postcon', 'Blood']
 ute_list = ['hr', 'fast-tast-rest'] # ignoring scans without prescan norm for now
@@ -43,7 +47,7 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # 3. realignment function Node
 
 xyz = [0, 1, 0]
-intrascan_realign = Node(spm.realign(in_files = in_files), name = "intrascan_realign")
+intrascan_realign = eng.Node(spm.Realign(), name = "intrascan_realign")
 intrascan_realign.register_to_mean = True
 intrascan_realign.quality = 0.95
 intrascan_realign.wrap = xyz
@@ -61,7 +65,7 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
 
 
 # Use the following DataSink output substitutions
-substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'), 'ute_type','']
+substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'), ('ute_type','')]
 subjFolders = [('sub-%s_session_id_%s' % (sub, ses), 'sub-%s/ses-%s' % (sub, ses))
                for ses in session_list
                for sub in subject_list]
@@ -71,8 +75,8 @@ datasink.inputs.substitutions = substitutions
 
 # 5 now actually make a Workflow
 
-realign_wf = Workflow(name = 'Intrascan_Realign')
-realign_wf.base_dir = working_dir + '/workflow')
+realign_wf = eng.Workflow(name = 'Intrascan_Realign')
+realign_wf.base_dir = working_dir + '/workflow'
 
 realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id'),
