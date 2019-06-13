@@ -11,7 +11,6 @@ import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
-from nipype.algorithms.misc import Gunzip #need to unzip for spm
 
 # must define working_dir
 
@@ -19,9 +18,6 @@ from nipype.algorithms.misc import Gunzip #need to unzip for spm
 
 subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
 session_list = ['Precon', 'Postcon', 'Blood']
-
-# Gunzip - unzip scans for SPM to be able to use them
-gunzip = eng.MapNode(Gunzip(), name="gunzip", iterfield=['in_file'])
 
 # 1. search for scans
 # Infosource - a function free node to iterate over the list of subject names
@@ -77,10 +73,8 @@ realign_wf = eng.Workflow(name = 'Intrascan_Realign')
 realign_wf.base_dir = working_dir + '/workflow'
 
 realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                              ('session_id', 'session_id')]
-                    (selectfiles, gunzip, [('qutece', 'in_files')])])
-
-realign_wf.connect([(gunzip, intrascan_realign, [('out_file', 'in_files')])])
+                                              ('session_id', 'session_id')],
+                    (selectfiles, intrascan_realign,  [('qutece', 'in_files')])])
 
 realign_wf.connect([(intrascan_realign, datasink,
                      [('realigned_files', 'realign.@con'),
