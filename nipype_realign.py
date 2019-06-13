@@ -1,3 +1,7 @@
+# note: it may be more effective to split this into a workflow for
+# just pre-processing QUTECE scans
+# or split into a pre-prepocessing WF and then a realign WF
+
 # -----------------Imports-------------------------------
 import os
 import CustomNipype as cnp
@@ -64,13 +68,16 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # -------------------------------------------------------
 
 # -----------------------UnringNode----------------------
-unring_nii = eng.MapNode(interface = cnp.UnringNii(), 
+unring_nii = eng.MapNode(interface = cnp.UnringNii(),
                          name = 'Unring', iterfield=['in_file'])
 # -------------------------------------------------------
 
 # ------------------------RealignNode--------------------
 xyz = [0, 1, 0]
-realign = eng.Node(spm.Realign(), name = "Realign")
+#realign = eng.Node(spm.Realign(), name = "Realign")
+realign = eng.JoinNode(spm.Realign(), name = "Realign",
+                       joinsource = 'unring_nii',
+                       joinfield = 'in_files')
 realign.register_to_mean = True
 realign.quality = 0.95
 realign.wrap = xyz
@@ -119,7 +126,14 @@ realign_wf.connect([(realign, datasink,
 # -------------------------------------------------------
 
 # --------------------CombiningWorkflows-----------------
-Preproc_wf = eng.Workflow(name = 'Preprocessing')
+preproc_wf = eng.Workflow(name = 'Preprocessing')
+preproc_wf.base_dir = working_dir + '/workflow'
+
+preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
+                                             ('session_id', 'session_id')]),
+                  (selectfiles, unring_nii, [('qutece_hr', 'in_file'),
+                                             ('qutece_fast', 'in_file')])
+                  ])
 
 # -------------------------------------------------------
 
