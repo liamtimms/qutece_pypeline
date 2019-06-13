@@ -1,5 +1,6 @@
 # -----------------Imports-------------------------------
 import os
+import CustomNipype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
@@ -62,6 +63,11 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                    name="selectfiles")
 # -------------------------------------------------------
 
+# -----------------------UnringNode----------------------
+unring_nii = eng.MapNode(interface = cnp.UnringNii(), 
+                         name = 'Unring', iterfield=['in_file'])
+# -------------------------------------------------------
+
 # ------------------------RealignNode--------------------
 xyz = [0, 1, 0]
 realign = eng.Node(spm.Realign(), name = "Realign")
@@ -87,7 +93,17 @@ substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
-# ---------------------RealignmentWorkflow---------------
+# -----------------UnringWorkflow------------------------
+unring_wf = eng.Workflow(name = 'Unring')
+unring_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
+                                             ('session_id', 'session_id')]),
+                  (selectfiles, unring_nii, [('qutece_hr', 'in_file'),
+                                             ('qutece_fast', 'in_file')]),
+                  (unring_nii, datasink, [('out_file', 'unring.@con')])
+                  ])
+# -------------------------------------------------------
+
+# -----------------RealignmentWorkflow-------------------
 realign_wf = eng.Workflow(name = 'Intrascan_Realign')
 realign_wf.base_dir = working_dir + '/workflow'
 
@@ -101,6 +117,12 @@ realign_wf.connect([(realign, datasink,
                      [('realigned_files', 'realign.@con'),
                       ('mean_image', 'realignmean.@con')])])
 # -------------------------------------------------------
+
+# --------------------CombiningWorkflows-----------------
+Preproc_wf = eng.Workflow(name = 'Preprocessing')
+
+# -------------------------------------------------------
+
 
 # -------------------WorkflowPlotting--------------------
 task = 'Intrascan_Realign'
