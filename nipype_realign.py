@@ -8,9 +8,23 @@ import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
+# From tutorial:
+# Let's create a short helper function to plot 3D NIfTI images
+def plot_slice(fname):
+    # Load the image
+    img = nb.load(fname)
+    data = img.get_data()
+    # Cut in the middle of the brain
+    cut = int(data.shape[-1]/2) + 10
+    # Plot the data
+    plt.imshow(np.rot90(data[..., cut]), cmap="gray")
+    plt.gca().set_axis_off()
+
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = 'workingBIDs'
+working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
+output_dir = os.path.join(working_dir, 'derivatives/')
+temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
 session_list = ['Precon', 'Postcon']
@@ -88,4 +102,10 @@ realign_wf.connect([(realign, datasink,
                       ('mean_image', 'realignmean.@con')])])
 # -------------------------------------------------------
 
+# -------------------WorkflowPlotting--------------------
+task = 'Intrascan_Realign'
+realign_wf.write_graph(graph2use='flat')
+from IPython.display import Image
+Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
+# -------------------------------------------------------
 
