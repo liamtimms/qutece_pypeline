@@ -1,7 +1,4 @@
-# note: it may be more effective to split this into a workflow for
-# just pre-processing QUTECE scans
-# or split into a pre-prepocessing WF and then a realign WF
-
+# Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
 import CustomNipype as cnp
@@ -9,21 +6,10 @@ import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
+import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
-
-# From tutorial:
-# Let's create a short helper function to plot 3D NIfTI images
-def plot_slice(fname):
-    # Load the image
-    img = nb.load(fname)
-    data = img.get_data()
-    # Cut in the middle of the brain
-    cut = int(data.shape[-1]/2) + 10
-    # Plot the data
-    plt.imshow(np.rot90(data[..., cut]), cmap="gray")
-    plt.gca().set_axis_off()
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
@@ -32,10 +18,9 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
-session_list = ['Precon', 'Postcon']
+session_list = ['Precon', 'Postcon', 'Blood']
 
-#subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
-subdirectory = os.path.join(temp_dir, 'preproc')
+subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
@@ -43,8 +28,17 @@ qutece_highres_files = os.path.join(subdirectory, scantype,
                                     filestart, '_hr_run*_UTE.nii')
 qutece_fast_files = os.path.join(subdirectory, scantype,
                                     filestart, '_fast*_UTE.nii')
+
+scantype = 'anat'
+anat_files = os.path.join(subdirectory, scantype,
+                                    filestart, '_T1w.nii')
+swi_files = os.path.join(subdirectory, scantype,
+                                    filestart, '_SWI_angio.nii')
+
 templates = {'qutece_hr': qutece_highres_files,
-             'qutece_fast': qutece_fast_files}
+             'qutece_fast': qutece_fast_files,
+             'T1w': anat_files,
+             'swi': swi_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -56,18 +50,17 @@ infosource.iterables = [('subject_id', subject_list),
 selectfiles = eng.Node(nio.SelectFiles(templates,
                                base_directory=working_dir,
                                sort_filelist=True, raise_on_empty=True),
-                   name="selectfiles")
+                   name="Select Files")
 # -------------------------------------------------------
 
-# ------------------------RealignNode--------------------
-xyz = [0, 1, 0]
-realign = eng.Node(spm.Realign(), name = "Realign")
-realign.register_to_mean = True
-realign.quality = 0.95
-realign.wrap = xyz
-realign.write_wrap = xyz
-realign.interp = 7
-realign.write_interp = 7
+# -----------------------UnringNode----------------------
+unring_nii = eng.MapNode(interface = cnp.UnringNii(),
+                         name = 'Unring', iterfield=['in_file'])
+# -------------------------------------------------------
+
+# -----------------------BiasFieldCorrection-------------
+bias_norm = eng.Node(ants.N4BiasFieldCorrection(),
+                     name = 'Bias Correction')
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -84,25 +77,14 @@ substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
-# -----------------RealignmentWorkflow-------------------
-realign_wf = eng.Workflow(name = 'Intrascan_Realign')
-realign_wf.base_dir = working_dir + '/workflow'
-
-realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                              ('session_id', 'session_id')])])
-
-realign_wf.connect([(selectfiles, realign, [('qutece_hr', 'in_files'),
-                                            ('qutece_fast', 'in_files')])])
-
-realign_wf.connect([(realign, datasink,
-                     [('realigned_files', 'realign.@con'),
-                      ('mean_image', 'realignmean.@con')])])
-# -------------------------------------------------------
-
-# -------------------WorkflowPlotting--------------------
-task = 'Intrascan_Realign'
-realign_wf.write_graph(graph2use='flat')
-from IPython.display import Image
-Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
+# -----------------UnringWorkflow------------------------
+preproc_wf = eng.Workflow(name = 'Preprocessing')
+preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
+                                             ('session_id', 'session_id')]),
+                  (selectfiles, unring_nii, [('qutece_hr', 'in_file'),
+                                             ('qutece_fast', 'in_file')]),
+                  (unring_nii, bias_norm, [('out_file', 'input_image')]),
+                  (bias_norm, datasink, [('output_image', 'preproc.@con')])
+                  ])
 # -------------------------------------------------------
 
