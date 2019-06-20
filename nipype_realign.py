@@ -84,7 +84,7 @@ datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
 # -----------------RealignmentWorkflow-------------------
-task = 'realign'
+task = 'realign1'
 realign_wf = eng.Workflow(name = task)
 realign_wf.base_dir = working_dir + '/workflow'
 
@@ -94,7 +94,7 @@ realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 realign_wf.connect([(selectfiles, realign, [('qutece_hr', 'in_files')])])
 
 realign_wf.connect([(realign, datasink,
-                     [('realigned_files', 'realign.@con'),
+                     [('realigned_files', task+'.@con'),
                       ('mean_image', 'realignmean.@con')])])
 # -------------------------------------------------------
 
