@@ -1,6 +1,4 @@
-# note: it may be more effective to split this into a workflow for
-# just pre-processing QUTECE scans
-# or split into a pre-prepocessing WF and then a realign WF
+# This originally had both preproc and realign but I decided to split them up into different workflows
 
 # -----------------Imports-------------------------------
 import os
@@ -31,23 +29,19 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
+subject_list = ['02', '03', '05', '06', '08', '10', '11']
 session_list = ['Precon', 'Postcon']
 
-#subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
-subdirectory = os.path.join(temp_dir, 'preproc')
+subdirectory = os.path.join(temp_dir, 'preproc', 'sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart, '_hr_run*_UTE.nii')
-qutece_fast_files = os.path.join(subdirectory, scantype,
-                                    filestart, '_fast*_UTE.nii')
-templates = {'qutece_hr': qutece_highres_files,
-             'qutece_fast': qutece_fast_files}
+                                    filestart, 'hr_run*.nii')
+templates = {'qutece_hr': qutece_highres_files}
 
 # Infosource - a function free node to iterate over the list of subject names
-infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
+infosource = eng.Node(utl.IdentityInterface(fields=['subject_id','session_id']),
                   name="infosource")
 infosource.iterables = [('subject_id', subject_list),
                         ('session_id', session_list)]
@@ -58,6 +52,10 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                                sort_filelist=True, raise_on_empty=True),
                    name="selectfiles")
 # -------------------------------------------------------
+
+# TODO: motion artifact testing?
+
+#TODO: skip over scans marked skip? maybe add GUI to skip scans
 
 # ------------------------RealignNode--------------------
 xyz = [0, 1, 0]
@@ -77,7 +75,8 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
                 name="datasink")
 # Use the following DataSink output substitutions
 substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
-subjFolders = [('sub-%s_session_id_%s' % (sub, ses), 'sub-%s/ses-%s' % (sub, ses))
+subjFolders = [('sub-%s_session_id_%s' % (sub, ses), 
+                'sub-%s/ses-%s' % (sub, ses))
                for ses in session_list
                for sub in subject_list]
 substitutions.extend(subjFolders)
@@ -85,14 +84,14 @@ datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
 # -----------------RealignmentWorkflow-------------------
-realign_wf = eng.Workflow(name = 'Intrascan_Realign')
+task = 'realign'
+realign_wf = eng.Workflow(name = task)
 realign_wf.base_dir = working_dir + '/workflow'
 
 realign_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id')])])
 
-realign_wf.connect([(selectfiles, realign, [('qutece_hr', 'in_files'),
-                                            ('qutece_fast', 'in_files')])])
+realign_wf.connect([(selectfiles, realign, [('qutece_hr', 'in_files')])])
 
 realign_wf.connect([(realign, datasink,
                      [('realigned_files', 'realign.@con'),
@@ -100,7 +99,6 @@ realign_wf.connect([(realign, datasink,
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
-task = 'Intrascan_Realign'
 realign_wf.write_graph(graph2use='flat')
 from IPython.display import Image
 Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
