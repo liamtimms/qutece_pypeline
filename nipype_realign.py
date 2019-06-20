@@ -1,8 +1,9 @@
+
 # This originally had both preproc and realign but I decided to split them up into different workflows
 
 # -----------------Imports-------------------------------
 import os
-import CustomNipype as cnp
+import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
@@ -37,7 +38,7 @@ filestart = 'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart, 'hr_run*.nii')
+                                    filestart+'hr_run*.nii')
 templates = {'qutece_hr': qutece_highres_files}
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -75,7 +76,8 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
                 name="datasink")
 # Use the following DataSink output substitutions
 substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
-subjFolders = [('sub-%s_session_id_%s' % (sub, ses), 
+
+subjFolders = [('ses-%ssub-%s' % (ses, sub), 
                 'sub-%s/ses-%s' % (sub, ses))
                for ses in session_list
                for sub in subject_list]
