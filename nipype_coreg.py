@@ -30,7 +30,7 @@ nonT1w_files = os.path.join(subdirectory, scantype,
                                     filestart + '_[!T1w]*.nii')
 
 templates = {'T1w': T1w_files,
-             'notT1w': FLAIR_files}
+             'nonT1w': nonT1w_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -78,7 +78,7 @@ coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id')])])
 
 coreg_wf.connect([(selectfiles, coreg, [('T1w', 'target'),
-                                          'notT1w', 'source'])])
+                                        ('nonT1w', 'source')])])
 coreg_wf.connect([(coreg, datasink,
                      [('coregistered_source', task+'.@con')])])
 # -------------------------------------------------------
