@@ -33,7 +33,7 @@ templates = {'T1w': T1w_files,
              'nonT1w': nonT1w_files}
 
 
-subdirectory = os.path.join(temp_dir, 'realignmean', 
+subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-{session_id}')
 filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 
@@ -56,11 +56,11 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # -------------------------------------------------------
 
 # -----------------------CoregisterNodes-----------------
-coreg1 = eng.MapNode(spm.Coregister(), name = "Coregister1", iterfield = 'source')
+coreg1 = eng.MapNode(spm.Coregister(), name = 'coreg1', iterfield = 'source')
 coreg1.inputs.write_interp = 7
 coreg1.inputs.separation = [6, 3, 2]
 
-coreg2 = eng.Node(spm.Coregister(), name = 'Coregister2')
+coreg2 = eng.JoinNode(spm.Coregister(), name = 'coreg2',                       joinsource = 'Coregister1')
 coreg2.inputs.write_interp = 7
 coreg2.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
@@ -89,11 +89,12 @@ coreg_wf.base_dir = working_dir + '/workflow'
 coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id')])])
 
-coreg_wf.connect([(selectfiles, coreg, [('T1w', 'target'),
+coreg_wf.connect([(selectfiles, coreg1, [('T1w', 'target'),
                                         ('nonT1w', 'source')])])
 coreg_wf.connect([(selectfiles, coreg2, [('qutece_mean', 'target')
-                                          ('T1w', 'target')])])
-coreg_wf.connect([(coreg1, coreg2, [('
+                                          ('T1w', 'source')])])
+coreg_wf.connect([(coreg1, coreg2,
+                [('coregistered_source', 'apply_to_files')])])
 coreg_wf.connect([(coreg, datasink,
                      [('coregistered_source', task+'.@con')])])
 # -------------------------------------------------------
