@@ -32,6 +32,16 @@ nonT1w_files = os.path.join(subdirectory, scantype,
 templates = {'T1w': T1w_files,
              'nonT1w': nonT1w_files}
 
+
+subdirectory = os.path.join(temp_dir, 'realignmean', 
+                            'sub-{subject_id}', 'ses-{session_id}')
+filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
+
+scantype = 'qutece'
+qutece_highres_files = os.path.join(subdirectory, scantype,
+                                    filestart+'hr_run*.nii')
+templates = {'qutece_mean': qutece_highres_files}
+
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
                   name="infosource")
@@ -45,10 +55,14 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                    name="SelectFiles")
 # -------------------------------------------------------
 
-# -----------------------CoregisterNode------------------
-coreg = eng.MapNode(spm.Coregister(), name = "Coregister", iterfield = 'source')
-coreg.inputs.write_interp = 7
-coreg.inputs.separation = [6, 3, 2]
+# -----------------------CoregisterNodes-----------------
+coreg1 = eng.MapNode(spm.Coregister(), name = "Coregister1", iterfield = 'source')
+coreg1.inputs.write_interp = 7
+coreg1.inputs.separation = [6, 3, 2]
+
+coreg2 = eng.Node(spm.Coregister(), name = 'Coregister2')
+coreg2.inputs.write_interp = 7
+coreg2.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -68,12 +82,10 @@ datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
-task = 'CoregisterPrecon'
+task = 'IntrasessionCoregister'
 coreg_wf = eng.Workflow(name = task)
 coreg_wf.base_dir = working_dir + '/workflow'
 
-# I don't expect this to work... TODO: make select files pass a list of non-T1w
-# files to the coreg mapnode and then use source as the iterable
 coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id')])])
 
