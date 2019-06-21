@@ -91,6 +91,9 @@ coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 
 coreg_wf.connect([(selectfiles, coreg, [('T1w', 'target'),
                                         ('nonT1w', 'source')])])
+coreg_wf.connect([(selectfiles, coreg2, [('qutece_mean', 'target')
+                                          ('T1w', 'target')])])
+coreg_wf.connect([(coreg1, coreg2, [('
 coreg_wf.connect([(coreg, datasink,
                      [('coregistered_source', task+'.@con')])])
 # -------------------------------------------------------
