@@ -60,7 +60,7 @@ coreg1 = eng.MapNode(spm.Coregister(), name = 'coreg1', iterfield = 'source')
 coreg1.inputs.write_interp = 7
 coreg1.inputs.separation = [6, 3, 2]
 
-coreg2 = eng.JoinNode(spm.Coregister(), name = 'coreg2',                       joinsource = 'Coregister1')
+coreg2 = eng.JoinNode(spm.Coregister(), name = 'coreg2', joinsource = 'Coregister1', joinfield = 'apply_to_files')
 coreg2.inputs.write_interp = 7
 coreg2.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
@@ -91,11 +91,12 @@ coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 
 coreg_wf.connect([(selectfiles, coreg1, [('T1w', 'target'),
                                         ('nonT1w', 'source')])])
-coreg_wf.connect([(selectfiles, coreg2, [('qutece_mean', 'target')
+coreg_wf.connect([(selectfiles, coreg2, [('qutece_mean', 'target'),
                                           ('T1w', 'source')])])
 coreg_wf.connect([(coreg1, coreg2,
                 [('coregistered_source', 'apply_to_files')])])
-coreg_wf.connect([(coreg, datasink,
-                     [('coregistered_source', task+'.@con')])])
-# -------------------------------------------------------
+coreg_wf.connect([(coreg2, datasink,
+                     [('coregistered_source', task+'.@con'),
+                     ('coregistered_files', task+'2.@con')])])
 
+# -------------------------------------------------------
