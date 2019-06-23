@@ -1,4 +1,5 @@
 
+
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -112,7 +113,7 @@ substitutions = [('_subject_id_', 'sub-')]
 
 subjFolders = [('sub-%s' % (sub),
                 'sub-%s/ses-Precon' % (sub))
-               for ses in session_list]
+               for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
 datasink.inputs.regexp_substitutions = [('_coreg_to_postcon.','')]
@@ -123,10 +124,9 @@ task = 'IntersessionCoregister'
 coreg_wf = eng.Workflow(name = task)
 coreg_wf.base_dir = working_dir + '/workflow'
 
-coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                              ('session_id', 'session_id')])])
+coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 
-coreg_wf.connect([(selectfiles, merge, [('qutece_precon_files', 'in1'),
+coreg_wf.connect([(selectfiles, merge, [('qutece_precon', 'in1'),
                                         ('T1w', 'in2'),
                                         ('nonT1w', 'in3')])])
 
