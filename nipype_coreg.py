@@ -16,7 +16,7 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['02', '03', '06', '07', '08', '09', '10', '11']
+subject_list = ['02', '03', '05', '06', '08', '10', '11']
 session_list = ['Precon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
@@ -38,7 +38,7 @@ subdirectory = os.path.join(temp_dir, 'realignmean',
 filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
-qutece_highres_files = os.path.join(subdirectory, scantype,
+qutece_highres_files = os.path.join(subdirectory,
                                     filestart+'hr_run*.nii')
 templates = {'qutece_mean': qutece_highres_files}
 
@@ -100,3 +100,4 @@ coreg_wf.connect([(coreg2, datasink,
                      ('coregistered_files', task+'2.@con')])])
 
 # -------------------------------------------------------
+
