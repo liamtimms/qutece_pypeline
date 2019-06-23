@@ -29,9 +29,6 @@ T1w_files = os.path.join(subdirectory, scantype,
 nonT1w_files = os.path.join(subdirectory, scantype,
                                     filestart + '_[!T1w]*.nii')
 
-templates = {'T1w': T1w_files,
-             'nonT1w': nonT1w_files}
-
 
 subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-{session_id}')
@@ -40,7 +37,11 @@ filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory,
                                     filestart+'hr_run*.nii')
-templates = {'qutece_mean': qutece_highres_files}
+
+templates = {'qutece_mean': qutece_highres_files,
+             'T1w': T1w_files,
+             'nonT1w': nonT1w_files}
+
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
