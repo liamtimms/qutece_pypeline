@@ -93,8 +93,9 @@ coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 coreg_wf.connect([(selectfiles, coreg_to_ute, [('qutece_mean', 'target'),
                                           ('T1w', 'source')])])
 
-coreg_wf.connect([(coreg_to_ute, coreg_to_anat, [('coregistered_source', 'target'),
-                                        ('nonT1w', 'source')])])
+coreg_wf.connect([(coreg_to_ute, coreg_to_anat, [('coregistered_source', 'target')])])
+
+coreg_wf.connect([(selectfiles, coreg_to_anat, [('nonT1w', 'source')])])
 
 coreg_wf.connect([(coreg_to_ute, datasink,
                      [('coregistered_source', task+'_T1w.@con')])])
