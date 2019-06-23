@@ -1,4 +1,5 @@
 
+
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -17,7 +18,7 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
-session_list = ['Precon']
+session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
@@ -80,6 +81,7 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub),
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
+datasink.inputs.regexp_substitutions = [('_coreg_to_anat.','')]
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
@@ -104,4 +106,5 @@ coreg_wf.connect([(coreg_to_anat, datasink,
                      [('coregistered_source', task+'_nonT1w.@con')])])
 
 # -------------------------------------------------------
+
 
