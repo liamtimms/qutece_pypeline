@@ -29,9 +29,6 @@ T1w_files = os.path.join(subdirectory, scantype,
 nonT1w_files = os.path.join(subdirectory, scantype,
                                     filestart + '_[!T1w]*.nii')
 
-templates = {'T1w': T1w_files,
-             'nonT1w': nonT1w_files}
-
 
 subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-{session_id}')
@@ -40,7 +37,11 @@ filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory,
                                     filestart+'hr_run*.nii')
-templates = {'qutece_mean': qutece_highres_files}
+
+templates = {'qutece_mean': qutece_highres_files,
+             'T1w': T1w_files,
+             'nonT1w': nonT1w_files}
+
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -56,13 +57,13 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # -------------------------------------------------------
 
 # -----------------------CoregisterNodes-----------------
-coreg1 = eng.MapNode(spm.Coregister(), name = 'coreg1', iterfield = 'source')
-coreg1.inputs.write_interp = 7
-coreg1.inputs.separation = [6, 3, 2]
+coreg_to_ute = eng.Node(spm.Coregister(), name = 'coreg_to_ute')
+coreg_to_ute.inputs.write_interp = 7
+coreg_to_ute.inputs.separation = [6, 3, 2]
 
-coreg2 = eng.JoinNode(spm.Coregister(), name = 'coreg2', joinsource = 'coreg1', joinfield = 'apply_to_files')
-coreg2.inputs.write_interp = 7
-coreg2.inputs.separation = [6, 3, 2]
+coreg_to_anat = eng.MapNode(spm.Coregister(), name = 'coreg_to_anat', iterfield = 'source')
+coreg_to_anat.inputs.write_interp = 7
+coreg_to_anat.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -89,15 +90,17 @@ coreg_wf.base_dir = working_dir + '/workflow'
 coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                               ('session_id', 'session_id')])])
 
-coreg_wf.connect([(selectfiles, coreg1, [('T1w', 'target'),
-                                        ('nonT1w', 'source')])])
-coreg_wf.connect([(selectfiles, coreg2, [('qutece_mean', 'target'),
+coreg_wf.connect([(selectfiles, coreg_to_ute, [('qutece_mean', 'target'),
                                           ('T1w', 'source')])])
-coreg_wf.connect([(coreg1, coreg2,
-                [('coregistered_source', 'apply_to_files')])])
-coreg_wf.connect([(coreg2, datasink,
-                     [('coregistered_source', task+'.@con'),
-                     ('coregistered_files', task+'2.@con')])])
+
+coreg_wf.connect([(coreg_to_ute, coreg_to_anat, [('coregistered_source', 'target'),
+                                        ('nonT1w', 'source')])])
+
+coreg_wf.connect([(coreg_to_ute, datasink,
+                     [('coregistered_source', task+'_T1w.@con')])])
+
+coreg_wf.connect([(coreg_to_anat, datasink,
+                     [('coregistered_source', task+'_nonT1w.@con')])])
 
 # -------------------------------------------------------
 
