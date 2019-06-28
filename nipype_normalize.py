@@ -1,5 +1,4 @@
 
-
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -16,18 +15,11 @@ import nipype.interfaces.io as nio
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-
-#TODO: Change this so that it is not iterating over subject and session
-#      but rather, just over the subject with selectfiles grabbing pre or
-#      post-con as appropriate
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
+coreg_wf.connect([(coreg_to_postcon, datasink,
+                     [('coregistered_source', task+'_preconUTEmean.@con'),
+                      ('coregisted_files', task+'_preconScans.@con')])])
 
-
-# session_list = ['Precon', 'Postcon']
-
-# TODO: grab;
-
-# * realigned precontrast average
 scantype = 'qutece'
 session = 'Precon'
 subdirectory = os.path.join(temp_dir, 'realignmean',
@@ -142,5 +134,4 @@ coreg_wf.connect([(coreg_to_postcon, datasink,
                       ('coregisted_files', task+'_preconScans.@con')])])
 
 # -------------------------------------------------------
-
 
