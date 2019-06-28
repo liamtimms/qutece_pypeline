@@ -1,4 +1,3 @@
-
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -18,9 +17,7 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-#subject_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
-#subject_list = ['02', '03', '06', '07', '08', '09', '10', '11']
-subject_list = ['05']
+subject_list = ['02', '03', '05', '06', '08', '10', '11']
 session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
@@ -28,13 +25,8 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart + '_hr_run-??_UTE.nii')
-#qutece_fast_files = os.path.join(subdirectory, scantype,
-#                                    filestart + '_fast*_UTE.nii')
-
-
+                                    filestart+'hr_run*.nii')
 templates = {'qutece_hr': qutece_highres_files}
-#             'qutece_fast': qutece_fast_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -46,17 +38,29 @@ infosource.iterables = [('subject_id', subject_list),
 selectfiles = eng.Node(nio.SelectFiles(templates,
                                base_directory=working_dir,
                                sort_filelist=True, raise_on_empty=True),
-                   name="SelectFiles")
+                   name="selectfiles")
 # -------------------------------------------------------
 
 # -----------------------UnringNode----------------------
 unring_nii = eng.MapNode(interface = cnp.UnringNii(),
-                         name = 'Unring', iterfield=['in_file'])
+                         name = 'unring_nii', iterfield=['in_file'])
 # -------------------------------------------------------
 
 # -----------------------BiasFieldCorrection-------------
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
-                     name = 'BiasCorrection', iterfield=['input_image'])
+                     name = 'bias_norm', iterfield=['input_image'])
+# -------------------------------------------------------
+
+# ------------------------RealignNode--------------------
+xyz = [0, 1, 0]
+realign = eng.JoinNode(spm.Realign(), name = "realign",
+                       joinsource='bias_norm', joinfield='in_files')
+realign.register_to_mean = True
+realign.quality = 0.95
+realign.wrap = xyz
+realign.write_wrap = xyz
+realign.interp = 7
+realign.write_interp = 7
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -74,13 +78,21 @@ datasink.inputs.substitutions = substitutions
 datasink.inputs.regexp_substitutions = [('_BiasCorrection.','')]
 # -------------------------------------------------------
 
-# -----------------UnringWorkflow------------------------
-preproc_wf = eng.Workflow(name = 'Preprocessing', base_dir = working_dir + '/workflow')
+# -----------------PreprocWorkflow------------------------
+task = 'preprocessing'
+preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
                   (selectfiles, unring_nii, [('qutece_hr', 'in_file')]),
                   (unring_nii, bias_norm, [('out_file', 'input_image')]),
-                  (bias_norm, datasink, [('output_image', 'preproc.@con')])
-                  ])
+                  (bias_norm, realign, [('output_image', 'in_files')]),
+                  (realign, datasink,  [('realigned_files', task+'.@con'),
+                                        ('mean_image', 'realignmean.@con')])])
+# -------------------------------------------------------
+
+# -------------------WorkflowPlotting--------------------
+realign_wf.write_graph(graph2use='flat')
+from IPython.display import Image
+Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
 # -------------------------------------------------------
 
