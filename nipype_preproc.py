@@ -1,3 +1,4 @@
+
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -18,6 +19,7 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
+#subject_list =['11']
 session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
@@ -25,7 +27,7 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart+'_hr_run*.nii')
+                                    filestart+'_hr_run-??_UTE.nii')
 templates = {'qutece_hr': qutece_highres_files}
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -53,8 +55,7 @@ bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
 
 # ------------------------RealignNode--------------------
 xyz = [0, 1, 0]
-realign = eng.JoinNode(spm.Realign(), name = "realign",
-                       joinsource='bias_norm', joinfield='in_files')
+realign = eng.Node(spm.Realign(), name = "realign")
 realign.register_to_mean = True
 realign.quality = 0.95
 realign.wrap = xyz
@@ -91,7 +92,7 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
-realign_wf.write_graph(graph2use='flat')
+preproc_wf.write_graph(graph2use='flat')
 from IPython.display import Image
 Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
 # -------------------------------------------------------
