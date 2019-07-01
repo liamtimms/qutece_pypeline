@@ -1,5 +1,4 @@
 
-
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -17,28 +16,24 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-#TODO: Change this so that it is not iterating over subject and session
-#      but rather, just over the subject with selectfiles grabbing pre or
-#      post-con as appropriate
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
+#subject_list = ['11']
 
 
 # session_list = ['Precon', 'Postcon']
-
-# TODO: grab;
 
 # * realigned precontrast average
 scantype = 'qutece'
 session = 'Precon'
 subdirectory = os.path.join(temp_dir, 'realignmean',
-                            'sub-{subject_id}', 'ses-'+session)
+                            'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_mean_precon_file = os.path.join(subdirectory,
                                        'mean'+filestart+'hr_run*.nii')
 
 # * realigned precontrast scans
-subdirectory = os.path.join(temp_dir, 'realign1',
-                            'sub-{subject_id}', 'ses-'+session)
+subdirectory = os.path.join(temp_dir, 'preprocessing',
+                            'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_precon_files = os.path.join(subdirectory,
                                        'r'+filestart+'hr_run*.nii')
@@ -46,7 +41,7 @@ qutece_precon_files = os.path.join(subdirectory,
 # * realigned postcontrast average
 session = 'Postcon'
 subdirectory = os.path.join(temp_dir, 'realignmean',
-                            'sub-{subject_id}', 'ses-'+session)
+                            'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_mean_postcon_file = os.path.join(subdirectory,
                                        'mean'+filestart+'hr_run*.nii')
@@ -72,7 +67,7 @@ nonT1w_files  = os.path.join(subdirectory,
 
 
 templates = {'qutece_precon_mean': qutece_mean_precon_file,
-             'qutece_precon'      : qutece_precon_files,
+             'qutece_precon'      : qutece_precon_files, 
              'qutece_postcon_mean': qutece_mean_postcon_file,
              'T1w': T1w_files,
              'nonT1w': nonT1w_files}
@@ -92,7 +87,7 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 
 # -----------------------CoregisterNodes-----------------
 #coreg_to_postcon = eng.JoinNode(spm.Coregister(), name = 'coreg_to_postcon', joinsource= 'selectfiles', joinfield = 'apply_to_files')
-coreg_to_postcon = eng.Node(spm.Coregister(), name = 'coreg_to_postcon')
+coreg_to_postcon = eng.Node(spm.Coregister(), name = 'coreg_to_postcon') 
 coreg_to_postcon.inputs.write_interp = 7
 coreg_to_postcon.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
@@ -139,8 +134,8 @@ coreg_wf.connect([(merge, coreg_to_postcon, [('out', 'apply_to_files')])])
 
 coreg_wf.connect([(coreg_to_postcon, datasink,
                      [('coregistered_source', task+'_preconUTEmean.@con'),
-                      ('coregisted_files', task+'_preconScans.@con')])])
+                      ('coregistered_files', task+'_preconScans.@con')])])
+
 
 # -------------------------------------------------------
-
 
