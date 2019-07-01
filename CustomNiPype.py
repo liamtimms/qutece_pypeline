@@ -50,3 +50,31 @@ class UnringNii(BaseInterface):
         outputs = self._outputs().get()
         outputs['out_file'] = getattr(self, '_out_file')
         return outputs
+
+
+class CBVInputSpec(BaseInterfaceInputSpec):
+    precon_file = File(exists=True, mandatory=True)
+    postcon_file = File(exists=True, mandatory=True)
+    mask_file = File(exists=True, mandatory=True)
+
+
+class CBVOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc = 'CBV calculation')
+
+class CBVcalc(BaseInterface):
+    input_spec = CBVInputSpec
+    output_spec = CBVOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        
+        lab = MatlabCommand(script=script, mfile=False)
+        result = mlab.run()
+        return result.runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['out_file'] = getattr(self, '_out_file')
+        return outputs
+
+
