@@ -17,6 +17,18 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
 
+
+# TODO: select files:
+# + precon scans
+#   * IntersessionCoregister_preconScans
+#       -T1w -> image to align (all else must go to merge and then 'apply_to_files')
+#       -non T1w
+#   * IntersessionCoregister_preconUTEmean
+# + postcon scans
+#   * IntrasessionCoregister_nonT1w
+#   * IntrasessionCoregister_T1w
+#   * preprocessing (sub-??, ses-Postcon, qutece)
+
 scantype = 'qutece'
 session = 'Precon'
 subdirectory = os.path.join(temp_dir, 'realignmean',
