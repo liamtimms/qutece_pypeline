@@ -18,6 +18,7 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
+#subject_list = ['11']
 session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
@@ -28,18 +29,18 @@ T1w_files = os.path.join(subdirectory, scantype,
                                     filestart + '_T1w.nii')
 
 nonT1w_files = os.path.join(subdirectory, scantype,
-                                    filestart + '_[!T1w]*.nii')
+                                    filestart + '_*[!w]*.nii')
 
 
-subdirectory = os.path.join(temp_dir, 'realignmean',
-                            'sub-{subject_id}', 'ses-{session_id}')
+subdirectory = os.path.join(temp_dir, 'realignmean', 
+                            'sub-{subject_id}', 'ses-{session_id}', 'qutece')
 filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
-qutece_highres_files = os.path.join(subdirectory,
+qutece_mean_files = os.path.join(subdirectory,
                                     filestart+'hr_run*.nii')
 
-templates = {'qutece_mean': qutece_highres_files,
+templates = {'qutece_mean': qutece_mean_files,
              'T1w': T1w_files,
              'nonT1w': nonT1w_files}
 
