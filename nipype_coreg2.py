@@ -17,7 +17,7 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
-#subject_list = ['11']
+subject_list = ['11']
 
 
 # session_list = ['Precon', 'Postcon']
@@ -106,12 +106,7 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
 # Use the following DataSink output substitutions
 substitutions = [('_subject_id_', 'sub-')]
 
-subjFolders = [('sub-%s' % (sub),
-                'sub-%s/ses-Precon' % (sub))
-               for sub in subject_list]
-substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_coreg_to_postcon.','')]
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
@@ -138,4 +133,5 @@ coreg_wf.connect([(coreg_to_postcon, datasink,
 
 
 # -------------------------------------------------------
+
 
