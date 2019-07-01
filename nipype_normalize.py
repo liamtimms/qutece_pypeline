@@ -16,9 +16,6 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
-coreg_wf.connect([(coreg_to_postcon, datasink,
-                     [('coregistered_source', task+'_preconUTEmean.@con'),
-                      ('coregisted_files', task+'_preconScans.@con')])])
 
 scantype = 'qutece'
 session = 'Precon'
@@ -82,11 +79,10 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                    name="SelectFiles")
 # -------------------------------------------------------
 
-# -----------------------CoregisterNodes-----------------
-#coreg_to_postcon = eng.JoinNode(spm.Coregister(), name = 'coreg_to_postcon', joinsource= 'selectfiles', joinfield = 'apply_to_files')
-coreg_to_postcon = eng.Node(spm.Coregister(), name = 'coreg_to_postcon')
-coreg_to_postcon.inputs.write_interp = 7
-coreg_to_postcon.inputs.separation = [6, 3, 2]
+# -----------------------NormalizeNode-------------------
+normalize = eng.Node(spm.Normalize12(), name = 'normalize')
+normalize.inputs.write_interp = 7
+normalize.inputs.write_voxel_sizes = [1, 1, 1]
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
@@ -112,24 +108,24 @@ datasink.inputs.regexp_substitutions = [('_coreg_to_postcon.','')]
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
-task = 'IntersessionCoregister'
-coreg_wf = eng.Workflow(name = task)
-coreg_wf.base_dir = working_dir + '/workflow'
+task = 'SpatialNormalization'
+norm_wf = eng.Workflow(name = task)
+norm_wf.base_dir = working_dir + '/workflow'
 
-coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
+norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 
-coreg_wf.connect([(selectfiles, merge, [('qutece_precon', 'in1'),
+norm_wf.connect([(selectfiles, merge, [('qutece_precon', 'in1'),
                                         ('T1w', 'in2'),
                                         ('nonT1w', 'in3')])])
 
 
-coreg_wf.connect([(selectfiles, coreg_to_postcon, [('qutece_precon_mean', 'target'),
+norm_wf.connect([(selectfiles, coreg_to_postcon, [('qutece_precon_mean', 'target'),
                                                    ('qutece_postcon_mean', 'source')
                                                    ])])
 
-coreg_wf.connect([(merge, coreg_to_postcon, [('out', 'apply_to_files')])])
+norm_wf.connect([(merge, coreg_to_postcon, [('out', 'apply_to_files')])])
 
-coreg_wf.connect([(coreg_to_postcon, datasink,
+norm_wf.connect([(coreg_to_postcon, datasink,
                      [('coregistered_source', task+'_preconUTEmean.@con'),
                       ('coregisted_files', task+'_preconScans.@con')])])
 
