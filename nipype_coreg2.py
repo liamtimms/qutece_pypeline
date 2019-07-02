@@ -49,7 +49,7 @@ qutece_mean_postcon_file = os.path.join(subdirectory,
 
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
 
-# * precon IntrasessionCoregister_nonT1w
+# * precon IntrasessionCoregister_T1w
 scantype = 'anat'
 session = 'Precon'
 subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_T1w',
@@ -58,7 +58,7 @@ filestart = 'sub-{subject_id}_ses-'+ session +'_'
 T1w_files  = os.path.join(subdirectory,
                                        'r'+filestart+'*.nii')
 
-# * precon IntrasessionCoregister_T1w
+# * precon IntrasessionCoregister_nonT1w
 subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_nonT1w',
                             'sub-{subject_id}', 'ses-'+session)
 nonT1w_files  = os.path.join(subdirectory,
