@@ -4,6 +4,8 @@ from nipype.interfaces.base import TraitedSpec, \
 import os
 from string import Template
 import re
+import numpy as np
+import nibabel as nib
 
 class UnringNiiInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
@@ -66,7 +68,20 @@ class CBVcalc(BaseInterface):
     output_spec = CBVOutputSpec
 
     def _run_interface(self, runtime):
-        in_file_name = self.inputs.in_file
+        precon_file_name = self.inputs.precon_file
+        postcon_file_name = self.inputs.postcon_file
+        mask_file_name = self.inputs.mask_file
+        
+        precon_nii = nib.load(precon_file_name)
+        postcon_nii = nib.load(postcon_file_name)
+        blood_nii = nib.load(mask_file_name)
+        
+        precon_img = precon_nii.get_fdata()
+        postcon_img = postcon_nii.get_fdata()
+
+        diff_img = postcon_img - precon_img
+        diff_nii = nib.Nifti1Image(diff_img, postcon_nii.affine, postcon_nii.header)
+        # nib.save(diff_nii, save_file_name)
         
         lab = MatlabCommand(script=script, mfile=False)
         result = mlab.run()
