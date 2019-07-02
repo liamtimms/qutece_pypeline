@@ -121,8 +121,8 @@ coreg_wf.connect([(selectfiles, merge, [('qutece_precon', 'in1'),
                                         ('nonT1w', 'in3')])])
 
 
-coreg_wf.connect([(selectfiles, coreg_to_postcon, [('qutece_precon_mean', 'target'),
-                                                   ('qutece_postcon_mean', 'source')
+coreg_wf.connect([(selectfiles, coreg_to_postcon, [('qutece_postcon_mean', 'target'),
+                                                   ('qutece_precon_mean', 'source')
                                                    ])])
 
 coreg_wf.connect([(merge, coreg_to_postcon, [('out', 'apply_to_files')])])
