@@ -23,60 +23,51 @@ subject_list = ['02', '03', '05', '06', '08', '10', '11']
 #   * IntersessionCoregister_preconScans
 #       -T1w -> image to align (all else must go to merge and then 'apply_to_files')
 #       -non T1w
-#   * IntersessionCoregister_preconUTEmean
 # + postcon scans
 #   * IntrasessionCoregister_nonT1w
 #   * IntrasessionCoregister_T1w
 #   * preprocessing (sub-??, ses-Postcon, qutece)
 
-scantype = 'qutece'
-session = 'Precon'
-subdirectory = os.path.join(temp_dir, 'realignmean',
-                            'sub-{subject_id}', 'ses-'+session)
-filestart = 'sub-{subject_id}_ses-'+ session +'_'
-qutece_mean_precon_file = os.path.join(subdirectory,
-                                       'mean'+filestart+'hr_run*.nii')
-
-# * realigned precontrast scans
-subdirectory = os.path.join(temp_dir, 'realign1',
-                            'sub-{subject_id}', 'ses-'+session)
-filestart = 'sub-{subject_id}_ses-'+ session +'_'
-qutece_precon_files = os.path.join(subdirectory,
-                                       'r'+filestart+'hr_run*.nii')
-
-# * realigned postcontrast average
-session = 'Postcon'
-subdirectory = os.path.join(temp_dir, 'realignmean',
-                            'sub-{subject_id}', 'ses-'+session)
-filestart = 'sub-{subject_id}_ses-'+ session +'_'
-qutece_mean_postcon_file = os.path.join(subdirectory,
-                                       'mean'+filestart+'hr_run*.nii')
-
-
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
-
-# * precon IntrasessionCoregister_nonT1w
-scantype = 'anat'
 session = 'Precon'
-subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_T1w',
+# * precon T1w from IntersessionCoregister_preconScans 
+filestart = 'sub-{subject_id}_ses-'+ session +'_'
+scanfolder = 'IntersessionCoregister_preconScans'
+subdirectory = os.path.join(temp_dir, scanfolder, 
+                            'sub-{subject_id}')
+precon_T1w_files  = os.path.join(subdirectory,
+                                       'rr'+filestart+'_T1w.nii')
+
+# * precon nonT1w (includes UTE) from IntersessionCoregister_preconScans 
+subdirectory = os.path.join(temp_dir, scanfolder, 
+                            'sub-{subject_id}')
+precon_nonT1w_files  = os.path.join(subdirectory,
+                                       'rr'+filestart+'_??[!w]*.nii')
+
+# + postcon scans
+#   * IntrasessionCoregister_nonT1w
+session = 'Postcon'
+scanfolder = 'IntrasessionCoregister_nonT1w' # note that this also includes T1w for some reason right now
+subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
-T1w_files  = os.path.join(subdirectory,
+postcon_nonUTE_files = os.path.join(subdirectory,
                                        'r'+filestart+'*.nii')
 
-# * precon IntrasessionCoregister_T1w
-subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_nonT1w',
+
+# * preprocessing (sub-??, ses-Postcon, qutece)
+scanfolder = 'Preprocessing'
+subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
-nonT1w_files  = os.path.join(subdirectory,
-                                       'r'+filestart+'*.nii')
+filestart = 'sub-{subject_id}_ses-'+ session +'_'
+postcon_UTE_files = os.path.join(subdirectory, 'qutece'
+                                       'mean'+filestart+'hr_run*.nii')
 
 
-
-templates = {'qutece_precon_mean': qutece_mean_precon_file,
-             'qutece_precon'      : qutece_precon_files,
-             'qutece_postcon_mean': qutece_mean_postcon_file,
-             'T1w': T1w_files,
-             'nonT1w': nonT1w_files}
+templates = {'nonUTE_postcon': postcon_nonUTE_files,
+             'qutece_postcon': postcon_UTE_files,
+             'T1w_precon': precon_T1w_files,
+             'nonT1w_precon': precon_nonT1w_files}
 
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -112,34 +103,28 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
 substitutions = [('_subject_id_', 'sub-')]
 
 subjFolders = [('sub-%s' % (sub),
-                'sub-%s/ses-Precon' % (sub))
+                'sub-%s' % (sub))
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_coreg_to_postcon.','')]
+# datasink.inputs.regexp_substitutions = [('_coreg_to_postcon.','')]
 # -------------------------------------------------------
 
-# -----------------CoregistrationWorkflow----------------
+# -----------------NormalizationWorkflow-----------------
 task = 'SpatialNormalization'
 norm_wf = eng.Workflow(name = task)
 norm_wf.base_dir = working_dir + '/workflow'
 
 norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 
-norm_wf.connect([(selectfiles, merge, [('qutece_precon', 'in1'),
-                                        ('T1w', 'in2'),
-                                        ('nonT1w', 'in3')])])
+norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
+                                        ('qutece_postcon', 'in2'),
+                                        ('nonT1w_precon', 'in3')])])
 
-
-norm_wf.connect([(selectfiles, coreg_to_postcon, [('qutece_precon_mean', 'target'),
-                                                   ('qutece_postcon_mean', 'source')
-                                                   ])])
-
-norm_wf.connect([(merge, coreg_to_postcon, [('out', 'apply_to_files')])])
-
-norm_wf.connect([(coreg_to_postcon, datasink,
-                     [('coregistered_source', task+'_preconUTEmean.@con'),
-                      ('coregisted_files', task+'_preconScans.@con')])])
-
+norm_wf.connect([(selectfiles, normalize, [('T1w_precon', 'image_to_align')])])
+norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
+norm_wf.connect([(normalize, datasink,
+                     [('normalized_image', task+'_preconT1w.@con'),
+                      ('noramalized_files', task+'_allOtherScans.@con')])])
 # -------------------------------------------------------
 
