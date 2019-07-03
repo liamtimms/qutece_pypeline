@@ -15,8 +15,8 @@ import nipype.interfaces.io as nio
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-subject_list = ['02', '03', '05', '06', '08', '10', '11']
-
+#subject_list = ['02', '03', '05', '06', '08', '10', '11']
+subject_list =['11']
 
 # TODO: select files:
 # + precon scans
@@ -36,13 +36,13 @@ scanfolder = 'IntersessionCoregister_preconScans'
 subdirectory = os.path.join(temp_dir, scanfolder, 
                             'sub-{subject_id}')
 precon_T1w_files  = os.path.join(subdirectory,
-                                       'rr'+filestart+'_T1w.nii')
+                                       'rr'+filestart+'T1w.nii')
 
 # * precon nonT1w (includes UTE) from IntersessionCoregister_preconScans 
 subdirectory = os.path.join(temp_dir, scanfolder, 
                             'sub-{subject_id}')
 precon_nonT1w_files  = os.path.join(subdirectory,
-                                       'rr'+filestart+'_??[!w]*.nii')
+                                       'rr'+filestart+'??[!w]*.nii')
 
 # + postcon scans
 #   * IntrasessionCoregister_nonT1w
@@ -60,8 +60,8 @@ scanfolder = 'Preprocessing'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
-postcon_UTE_files = os.path.join(subdirectory, 'qutece'
-                                       'mean'+filestart+'hr_run*.nii')
+postcon_UTE_files = os.path.join(subdirectory, 'qutece',
+                                       'r'+filestart+'hr_run*.nii')
 
 
 templates = {'nonUTE_postcon': postcon_nonUTE_files,
@@ -125,6 +125,6 @@ norm_wf.connect([(selectfiles, normalize, [('T1w_precon', 'image_to_align')])])
 norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
 norm_wf.connect([(normalize, datasink,
                      [('normalized_image', task+'_preconT1w.@con'),
-                      ('noramalized_files', task+'_allOtherScans.@con')])])
+                      ('normalized_files', task+'_allOtherScans.@con')])])
 # -------------------------------------------------------
 
