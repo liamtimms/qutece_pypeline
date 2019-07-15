@@ -67,6 +67,16 @@ coreg_to_anat.inputs.write_interp = 7
 coreg_to_anat.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
 
+# -----------------------BiasFieldCorrection-------------
+bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
+                     name = 'bias_norm', iterfield=['input_image'])
+# -------------------------------------------------------
+
+# -----------------------Merge---------------------------
+merge = eng.Node(utl.Merge(2), name = 'merge')
+merge.ravel_inputs = True
+# -------------------------------------------------------
+
 # ------------------------Output-------------------------
 # Datasink - creates output folder for important outputs
 datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -99,12 +109,17 @@ coreg_wf.connect([(coreg_to_ute, coreg_to_anat, [('coregistered_source', 'target
 
 coreg_wf.connect([(selectfiles, coreg_to_anat, [('nonT1w', 'source')])])
 
-coreg_wf.connect([(coreg_to_ute, datasink,
-                     [('coregistered_source', task+'_T1w.@con')])])
+coreg_wf.connect([(coreg_to_ute, merge,
+                     [('coregistered_source', 'in1')])])
 
-coreg_wf.connect([(coreg_to_anat, datasink,
-                     [('coregistered_source', task+'_nonT1w.@con')])])
+coreg_wf.connect([(coreg_to_anat, merge,
+                     [('coregistered_source', 'in2')])])
 
+coreg_wf.connect([(merge, bias_norm,
+                     [('out', 'input_image')])])
+
+coreg_wf.connect([(bias_norm, datasink,
+                     [('output_image', task+'.@con')])])
 # -------------------------------------------------------
 
 
