@@ -86,6 +86,21 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 normalize = eng.Node(spm.Normalize12(), name = 'normalize')
 normalize.inputs.write_interp = 7
 normalize.inputs.write_voxel_sizes = [1, 1, 1]
+
+warp_list = []
+warp_list.append([0, 0.0001, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001*100, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5*100, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005*100, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005, 0.02*100])
+warp_list.append([0, 0.0001/100, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5/100, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005/100, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005, 0.02/100])
+warp_list.append([1, 0.0001, 0.5, 0.005, 0.02/100])
+
+normalize.iterables = ('warping_regularization', warp_list)
+#normalize.inputs.warping_regularization = [0, 0.0001, 0.5, 0.005, 0.02]
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
