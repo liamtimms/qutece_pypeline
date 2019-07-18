@@ -6,6 +6,7 @@ import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
+import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
@@ -18,7 +19,7 @@ temp_dir = os.path.join(output_dir, 'datasink/')
 #subject_list = ['02', '03', '05', '06', '08', '10', '11']
 subject_list =['11']
 
-# TODO: select files:
+# Select files:
 # + precon scans
 #   * IntersessionCoregister_preconScans
 #       -T1w -> image to align (all else must go to merge and then 'apply_to_files')
@@ -30,16 +31,16 @@ subject_list =['11']
 
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
 session = 'Precon'
-# * precon T1w from IntersessionCoregister_preconScans 
+# * precon T1w from IntersessionCoregister_preconScans
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 scanfolder = 'IntersessionCoregister_preconScans'
-subdirectory = os.path.join(temp_dir, scanfolder, 
+subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}')
 precon_T1w_files  = os.path.join(subdirectory,
                                        'rr'+filestart+'T1w.nii')
 
-# * precon nonT1w (includes UTE) from IntersessionCoregister_preconScans 
-subdirectory = os.path.join(temp_dir, scanfolder, 
+# * precon nonT1w (includes UTE) from IntersessionCoregister_preconScans
+subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}')
 precon_nonT1w_files  = os.path.join(subdirectory,
                                        'rr'+filestart+'??[!w]*.nii')
@@ -82,6 +83,12 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                    name="SelectFiles")
 # -------------------------------------------------------
 
+# -----------------------SkullStrip----------------------
+bet = eng.Node(fsl.BET(), name = 'bet')
+bet.inputs.mask = True
+bet.inputs.robust = True
+# -------------------------------------------------------
+
 # -----------------------NormalizeNode-------------------
 normalize = eng.Node(spm.Normalize12(), name = 'normalize')
 normalize.inputs.write_interp = 7
@@ -120,6 +127,11 @@ norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
                                         ('qutece_postcon', 'in2'),
                                         ('nonT1w_precon', 'in3')])])
+
+norm_wf.connect([(selectfiles, bet, [('T1w_precon', 'in_file')])])
+norm_wf.connect([(bet, datasink,
+                     [('out_file', task+'_skullstripT1w.@con'),
+                      ('mask_file', task+'_skullstripMask.@con')])])
 
 norm_wf.connect([(selectfiles, normalize, [('T1w_precon', 'image_to_align')])])
 norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
