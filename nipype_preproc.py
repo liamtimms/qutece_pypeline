@@ -25,6 +25,9 @@ session_list = ['Precon', 'Postcon']
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
 
+# TODO: probably best to run all of the non-UTE scans through these
+# same corrections that makes it more fair and also might technically help coreg
+
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
                                     filestart+'_hr_run-??_UTE.nii')
