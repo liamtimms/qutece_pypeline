@@ -16,8 +16,8 @@ import nipype.interfaces.io as nio
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-#subject_list = ['02', '03', '05', '06', '08', '10', '11']
-subject_list =['11']
+subject_list = ['02', '03', '05', '06', '08', '10', '11']
+#subject_list =['11']
 
 # Select files:
 # + precon scans
@@ -87,6 +87,7 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 bet = eng.Node(fsl.BET(), name = 'bet')
 bet.inputs.mask = True
 bet.inputs.robust = True
+bet.inputs.output_type = 'NIFTI'
 # -------------------------------------------------------
 
 # -----------------------NormalizeNode-------------------
@@ -96,7 +97,7 @@ normalize.inputs.write_voxel_sizes = [1, 1, 1]
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
-merge = eng.Node(utl.Merge(3), name = 'merge')
+merge = eng.Node(utl.Merge(4), name = 'merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
@@ -126,14 +127,15 @@ norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 
 norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
                                         ('qutece_postcon', 'in2'),
-                                        ('nonT1w_precon', 'in3')])])
+                                        ('nonT1w_precon', 'in3'),
+                                        ('T1w_precon', 'in4')])])
 
 norm_wf.connect([(selectfiles, bet, [('T1w_precon', 'in_file')])])
 norm_wf.connect([(bet, datasink,
                      [('out_file', task+'_skullstripT1w.@con'),
                       ('mask_file', task+'_skullstripMask.@con')])])
 
-norm_wf.connect([(selectfiles, normalize, [('T1w_precon', 'image_to_align')])])
+norm_wf.connect([(bet, normalize, [('out_file', 'image_to_align')])])
 norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
 norm_wf.connect([(normalize, datasink,
                      [('normalized_image', task+'_preconT1w.@con'),
