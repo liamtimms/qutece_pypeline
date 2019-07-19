@@ -168,5 +168,8 @@ norm_wf.connect([(bet, fast, [('out_file', 'in_files')]),
                                  ('bias_field', 'in7'),
                                  ('probability_maps', 'in8')])])
 
+norm_wf.connect([(merge2, datasink,
+                     [('out', task+'_FAST.@con')])])
+
 # -------------------------------------------------------
 
