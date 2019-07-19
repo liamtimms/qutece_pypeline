@@ -1,5 +1,5 @@
 
-# Preprocessing Pipeline
+# Normalization Pipeline
 # -----------------Imports-------------------------------
 import os
 import CustomNiPype as cnp
@@ -83,10 +83,8 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                    name="SelectFiles")
 # -------------------------------------------------------
 
-# -----------------------SkullStrip----------------------
+# -----------------------RobustFOV----------------------
 robustFOV = eng.Node(fsl.RobustFOV(), name = 'robustFOV')
-robustFOV.inputs.mask = True
-robustFOV.inputs.robust = True
 robustFOV.inputs.output_type = 'NIFTI'
 # -------------------------------------------------------
 
@@ -108,6 +106,17 @@ merge = eng.Node(utl.Merge(4), name = 'merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
+# -----------------------FAST----------------------
+fast = eng.Node(fsl.FAST(), name = 'fast')
+fast.inputs.no_bias = True
+fast.inputs.segment_iters = 45
+fast.inputs.output_type = 'NIFTI'
+# -------------------------------------------------------
+
+# -----------------------Merge---------------------------
+merge2 = eng.Node(utl.Merge(8), name = 'merge2')
+merge2.ravel_inputs = True
+# -------------------------------------------------------
 
 # ------------------------Output-------------------------
 # Datasink - creates output folder for important outputs
@@ -138,7 +147,7 @@ norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
                                         ('T1w_precon', 'in4')])])
 
 norm_wf.connect([(selectfiles, robustFOV, [('T1w_precon', 'in_file')])])
-norm_wf.connect([(robustFOV, bet, [('T1w_precon', 'in_file')])])
+norm_wf.connect([(robustFOV, bet, [('out_roi', 'in_file')])])
 norm_wf.connect([(bet, datasink,
                      [('out_file', task+'_skullstripT1w.@con'),
                       ('mask_file', task+'_skullstripMask.@con')])])
@@ -148,5 +157,16 @@ norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
 norm_wf.connect([(normalize, datasink,
                      [('normalized_image', task+'_preconT1w.@con'),
                       ('normalized_files', task+'_allOtherScans.@con')])])
+
+norm_wf.connect([(bet, fast, [('out_file', 'in_files')]),
+                 (fast, merge2, [('tissue_class_map', 'in1'),
+                                 ('tissue_class_files', 'in2'),
+                                 ('restored_image', 'in3'),
+                                 ('mixeltype', 'in4'),
+                                 ('partial_volume_map', 'in5'),
+                                 ('partial_volume_files', 'in6'),
+                                 ('bias_field', 'in7'),
+                                 ('probability_maps', 'in8')])])
+
 # -------------------------------------------------------
 
