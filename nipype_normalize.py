@@ -84,6 +84,13 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # -------------------------------------------------------
 
 # -----------------------SkullStrip----------------------
+robustFOV = eng.Node(fsl.RobustFOV(), name = 'robustFOV')
+robustFOV.inputs.mask = True
+robustFOV.inputs.robust = True
+robustFOV.inputs.output_type = 'NIFTI'
+# -------------------------------------------------------
+
+# -----------------------SkullStrip----------------------
 bet = eng.Node(fsl.BET(), name = 'bet')
 bet.inputs.mask = True
 bet.inputs.robust = True
@@ -130,7 +137,8 @@ norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
                                         ('nonT1w_precon', 'in3'),
                                         ('T1w_precon', 'in4')])])
 
-norm_wf.connect([(selectfiles, bet, [('T1w_precon', 'in_file')])])
+norm_wf.connect([(selectfiles, robustFOV, [('T1w_precon', 'in_file')])])
+norm_wf.connect([(robustFOV, bet, [('T1w_precon', 'in_file')])])
 norm_wf.connect([(bet, datasink,
                      [('out_file', task+'_skullstripT1w.@con'),
                       ('mask_file', task+'_skullstripMask.@con')])])
