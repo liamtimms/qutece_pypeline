@@ -16,8 +16,8 @@ import nipype.interfaces.io as nio
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-subject_list = ['02', '03', '05', '06', '08', '10', '11']
-#subject_list =['11']
+#subject_list = ['02', '03', '05', '06', '08', '10', '11']
+subject_list =['11']
 
 # Select files:
 # + precon scans
@@ -118,6 +118,11 @@ merge2 = eng.Node(utl.Merge(8), name = 'merge2')
 merge2.ravel_inputs = True
 # -------------------------------------------------------
 
+# -----------------------FIRST---------------------------
+first = eng.Node(fsl.FIRST(), name = 'first')
+#first.inputs.output_type = 'NIFTI'
+# -------------------------------------------------------
+
 # ------------------------Output-------------------------
 # Datasink - creates output folder for important outputs
 datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -171,6 +176,8 @@ norm_wf.connect([(bet, fast, [('out_file', 'in_files')]),
 norm_wf.connect([(merge2, datasink,
                      [('out', task+'_FAST.@con')])])
 
+norm_wf.connect([(bet, first, [('out_file', 'in_file')]),
+                 (first, datasink, [('original_segmentations', task+'_FIRST.@con')])])
 # -------------------------------------------------------
 
 
