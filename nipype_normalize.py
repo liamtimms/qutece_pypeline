@@ -106,7 +106,7 @@ merge = eng.Node(utl.Merge(4), name = 'merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
-# -----------------------FAST----------------------
+# -----------------------FAST----------------------------
 fast = eng.Node(fsl.FAST(), name = 'fast')
 fast.inputs.no_bias = True
 fast.inputs.segment_iters = 45
@@ -172,4 +172,5 @@ norm_wf.connect([(merge2, datasink,
                      [('out', task+'_FAST.@con')])])
 
 # -------------------------------------------------------
+
 
