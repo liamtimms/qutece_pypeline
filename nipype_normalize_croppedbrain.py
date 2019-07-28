@@ -17,6 +17,7 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
+subject_list = ['02', '03', '06', '10']
 #subject_list =['11']
 
 # Select files:
@@ -47,10 +48,9 @@ precon_nonT1w_files  = os.path.join(subdirectory,
 
 # * precon T1w brain cropped out from Ju's manual work
 scanfolder = 'ManualBrainCrop'
-subdirectory = os.path.join(temp_dir, scanfolder,
-                            'sub-{subject_id}')
-precon_T1w_files  = os.path.join(subdirectory,
-                                       'rr'+filestart+'T1w.nii')
+subdirectory = os.path.join(temp_dir, scanfolder)
+precon_T1w_brain_files  = os.path.join(subdirectory,
+                                       'rr'+filestart+'T1w_brain.nii')
 
 # + postcon scans
 #   * IntrasessionCoregister_nonT1w
@@ -75,7 +75,8 @@ postcon_UTE_files = os.path.join(subdirectory, 'qutece',
 templates = {'nonUTE_postcon': postcon_nonUTE_files,
              'qutece_postcon': postcon_UTE_files,
              'T1w_precon': precon_T1w_files,
-             'nonT1w_precon': precon_nonT1w_files}
+             'nonT1w_precon': precon_nonT1w_files,
+             'T1w_precon_brain': precon_T1w_brain_files}
 
 
 # Infosource - a function free node to iterate over the list of subject names
