@@ -17,7 +17,7 @@ working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
-subject_list = ['02', '03', '06', '10']
+subject_list = ['02', '03', '05', '06', '10']
 #subject_list =['11']
 
 # Select files:
@@ -52,6 +52,9 @@ subdirectory = os.path.join(temp_dir, scanfolder)
 precon_T1w_brain_files  = os.path.join(subdirectory,
                                        'rr'+filestart+'T1w_brain.nii')
 
+precon_T1w_brain_label_files  = os.path.join(subdirectory,
+                                       'rr'+filestart+'T1w_brain-label.nii')
+
 # + postcon scans
 #   * IntrasessionCoregister_nonT1w
 session = 'Postcon'
@@ -76,7 +79,8 @@ templates = {'nonUTE_postcon': postcon_nonUTE_files,
              'qutece_postcon': postcon_UTE_files,
              'T1w_precon': precon_T1w_files,
              'nonT1w_precon': precon_nonT1w_files,
-             'T1w_precon_brain': precon_T1w_brain_files}
+             'T1w_precon_brain': precon_T1w_brain_files,
+             'T1w_precon_brain_label': precon_T1w_brain_label_files}
 
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -98,7 +102,7 @@ normalize.inputs.write_voxel_sizes = [1, 1, 1]
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
-merge = eng.Node(utl.Merge(4), name = 'merge')
+merge = eng.Node(utl.Merge(5), name = 'merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
@@ -139,9 +143,10 @@ norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
                                         ('qutece_postcon', 'in2'),
                                         ('nonT1w_precon', 'in3'),
-                                        ('T1w_precon', 'in4')])])
+                                        ('T1w_precon_brain_label', 'in4'),
+                                        ('T1w_precon', 'in5')])])
 
-norm_wf.connect([(selectfiles, normalize, [('T1w_precon_brain', 'in_file')])])
+norm_wf.connect([(selectfiles, normalize, [('T1w_precon_brain', 'image_to_align')])])
 norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
 norm_wf.connect([(normalize, datasink,
                      [('normalized_image', task+'_preconT1w.@con'),
@@ -160,5 +165,4 @@ norm_wf.connect([(selectfiles, fast, [('T1w_precon_brain', 'in_files')]),
 norm_wf.connect([(merge2, datasink,
                      [('out', task+'_FAST.@con')])])
 # -------------------------------------------------------
-
 
