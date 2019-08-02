@@ -4,6 +4,7 @@
 import os
 import CustomNiPype as cnp
 import nibabel as nib
+import nilearn as nil
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
@@ -56,11 +57,13 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 def scan_subtract(file1, file2):
         nii1 = nib.load(file1)
         nii2 = nib.load(file2)
-        
+
+        nii2 = nil.resample_to_img(nii2, nii1)
+
         img1 = nii1.get_fdata()
         img2 = nii2.get_fdata()
 
-        diff_img = img1 - img2
+        diff_img = img2 - img1
         diff_nii = nib.Nifti1Image(diff_img, postcon_nii.affine, postcon_nii.header)
 
     return difference
