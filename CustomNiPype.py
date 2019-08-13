@@ -1,3 +1,4 @@
+
 from nipype.interfaces.matlab import MatlabCommand
 from nipype.interfaces.base import TraitedSpec, \
     BaseInterface, BaseInterfaceInputSpec, File
@@ -83,13 +84,19 @@ class DiffNii(BaseInterface):
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
-        diff_file_name = fname2 + '_minus_' + fname1 + '.nii'
+        diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
         nib.save(diff_nii, diff_file_name)
         setattr(self, '_out_file', diff_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
+        file1_name = self.inputs.file1
+        file2_name = self.inputs.file2
+        pth, fname1, ext = split_filename(file1_name)
+        pth, fname2, ext = split_filename(file2_name)
+        diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
+        #outputs['out_file'] = getattr(self, '_out_file')
         outputs['out_file'] = os.path.abspath(diff_file_name)
         return outputs
 
@@ -141,3 +148,4 @@ class DiffNii(BaseInterface):
 #        return outputs
 #
 #
+

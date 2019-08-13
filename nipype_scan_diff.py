@@ -1,5 +1,5 @@
 
-# Normalization Pipeline
+# Diff Pipeline
 # -----------------Imports-------------------------------
 import os
 import CustomNiPype as cnp
@@ -28,7 +28,7 @@ scanfolder = 'IntersessionCoregister_preconUTEmean'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}')
 precon_UTE_mean  = os.path.join(subdirectory,
-                                       'rr'+filestart+'*UTE_corrected.nii')
+                                       'rmean'+filestart+'*UTE_corrected.nii')
 # + postcon scans
 session = 'Postcon'
 # * preprocessing (sub-??, ses-Postcon, qutece)
@@ -37,7 +37,7 @@ subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 postcon_UTE_files = os.path.join(subdirectory, 'qutece',
-                                       'r'+filestart+'hr_run*.nii')
+                                       'r'+filestart+'hr_run-??_desc-unring_UTE_corrected.nii')
 
 templates = {'qutece_precon_mean': precon_UTE_mean,
              'qutece_postcon': postcon_UTE_files}
@@ -56,7 +56,7 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # -------------------------------------------------------
 
 # -----------------------DiffNode-------------------
-difference = eng.MapNode(cnp.DiffNii(), name = 'difference', iterfield = 'file1')
+difference = eng.MapNode(cnp.DiffNii(), name = 'difference', iterfield = 'file2')
 #difference.iterables = [('file1', ['precon_UTE_files']), ('file2', ['postcon_UTE_files'])] # this is pseudo code not real
 # -------------------------------------------------------
 
@@ -86,6 +86,7 @@ diff_wf.connect([(selectfiles, difference, [('qutece_precon_mean', 'file1'),
                                         ('qutece_postcon', 'file2')])])
 
 diff_wf.connect([(difference, datasink,
-                     [('out_file', task+'_FAST.@con')])])
+                     [('out_file', task+'.@con')])])
 # -------------------------------------------------------
+
 
