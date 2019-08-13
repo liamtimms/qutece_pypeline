@@ -60,7 +60,6 @@ class DiffInputSpec(BaseInterfaceInputSpec):
     file1 = File(exists=True, mandatory=True)
     file2 = File(exists=True, mandatory=True)
 
-
 class DiffOutputSpec(TraitedSpec):
     out_file = File(exists=True, desc = 'file2 minus file1')
 
@@ -94,51 +93,51 @@ class DiffNii(BaseInterface):
         outputs['out_file'] = os.path.abspath(diff_file_name)
         return outputs
 
-
-class CBVInputSpec(BaseInterfaceInputSpec):
-    precon_file = File(exists=True, mandatory=True)
-    postcon_file = File(exists=True, mandatory=True)
-    mask_file = File(exists=True, mandatory=True)
-
-
-class CBVOutputSpec(TraitedSpec):
-    cbv_file = File(exists=True, desc = 'CBV calculation')
-    diff_file = File(exists=True, desc = 'Post minus Pre')
-
-class CBVcalc(BaseInterface):
-    input_spec = CBVInputSpec
-    output_spec = CBVOutputSpec
-
-    def _run_interface(self, runtime):
-        precon_file_name = self.inputs.precon_file
-        postcon_file_name = self.inputs.postcon_file
-        mask_file_name = self.inputs.mask_file
-
-        precon_nii = nib.load(precon_file_name)
-        postcon_nii = nib.load(postcon_file_name)
-        blood_nii = nib.load(mask_file_name)
-
-        precon_img = np.array(precon_nii.get_data())
-        postcon_img = np.array(postcon_nii.get_data())
-        blood_roi = np.array(blood_nii.get_data())
-
-        diff_img = postcon_img - precon_img
-        diff_nii = nib.Nifti1Image(diff_img, postcon_nii.affine, postcon_nii.header)
-
-        # TODO: define save_file_name
-        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
-        # a possiblity is
-        pth, fname, ext = split_filename(fname)
-        diff_file_name = fname + '_difference.nii'
-        nib.save(diff_nii, diff_file_name)
-
-        cbv_img = diff_img
-        return runtime
-
-    def _list_outputs(self):
-        outputs = self._outputs().get()
-        #outputs['cbv_file'] = getattr(self, '_cbv_file')
-        outputs['cbv_file'] = os.path.abspath(diff_file_name)
-        return outputs
-
-
+#
+#class CBVInputSpec(BaseInterfaceInputSpec):
+#    precon_file = File(exists=True, mandatory=True)
+#    postcon_file = File(exists=True, mandatory=True)
+#    mask_file = File(exists=True, mandatory=True)
+#
+#
+#class CBVOutputSpec(TraitedSpec):
+#    cbv_file = File(exists=True, desc = 'CBV calculation')
+#    diff_file = File(exists=True, desc = 'Post minus Pre')
+#
+#class CBVcalc(BaseInterface):
+#    input_spec = CBVInputSpec
+#    output_spec = CBVOutputSpec
+#
+#    def _run_interface(self, runtime):
+#        precon_file_name = self.inputs.precon_file
+#        postcon_file_name = self.inputs.postcon_file
+#        mask_file_name = self.inputs.mask_file
+#
+#        precon_nii = nib.load(precon_file_name)
+#        postcon_nii = nib.load(postcon_file_name)
+#        blood_nii = nib.load(mask_file_name)
+#
+#        precon_img = np.array(precon_nii.get_data())
+#        postcon_img = np.array(postcon_nii.get_data())
+#        blood_roi = np.array(blood_nii.get_data())
+#
+#        diff_img = postcon_img - precon_img
+#        diff_nii = nib.Nifti1Image(diff_img, postcon_nii.affine, postcon_nii.header)
+#
+#        # TODO: define save_file_name
+#        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+#        # a possiblity is
+#        pth, fname, ext = split_filename(fname)
+#        diff_file_name = fname + '_difference.nii'
+#        nib.save(diff_nii, diff_file_name)
+#
+#        cbv_img = diff_img
+#        return runtime
+#
+#    def _list_outputs(self):
+#        outputs = self._outputs().get()
+#        #outputs['cbv_file'] = getattr(self, '_cbv_file')
+#        outputs['cbv_file'] = os.path.abspath(diff_file_name)
+#        return outputs
+#
+#
