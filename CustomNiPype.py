@@ -83,7 +83,7 @@ class DiffNii(BaseInterface):
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
-        diff_file_name = fname2 + '_' + fname2 '_difference.nii'
+        diff_file_name = fname2 + '_minus_' + fname1 + '.nii'
         nib.save(diff_nii, diff_file_name)
         setattr(self, '_out_file', diff_file_name)
         return runtime
