@@ -24,10 +24,10 @@ subject_list = ['02', '03', '05', '06', '10']
 session = 'Precon'
 # * precon T1w from IntersessionCoregister_preconScans
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
-scanfolder = 'IntersessionCoregister_preconScans'
+scanfolder = 'IntersessionCoregister_preconUTEmean'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}')
-precon_UTE_files  = os.path.join(subdirectory,
+precon_UTE_mean  = os.path.join(subdirectory,
                                        'rr'+filestart+'*UTE_corrected.nii')
 # + postcon scans
 session = 'Postcon'
@@ -39,7 +39,7 @@ filestart = 'sub-{subject_id}_ses-'+ session +'_'
 postcon_UTE_files = os.path.join(subdirectory, 'qutece',
                                        'r'+filestart+'hr_run*.nii')
 
-templates = {'qutece_precon': precon_UTE_files,
+templates = {'qutece_precon_mean': precon_UTE_mean,
              'qutece_postcon': postcon_UTE_files}
 
 
@@ -56,27 +56,8 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 # -------------------------------------------------------
 
 # -----------------------DiffNode-------------------
-difference = eng.Node(cnp.DiffNii(), name = 'difference')
-difference.iterables = [('file1', ['precon_UTE_files']), ('file2', ['postcon_UTE_files'])] # this is pseudo code not real
-#difference.inputs.file1 = 7
-#difference.inputs.file2 = [1, 1, 1]
-# -------------------------------------------------------
-
-# -----------------------Merge---------------------------
-merge = eng.Node(utl.Merge(5), name = 'merge')
-merge.ravel_inputs = True
-# -------------------------------------------------------
-
-# -----------------------FAST----------------------------
-fast = eng.Node(fsl.FAST(), name = 'fast')
-fast.inputs.no_bias = True
-fast.inputs.segment_iters = 45
-fast.inputs.output_type = 'NIFTI'
-# -------------------------------------------------------
-
-# -----------------------Merge---------------------------
-merge2 = eng.Node(utl.Merge(8), name = 'merge2')
-merge2.ravel_inputs = True
+difference = eng.MapNode(cnp.DiffNii(), name = 'difference', iterfield = 'file1')
+#difference.iterables = [('file1', ['precon_UTE_files']), ('file2', ['postcon_UTE_files'])] # this is pseudo code not real
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -96,34 +77,15 @@ datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
 # -----------------NormalizationWorkflow-----------------
-task = 'SpatialNormalization'
-norm_wf = eng.Workflow(name = task)
-norm_wf.base_dir = working_dir + '/workflow'
+task = 'postminuspre'
+diff_wf = eng.Workflow(name = task)
+diff_wf.base_dir = working_dir + '/workflow'
 
-norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
-norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
-                                        ('qutece_postcon', 'in2'),
-                                        ('nonT1w_precon', 'in3'),
-                                        ('T1w_precon_brain_label', 'in4'),
-                                        ('T1w_precon', 'in5')])])
+diff_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
+diff_wf.connect([(selectfiles, difference, [('qutece_precon_mean', 'file1'),
+                                        ('qutece_postcon', 'file2')])])
 
-norm_wf.connect([(selectfiles, normalize, [('T1w_precon_brain', 'image_to_align')])])
-norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
-norm_wf.connect([(normalize, datasink,
-                     [('normalized_image', task+'_preconT1w.@con'),
-                      ('normalized_files', task+'_allOtherScans.@con')])])
-
-norm_wf.connect([(selectfiles, fast, [('T1w_precon_brain', 'in_files')]),
-                 (fast, merge2, [('tissue_class_map', 'in1'),
-                                 ('tissue_class_files', 'in2'),
-                                 ('restored_image', 'in3'),
-                                 ('mixeltype', 'in4'),
-                                 ('partial_volume_map', 'in5'),
-                                 ('partial_volume_files', 'in6'),
-                                 ('bias_field', 'in7'),
-                                 ('probability_maps', 'in8')])])
-
-norm_wf.connect([(merge2, datasink,
-                     [('out', task+'_FAST.@con')])])
+diff_wf.connect([(difference, datasink,
+                     [('out_file', task+'_FAST.@con')])])
 # -------------------------------------------------------
 
