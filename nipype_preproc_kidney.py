@@ -46,25 +46,9 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
                    name="selectfiles")
 # -------------------------------------------------------
 
-# -----------------------UnringNode----------------------
-unring_nii = eng.MapNode(interface = cnp.UnringNii(),
-                         name = 'unring_nii', iterfield=['in_file'])
-# -------------------------------------------------------
-
 # -----------------------BiasFieldCorrection-------------
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
                      name = 'bias_norm', iterfield=['input_image'])
-# -------------------------------------------------------
-
-# ------------------------RealignNode--------------------
-xyz = [0, 1, 0]
-realign = eng.Node(spm.Realign(), name = "realign")
-realign.register_to_mean = True
-realign.quality = 0.95
-realign.wrap = xyz
-realign.write_wrap = xyz
-realign.interp = 7
-realign.write_interp = 7
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -87,11 +71,8 @@ task = 'preprocessing'
 preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
-                  (selectfiles, unring_nii, [('qutece_hr', 'in_file')]),
-                  (unring_nii, bias_norm, [('out_file', 'input_image')]),
-                  (bias_norm, realign, [('output_image', 'in_files')]),
-                  (realign, datasink,  [('realigned_files', task+'.@con'),
-                                        ('mean_image', 'realignmean.@con')])])
+                  (selectfiles, bias_norm, [('qutece_hr', 'input_image')]),
+                  (bias_norm, datasink,  [('output_image', task+'.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
@@ -100,4 +81,3 @@ from IPython.display import Image
 Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
 # -------------------------------------------------------
 
-A
