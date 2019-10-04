@@ -14,11 +14,11 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
+working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['02', '03', '05', '06', '08', '10', '11']
+subject_list = ['03', '04', '05', '06', '07', '08', '09', '10', '11']
 #subject_list =['11']
 session_list = ['Precon', 'Postcon']
 
@@ -30,7 +30,7 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart+'_hr_run-??_UTE.nii')
+                                    filestart+'*_UTE.nii')
 templates = {'qutece_hr': qutece_highres_files}
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -96,7 +96,6 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 
 # -------------------WorkflowPlotting--------------------
 preproc_wf.write_graph(graph2use='flat')
-from IPython.display import Image
-Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
 # -------------------------------------------------------
 
+preproc_wf.run()
