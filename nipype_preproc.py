@@ -30,7 +30,7 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart+'*_run-*[[:digit:]]_UTE.nii')
+                                    filestart+'*_run-*[0123456789]_UTE.nii')
 templates = {'qutece_hr': qutece_highres_files}
 
 # Infosource - a function free node to iterate over the list of subject names
