@@ -27,7 +27,7 @@ subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_mean_precon_file = os.path.join(subdirectory,
-                                       'mean'+filestart+'_run*.nii')
+                                       'mean'+filestart+'*UTE*.nii')
 
 # * realigned precontrast scans
 subdirectory = os.path.join(temp_dir, 'preprocessing',
