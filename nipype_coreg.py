@@ -31,7 +31,7 @@ nonT1w_files = os.path.join(subdirectory, scantype,
                                     filestart + '_*[!w]*.nii')
 
 
-subdirectory = os.path.join(temp_dir, 'realignmean', 
+subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-{session_id}', 'qutece')
 filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 
@@ -91,7 +91,8 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub),
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_coreg_to_anat.','')]
+datasink.inputs.regexp_substitutions = [('_coreg_to_anat.',''),('_BiasCorrection.','')]
+#datasink.inputs.regexp_substitutions = []
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
