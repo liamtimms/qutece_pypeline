@@ -91,7 +91,7 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub),
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_coreg_to_anat.',''),('_BiasCorrection.','')]
+datasink.inputs.regexp_substitutions = [('_coreg_to_anat.',''),('_bias_norm.','')]
 #datasink.inputs.regexp_substitutions = []
 # -------------------------------------------------------
 
