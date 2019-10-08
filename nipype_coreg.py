@@ -5,6 +5,7 @@ import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
+import nipype.interfaces.ants as ants
 import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
@@ -36,7 +37,7 @@ filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
 qutece_mean_files = os.path.join(subdirectory,
-                                    filestart+'_run*.nii')
+                                    filestart+'*.nii')
 
 templates = {'qutece_mean': qutece_mean_files,
              'T1w': T1w_files,
