@@ -50,16 +50,9 @@ qutece_mean_postcon_file = os.path.join(subdirectory,
 # * precon IntrasessionCoregister_T1w
 scantype = 'anat'
 session = 'Precon'
-subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_T1w',
-                            'sub-{subject_id}', 'ses-'+session)
-filestart = 'sub-{subject_id}_ses-'+ session +'_'
-T1w_files  = os.path.join(subdirectory,
-                                       'r'+filestart+'*.nii')
-
-# * precon IntrasessionCoregister_nonT1w
 subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_nonT1w',
                             'sub-{subject_id}', 'ses-'+session)
-nonT1w_files  = os.path.join(subdirectory,
+anat_files  = os.path.join(subdirectory,
                                        'r'+filestart+'*.nii')
 
 
@@ -67,8 +60,7 @@ nonT1w_files  = os.path.join(subdirectory,
 templates = {'qutece_precon_mean': qutece_mean_precon_file,
              'qutece_precon'      : qutece_precon_files,
              'qutece_postcon_mean': qutece_mean_postcon_file,
-             'T1w': T1w_files,
-             'nonT1w': nonT1w_files}
+             'anat': anat_files}
 
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -91,7 +83,7 @@ coreg_to_postcon.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
-merge = eng.Node(utl.Merge(3), name = 'merge')
+merge = eng.Node(utl.Merge(2), name = 'merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
@@ -115,8 +107,7 @@ coreg2_wf.base_dir = working_dir + '/workflow'
 coreg2_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 
 coreg2_wf.connect([(selectfiles, merge, [('qutece_precon', 'in1'),
-                                        ('T1w', 'in2'),
-                                        ('nonT1w', 'in3')])])
+                                        ('anat', 'in2')])])
 
 
 coreg2_wf.connect([(selectfiles, coreg_to_postcon, [('qutece_postcon_mean', 'target'),
