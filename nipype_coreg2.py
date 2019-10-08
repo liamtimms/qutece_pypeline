@@ -34,7 +34,7 @@ subdirectory = os.path.join(temp_dir, 'preprocessing',
                             'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_precon_files = os.path.join(subdirectory,
-                                       'r'+filestart+'_run*UTE*.nii')
+                                       'r'+filestart+'*UTE*.nii')
 
 # * realigned postcontrast average
 session = 'Postcon'
@@ -42,7 +42,7 @@ subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_mean_postcon_file = os.path.join(subdirectory,
-                                       'mean'+filestart+'_run*UTE*.nii')
+                                       'mean'+filestart+'*UTE*.nii')
 
 
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
@@ -65,7 +65,7 @@ nonT1w_files  = os.path.join(subdirectory,
 
 
 templates = {'qutece_precon_mean': qutece_mean_precon_file,
-             'qutece_precon'      : qutece_precon_files, 
+             'qutece_precon'      : qutece_precon_files,
              'qutece_postcon_mean': qutece_mean_postcon_file,
              'T1w': T1w_files,
              'nonT1w': nonT1w_files}
@@ -85,7 +85,7 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 
 # -----------------------CoregisterNodes-----------------
 #coreg_to_postcon = eng.JoinNode(spm.Coregister(), name = 'coreg_to_postcon', joinsource= 'selectfiles', joinfield = 'apply_to_files')
-coreg_to_postcon = eng.Node(spm.Coregister(), name = 'coreg_to_postcon') 
+coreg_to_postcon = eng.Node(spm.Coregister(), name = 'coreg_to_postcon')
 coreg_to_postcon.inputs.write_interp = 7
 coreg_to_postcon.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
