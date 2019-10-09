@@ -42,3 +42,6 @@ for pat_folder in pat_folders:
                            + ' -s ' + SESSION_ID + ' -c ' + CONFIG_FILE
                 #print(command)
                 os.system(command)
+
+command = 'gunzip -r ' + bids_dir
+os.system(command)
