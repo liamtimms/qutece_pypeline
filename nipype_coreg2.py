@@ -50,8 +50,9 @@ qutece_mean_postcon_file = os.path.join(subdirectory,
 # * precon IntrasessionCoregister_T1w
 scantype = 'anat'
 session = 'Precon'
-subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister_nonT1w',
+subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister',
                             'sub-{subject_id}', 'ses-'+session)
+filestart = 'sub-{subject_id}_ses-'+ session +'_'
 anat_files  = os.path.join(subdirectory,
                                        'r'+filestart+'*.nii')
 

@@ -32,7 +32,7 @@ precon_UTE_mean  = os.path.join(subdirectory,
 # + postcon scans
 session = 'Postcon'
 # * preprocessing (sub-??, ses-Postcon, qutece)
-scanfolder = 'Preprocessing'
+scanfolder = 'preprocessing'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
@@ -90,3 +90,8 @@ diff_wf.connect([(difference, datasink,
 # -------------------------------------------------------
 
 
+# -------------------WorkflowPlotting--------------------
+diff_wf.write_graph(graph2use='flat')
+# -------------------------------------------------------
+
+diff_wf.run()
