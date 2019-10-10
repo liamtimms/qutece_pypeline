@@ -18,8 +18,7 @@ working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc3
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['03', '04', '05', '06', '07', '08', '09', '10', '11']
-#subject_list =['11']
+subject_list = ['03', '04', '06', '08', '09', '10', '11']
 session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
@@ -29,9 +28,9 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 # same corrections that makes it more fair and also might technically help coreg
 
 scantype = 'qutece'
-qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart+'*_run-*[0123456789]_UTE.nii')
-templates = {'qutece_hr': qutece_highres_files}
+qutece_fast_files = os.path.join(subdirectory, scantype,
+                                    filestart+'*fast*_run-*[0123456789]_UTE.nii')
+templates = {'qutece_fast': qutece_fast_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -87,7 +86,7 @@ task = 'preprocessing'
 preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
-                  (selectfiles, unring_nii, [('qutece_hr', 'in_file')]),
+                  (selectfiles, unring_nii, [('qutece_fast', 'in_file')]),
                   (unring_nii, bias_norm, [('out_file', 'input_image')]),
                   (bias_norm, realign, [('output_image', 'in_files')]),
                   (realign, datasink,  [('realigned_files', task+'.@con'),
@@ -98,4 +97,5 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 preproc_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-preproc_wf.run()
+preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+

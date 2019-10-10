@@ -16,7 +16,7 @@ working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc3
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['03', '04', '05', '06', '07', '08', '09', '10', '11']
+subject_list = ['03', '04', '06', '08', '09', '10', '11']
 
 # session_list = ['Precon', 'Postcon']
 
@@ -27,14 +27,14 @@ subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_mean_precon_file = os.path.join(subdirectory,
-                                       'mean'+filestart+'*UTE*.nii')
+                                       'mean'+filestart+'*fast*UTE*.nii')
 
 # * realigned precontrast scans
 subdirectory = os.path.join(temp_dir, 'preprocessing',
                             'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_precon_files = os.path.join(subdirectory,
-                                       'r'+filestart+'*UTE*.nii')
+                                       'r'+filestart+'*fast*UTE*.nii')
 
 # * realigned postcontrast average
 session = 'Postcon'
@@ -42,7 +42,7 @@ subdirectory = os.path.join(temp_dir, 'realignmean',
                             'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 qutece_mean_postcon_file = os.path.join(subdirectory,
-                                       'mean'+filestart+'*UTE*.nii')
+                                       'mean'+filestart+'*fast*UTE*.nii')
 
 
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
@@ -128,4 +128,4 @@ coreg2_wf.connect([(coreg_to_postcon, datasink,
 coreg2_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-coreg2_wf.run()
+coreg2_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})

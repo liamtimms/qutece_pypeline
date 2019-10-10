@@ -17,7 +17,7 @@ import nipype.interfaces.io as nio
 working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-subject_list = ['03', '04', '05', '06', '07', '08', '09', '10', '11']
+subject_list = ['03', '04', '06', '08', '09', '10', '11']
 #subject_list =['11']
 
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
@@ -28,7 +28,7 @@ scanfolder = 'IntersessionCoregister_preconUTEmean'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}')
 precon_UTE_mean  = os.path.join(subdirectory,
-                                       'rmean'+filestart+'*UTE*.nii')
+                                       'rmean'+filestart+'*fast*UTE*.nii')
 # + postcon scans
 session = 'Postcon'
 # * preprocessing (sub-??, ses-Postcon, qutece)
@@ -37,7 +37,7 @@ subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 postcon_UTE_files = os.path.join(subdirectory, 'qutece',
-                                       'r'+filestart+'*UTE*.nii')
+                                       'r'+filestart+'*fast*UTE*.nii')
 
 templates = {'qutece_precon_mean': precon_UTE_mean,
              'qutece_postcon': postcon_UTE_files}
@@ -94,4 +94,4 @@ diff_wf.connect([(difference, datasink,
 diff_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-diff_wf.run()
+diff_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
