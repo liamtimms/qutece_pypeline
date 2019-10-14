@@ -17,7 +17,7 @@ import nipype.interfaces.io as nio
 working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-subject_list = ['03', '04', '06', '08', '09', '10', '11']
+subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
 #subject_list =['11']
 
 # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
@@ -73,7 +73,7 @@ subjFolders = [('sub-%s' % (sub),
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-# datasink.inputs.regexp_substitutions = [('_coreg_to_postcon.','')]
+datasink.inputs.regexp_substitutions = [('_difference...','')]
 # -------------------------------------------------------
 
 # -----------------NormalizationWorkflow-----------------
