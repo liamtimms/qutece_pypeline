@@ -73,7 +73,7 @@ subjFolders = [('sub-%s' % (sub),
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_difference...','')]
+datasink.inputs.regexp_substitutions = [('_difference.??/','')]
 # -------------------------------------------------------
 
 # -----------------NormalizationWorkflow-----------------
