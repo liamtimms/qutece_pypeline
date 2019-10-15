@@ -13,13 +13,16 @@ brain_ROI_img = np.array(brain_ROI_nii.get_data())
 
 postminuspre_directory = os.path.join(base_path, 'datasink','postminuspre','sub-' + sub_num)
 num_runs = len([name for name in os.listdir(postminuspre_directory) if os.path.isfile(os.path.join(postminuspre_directory, name))])
-precon_scan = 'rmeansub-'+sub_num+'-Precon_fast-task-rest_run-01_desc-unring_UTE_corrected.nii'
-brain_aves = []
-for run_num in range(1,num_runs):
+precon_scan = 'rmeansub-'+sub_num+'_ses-Precon_fast-task-rest_run-01_desc-unring_UTE_corrected.nii'
+brain_aves = [[0]*2 for i in range(num_runs)]
+print(num_runs)
+for run_num in range(1,num_runs+1):
     if run_num < 10:
         str_run_num = '0' + str(run_num)
     else:
         str_run_num = str(run_num)
+
+    print(str_run_num)
 
     postminuspre_filename = os.path.join(postminuspre_directory, 'rsub-' + 
             sub_num + '_ses-Postcon_fast-task-rest_run-' + str_run_num + 
@@ -29,10 +32,12 @@ for run_num in range(1,num_runs):
     postminuspre_nii.set_data_dtype(np.double)
     postminuspre_img = np.array(postminuspre_nii.get_data())
 
-    brain_crop_img = postminuspre_img @ brain_ROI_img
+    brain_crop_img = np.multiply(postminuspre_img, brain_ROI_img)
     brain_vals = np.reshape(brain_crop_img, -1)
-    brain_ave = brain_vals[np.nonzero(brain_vals)].mean()
-    brain_aves.append(brain_ave)
+    brain_ave = np.nanmean(brain_vals[np.nonzero(brain_vals)])
+#    brain_aves.append(brain_ave)
+    brain_aves[run_num-1][1]=brain_ave
+    brain_aves[run_num-1][0]=run_num
 
 ave_filename = os.path.join(base_path, 'manualwork', 'timeseries', 
         'sub-' + sub_num + '_brain-aves.csv')
