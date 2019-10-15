@@ -12,11 +12,10 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
+working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
-#subject_list = ['02', '03', '05', '06', '08', '10', '11']
-subject_list =['11']
+subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
 
 # Select files:
 # + precon scans
@@ -47,7 +46,7 @@ precon_nonT1w_files  = os.path.join(subdirectory,
 # + postcon scans
 #   * IntrasessionCoregister_nonT1w
 session = 'Postcon'
-scanfolder = 'IntrasessionCoregister_nonT1w' # note that this also includes T1w for some reason right now
+scanfolder = 'IntrasessionCoregister' # note that this also includes T1w for some reason right now
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
@@ -56,12 +55,12 @@ postcon_nonUTE_files = os.path.join(subdirectory,
 
 
 # * preprocessing (sub-??, ses-Postcon, qutece)
-scanfolder = 'Preprocessing'
+scanfolder = 'preprocessing'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}', 'ses-'+session)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 postcon_UTE_files = os.path.join(subdirectory, 'qutece',
-                                       'r'+filestart+'hr_run*.nii')
+                                       'r'+filestart+'*UTE*.nii')
 
 
 templates = {'nonUTE_postcon': postcon_nonUTE_files,
@@ -179,4 +178,4 @@ norm_wf.connect([(bet, first, [('out_file', 'in_file')]),
                  (first, datasink, [('original_segmentations', task+'_FIRST.@con')])])
 # -------------------------------------------------------
 
-
+coreg2_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
