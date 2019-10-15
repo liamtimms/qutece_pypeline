@@ -16,7 +16,7 @@ working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc3
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
-
+subject_list = ['02']
 # Select files:
 # + precon scans
 #   * IntersessionCoregister_preconScans
@@ -35,7 +35,7 @@ scanfolder = 'IntersessionCoregister_preconScans'
 subdirectory = os.path.join(temp_dir, scanfolder,
                             'sub-{subject_id}')
 precon_T1w_files  = os.path.join(subdirectory,
-                                       'rr'+filestart+'T1w.nii')
+                                       'rr'+filestart+'T1w*.nii')
 
 # * precon nonT1w (includes UTE) from IntersessionCoregister_preconScans
 subdirectory = os.path.join(temp_dir, scanfolder,
@@ -44,7 +44,7 @@ precon_nonT1w_files  = os.path.join(subdirectory,
                                        'rr'+filestart+'??[!w]*.nii')
 
 # + postcon scans
-#   * IntrasessionCoregister_nonT1w
+#   * IntrasessionCoregister
 session = 'Postcon'
 scanfolder = 'IntrasessionCoregister' # note that this also includes T1w for some reason right now
 subdirectory = os.path.join(temp_dir, scanfolder,
@@ -178,4 +178,9 @@ norm_wf.connect([(bet, first, [('out_file', 'in_file')]),
                  (first, datasink, [('original_segmentations', task+'_FIRST.@con')])])
 # -------------------------------------------------------
 
-coreg2_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+# -------------------WorkflowPlotting--------------------
+norm_wf.write_graph(graph2use='flat')
+# -------------------------------------------------------
+
+#norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+norm_wf.run()
