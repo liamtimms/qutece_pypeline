@@ -53,17 +53,18 @@ unring_nii = eng.MapNode(interface = cnp.UnringNii(),
 # -----------------------BiasFieldCorrection-------------
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
                      name = 'bias_norm', iterfield=['input_image'])
+bias_norm.inputs.save_bias = True
 # -------------------------------------------------------
 
 # ------------------------RealignNode--------------------
 xyz = [0, 1, 0]
 realign = eng.Node(spm.Realign(), name = "realign")
-realign.register_to_mean = True
-realign.quality = 0.95
-realign.wrap = xyz
-realign.write_wrap = xyz
-realign.interp = 7
-realign.write_interp = 7
+realign.inputs.register_to_mean = True
+realign.inputs.quality = 0.95
+realign.inputs.wrap = xyz
+realign.inputs.write_wrap = xyz
+realign.inputs.interp = 7
+realign.inputs.write_interp = 7
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -89,6 +90,7 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                   (selectfiles, unring_nii, [('qutece_fast', 'in_file')]),
                   (unring_nii, bias_norm, [('out_file', 'input_image')]),
                   (bias_norm, realign, [('output_image', 'in_files')]),
+                  (bias_norm, datasink, [('bias_image', task+'_BiasField.@con')]),
                   (realign, datasink,  [('realigned_files', task+'.@con'),
                                         ('mean_image', 'realignmean.@con')])])
 # -------------------------------------------------------
@@ -97,5 +99,6 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 preproc_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+#preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
+preproc_wf.run(plugin = 'MultiProc')
 
