@@ -24,13 +24,15 @@ session_list = ['Precon', 'Postcon']
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
 
-# TODO: probably best to run all of the non-UTE scans through these
-# same corrections that makes it more fair and also might technically help coreg
-
 scantype = 'qutece'
 qutece_fast_files = os.path.join(subdirectory, scantype,
                                     filestart+'*fast*_run-*[0123456789]_UTE.nii')
-templates = {'qutece_fast': qutece_fast_files}
+
+qutece_hr_files = os.path.join(subdirectory, scantype,
+                                    filestart+'*hr*_run-*[0123456789]_UTE.nii')
+
+templates = {'qutece_fast': qutece_fast_files,
+             'qutece_hr': qutece_hr_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -74,7 +76,8 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
                 name="datasink")
 # Use the following DataSink output substitutions
 substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
-subjFolders = [('ses-%ssub-%s' % (ses, sub), ('sub-%s/ses-%s/'+scantype) % (sub, ses))
+subjFolders = [('ses-%ssub-%s' % (ses, sub),
+               ('sub-%s/ses-%s/'+scantype) % (sub, ses))
                for ses in session_list
                for sub in subject_list]
 substitutions.extend(subjFolders)
