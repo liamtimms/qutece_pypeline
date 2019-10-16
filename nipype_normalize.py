@@ -16,7 +16,7 @@ working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc3
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
-subject_list = ['02']
+#subject_list = ['11']
 # Select files:
 # + precon scans
 #   * IntersessionCoregister_preconScans
@@ -150,18 +150,18 @@ norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
                                         ('T1w_precon', 'in4')])])
 
 norm_wf.connect([(selectfiles, robustFOV, [('T1w_precon', 'in_file')])])
-norm_wf.connect([(robustFOV, bet, [('out_roi', 'in_file')])])
-norm_wf.connect([(bet, datasink,
-                     [('out_file', task+'_skullstripT1w.@con'),
-                      ('mask_file', task+'_skullstripMask.@con')])])
+#norm_wf.connect([(robustFOV, bet, [('out_roi', 'in_file')])])
+norm_wf.connect([(robustFOV, datasink,
+                     [('out_roi', task+'_skullstripT1w.@con')])])
+#                      ('mask_file', task+'_skullstripMask.@con')])])
 
-norm_wf.connect([(bet, normalize, [('out_file', 'image_to_align')])])
+norm_wf.connect([(robustFOV, normalize, [('out_roi', 'image_to_align')])])
 norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
 norm_wf.connect([(normalize, datasink,
                      [('normalized_image', task+'_preconT1w.@con'),
                       ('normalized_files', task+'_allOtherScans.@con')])])
 
-norm_wf.connect([(bet, fast, [('out_file', 'in_files')]),
+norm_wf.connect([(robustFOV, fast, [('out_roi', 'in_files')]),
                  (fast, merge2, [('tissue_class_map', 'in1'),
                                  ('tissue_class_files', 'in2'),
                                  ('restored_image', 'in3'),
@@ -174,7 +174,7 @@ norm_wf.connect([(bet, fast, [('out_file', 'in_files')]),
 norm_wf.connect([(merge2, datasink,
                      [('out', task+'_FAST.@con')])])
 
-norm_wf.connect([(bet, first, [('out_file', 'in_file')]),
+norm_wf.connect([(robustFOV, first, [('out_roi', 'in_file')]),
                  (first, datasink, [('original_segmentations', task+'_FIRST.@con')])])
 # -------------------------------------------------------
 
@@ -182,5 +182,5 @@ norm_wf.connect([(bet, first, [('out_file', 'in_file')]),
 norm_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-#norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
-norm_wf.run()
+norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
+#norm_wf.run()
