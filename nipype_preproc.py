@@ -19,7 +19,9 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['01', '02', '03', '04', '06', '08', '09', '10', '11']
-session_list = ['Precon', 'Postcon']
+subject_list = ['11']
+
+session_list = ['Blood','Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
@@ -31,8 +33,8 @@ qutece_fast_files = os.path.join(subdirectory, scantype,
 qutece_hr_files = os.path.join(subdirectory, scantype,
                                     filestart+'*hr*_run-*[0123456789]_UTE.nii')
 
-templates = {'qutece_fast': qutece_fast_files,
-             'qutece_hr': qutece_hr_files}
+templates = {'qutece_fast': qutece_fast_files}
+#             'qutece_hr': qutece_hr_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -56,6 +58,7 @@ unring_nii = eng.MapNode(interface = cnp.UnringNii(),
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
                      name = 'bias_norm', iterfield=['input_image'])
 bias_norm.inputs.save_bias = True
+bias_norm.inputs.rescale_intensities = True
 # -------------------------------------------------------
 
 # ------------------------RealignNode--------------------
@@ -82,7 +85,7 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub),
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_BiasCorrection.','')]
+datasink.inputs.regexp_substitutions = [('_BiasCorrection.',''), ('_bias_norm.*/','')]
 # -------------------------------------------------------
 
 # -----------------PreprocWorkflow------------------------
@@ -104,4 +107,5 @@ preproc_wf.write_graph(graph2use='flat')
 
 #preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
 preproc_wf.run(plugin = 'MultiProc')
+#preproc_wf.run()
 
