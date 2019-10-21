@@ -54,11 +54,22 @@ unring_nii = eng.MapNode(interface = cnp.UnringNii(),
                          name = 'unring_nii', iterfield=['in_file'])
 # -------------------------------------------------------
 
+# -----------------------AverageImages-------------
+average_niis = eng.Node(ants.AverageImages(), name = 'average_niis')
+average_niis.inputs.dimension = 3
+average_niis.inputs.normalize = False
+# -------------------------------------------------------
+
 # -----------------------BiasFieldCorrection-------------
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
                      name = 'bias_norm', iterfield=['input_image'])
 bias_norm.inputs.save_bias = True
 bias_norm.inputs.rescale_intensities = True
+# -------------------------------------------------------
+
+# ----------------------DivideNii------------------------
+divide_bias = eng.MapNode(interface = cnp.UnringNii(),
+                         name = 'divide_bias', iterfield=['file1'])
 # -------------------------------------------------------
 
 # ------------------------RealignNode--------------------
@@ -94,9 +105,12 @@ preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
                   (selectfiles, unring_nii, [('qutece_fast', 'in_file')]),
-                  (unring_nii, bias_norm, [('out_file', 'input_image')]),
-                  (bias_norm, realign, [('output_image', 'in_files')]),
+                  (unring_nii, average_niis, [('out_file', 'images')]),
+                  (average_niis, bias_norm, [('output_average_image', 'input_image')]),
+                  (unring_nii, divide_bias, [('out_file', 'file1')]),
+                  (bias_norm, divide_bias, [('output_image', 'file2')]),
                   (bias_norm, datasink, [('bias_image', task+'_BiasField.@con')]),
+                  (divide_bias, realign, [('out_file', 'in_files')]),
                   (realign, datasink,  [('realigned_files', task+'.@con'),
                                         ('mean_image', 'realignmean.@con')])])
 # -------------------------------------------------------
