@@ -55,6 +55,7 @@ unring_nii = eng.MapNode(interface = cnp.UnringNii(),
 # -------------------------------------------------------
 
 # -----------------------BiasFieldCorrection-------------
+# UNUSED ON THIS BRANCH
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
                      name = 'bias_norm', iterfield=['input_image'])
 bias_norm.inputs.save_bias = True
@@ -94,9 +95,7 @@ preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
                   (selectfiles, unring_nii, [('qutece_fast', 'in_file')]),
-                  (unring_nii, bias_norm, [('out_file', 'input_image')]),
-                  (bias_norm, realign, [('output_image', 'in_files')]),
-                  (bias_norm, datasink, [('bias_image', task+'_BiasField.@con')]),
+                  (unring_nii, realign, [('out_file', 'in_files')]),
                   (realign, datasink,  [('realigned_files', task+'.@con'),
                                         ('mean_image', 'realignmean.@con')])])
 # -------------------------------------------------------
