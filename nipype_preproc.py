@@ -68,7 +68,7 @@ bias_norm.inputs.rescale_intensities = True
 # -------------------------------------------------------
 
 # ----------------------DivideNii------------------------
-divide_bias = eng.MapNode(interface = cnp.UnringNii(),
+divide_bias = eng.MapNode(interface = cnp.DivNii(),
                          name = 'divide_bias', iterfield=['file1'])
 # -------------------------------------------------------
 
