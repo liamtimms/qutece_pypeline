@@ -124,7 +124,7 @@ class DivNii(BaseInterface):
         file1_img = np.array(file1_nii.get_data())
         file2_img = np.array(file2_nii.get_data())
 
-        div_img = nb.divide(file1_img, file2_img)
+        div_img = np.divide(file1_img, file2_img)
         div_nii = nib.Nifti1Image(div_img, file1_nii.affine, file2_nii.header)
 
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
