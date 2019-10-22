@@ -19,9 +19,10 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['01', '02', '03', '04', '06', '08', '09', '10', '11']
-subject_list = ['11']
+#subject_list = ['11']
 
-session_list = ['Blood','Precon', 'Postcon']
+# session_list = ['Blood','Precon', 'Postcon']
+session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
@@ -61,8 +62,8 @@ average_niis.inputs.normalize = False
 # -------------------------------------------------------
 
 # -----------------------BiasFieldCorrection-------------
-bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
-                     name = 'bias_norm', iterfield=['input_image'])
+bias_norm = eng.Node(ants.N4BiasFieldCorrection(),
+                     name = 'bias_norm')
 bias_norm.inputs.save_bias = True
 bias_norm.inputs.rescale_intensities = True
 # -------------------------------------------------------
@@ -119,7 +120,7 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 preproc_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-#preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
-# preproc_wf.run(plugin = 'MultiProc')
+preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 4})
+#preproc_wf.run(plugin = 'MultiProc')
 #preproc_wf.run()
 

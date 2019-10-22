@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import os
 
-base_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2/derivatives'
+base_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2_AveScanBiasCorr/derivatives'
 
-subject_list = ['02', '03', '05', '06', '08', '10', '11']
-#sub_num = '11'
+#subject_list = ['02', '03', '05', '06', '08', '10', '11']
+subject_list = ['11']
 
 for sub_num in subject_list:
     brain_ROI_filename = os.path.join(base_path, 'manualwork', 'brain_seg', 'sub-' + sub_num +
