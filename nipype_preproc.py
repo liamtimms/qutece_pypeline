@@ -108,7 +108,7 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                   (unring_nii, average_niis, [('out_file', 'images')]),
                   (average_niis, bias_norm, [('output_average_image', 'input_image')]),
                   (unring_nii, divide_bias, [('out_file', 'file1')]),
-                  (bias_norm, divide_bias, [('output_image', 'file2')]),
+                  (bias_norm, divide_bias, [('bias_image', 'file2')]),
                   (bias_norm, datasink, [('bias_image', task+'_BiasField.@con')]),
                   (divide_bias, realign, [('out_file', 'in_files')]),
                   (realign, datasink,  [('realigned_files', task+'.@con'),
@@ -120,6 +120,6 @@ preproc_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
 #preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
-preproc_wf.run(plugin = 'MultiProc')
+# preproc_wf.run(plugin = 'MultiProc')
 #preproc_wf.run()
 
