@@ -3,10 +3,11 @@ import numpy as np
 import pandas as pd
 import os
 
-base_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2/derivatives'
+base_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2_NoBiasCorr/derivatives'
 
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
 #sub_num = '11'
+subject_list = ['11']
 
 for sub_num in subject_list:
     brain_ROI_filename = os.path.join(base_path, 'manualwork', 'brain_seg', 'sub-' + sub_num +
@@ -16,7 +17,7 @@ for sub_num in subject_list:
 
     postminuspre_directory = os.path.join(base_path, 'datasink','postminuspre','sub-' + sub_num)
     num_runs = len([name for name in os.listdir(postminuspre_directory) if os.path.isfile(os.path.join(postminuspre_directory, name))])
-    precon_scan = 'rmeansub-'+sub_num+'_ses-Precon_fast-task-rest_run-01_desc-unring_UTE_corrected.nii'
+    precon_scan = 'rmeansub-'+sub_num+'_ses-Precon_fast-task-rest_run-01_desc-unring_UTE.nii'
     brain_aves = [[0]*2 for i in range(num_runs)]
     print(num_runs)
     for run_num in range(1,num_runs+1):
@@ -29,7 +30,7 @@ for sub_num in subject_list:
 
         postminuspre_filename = os.path.join(postminuspre_directory, 'rsub-' +
                 sub_num + '_ses-Postcon_fast-task-rest_run-' + str_run_num +
-                '_desc-unring_UTE_corrected_minus_'+ precon_scan)
+                '_desc-unring_UTE_minus_'+ precon_scan)
 
         postminuspre_nii = nib.load(postminuspre_filename)
         postminuspre_nii.set_data_dtype(np.double)
