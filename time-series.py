@@ -16,7 +16,7 @@ for sub_num in subject_list:
 
     postminuspre_directory = os.path.join(base_path, 'datasink','postminuspre','sub-' + sub_num)
     num_runs = len([name for name in os.listdir(postminuspre_directory) if os.path.isfile(os.path.join(postminuspre_directory, name))])
-    precon_scan = 'rmeansub-'+sub_num+'_ses-Precon_fast-task-rest_run-01_desc-unring_UTE_corrected.nii'
+    precon_scan = 'rmeansub-'+sub_num+'_ses-Precon_fast-task-rest_run-01_desc-unring_UTE_divby_average_bias.nii'
     brain_aves = [[0]*2 for i in range(num_runs)]
     print(num_runs)
     for run_num in range(1,num_runs+1):
@@ -29,7 +29,7 @@ for sub_num in subject_list:
 
         postminuspre_filename = os.path.join(postminuspre_directory, 'rsub-' +
                 sub_num + '_ses-Postcon_fast-task-rest_run-' + str_run_num +
-                '_desc-unring_UTE_corrected_minus_'+ precon_scan)
+                '_desc-unring_UTE_divby_average_bias_minus_'+ precon_scan)
 
         postminuspre_nii = nib.load(postminuspre_filename)
         postminuspre_nii.set_data_dtype(np.double)
