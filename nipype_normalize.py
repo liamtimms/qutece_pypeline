@@ -12,7 +12,7 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
+working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2_AveScanBiasCorr')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
@@ -101,7 +101,7 @@ normalize.inputs.write_voxel_sizes = [1, 1, 1]
 
 # -----------------------Merge---------------------------
 merge = eng.Node(utl.Merge(4), name = 'merge')
-merge.ravel_inputs = True
+#merge.inputs.ravel_inputs = True
 # -------------------------------------------------------
 
 # -----------------------FAST----------------------------
@@ -113,7 +113,7 @@ fast.inputs.output_type = 'NIFTI'
 
 # -----------------------Merge---------------------------
 merge2 = eng.Node(utl.Merge(8), name = 'merge2')
-merge2.ravel_inputs = True
+#merge2.ravel_inputs = True
 # -------------------------------------------------------
 
 # -----------------------FIRST---------------------------
