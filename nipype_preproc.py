@@ -14,14 +14,15 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
+working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2_NoBiasCorr')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['01', '02', '03', '04', '06', '08', '09', '10', '11']
-subject_list = ['11']
+#subject_list = ['11']
 
-session_list = ['Blood','Precon', 'Postcon']
+#session_list = ['Blood','Precon', 'Postcon']
+session_list = ['Precon', 'Postcon']
 
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
@@ -104,7 +105,7 @@ preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 preproc_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-#preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
-preproc_wf.run(plugin = 'MultiProc')
-#preproc_wf.run()
+#preproc_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 3})
+#preproc_wf.run(plugin = 'MultiProc')
+preproc_wf.run()
 
