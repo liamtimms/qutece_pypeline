@@ -182,5 +182,5 @@ norm_wf.connect([(robustFOV, first, [('out_roi', 'in_file')]),
 norm_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
+norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 4})
 #norm_wf.run()
