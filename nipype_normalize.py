@@ -161,21 +161,21 @@ norm_wf.connect([(normalize, datasink,
                      [('normalized_image', task+'_preconT1w.@con'),
                       ('normalized_files', task+'_allOtherScans.@con')])])
 
-norm_wf.connect([(robustFOV, fast, [('out_roi', 'in_files')]),
-                 (fast, merge2, [('tissue_class_map', 'in1'),
-                                 ('tissue_class_files', 'in2'),
-                                 ('restored_image', 'in3'),
-                                 ('mixeltype', 'in4'),
-                                 ('partial_volume_map', 'in5'),
-                                 ('partial_volume_files', 'in6'),
-                                 ('bias_field', 'in7'),
-                                 ('probability_maps', 'in8')])])
-
-norm_wf.connect([(merge2, datasink,
-                     [('out', task+'_FAST.@con')])])
-
-norm_wf.connect([(robustFOV, first, [('out_roi', 'in_file')]),
-                 (first, datasink, [('original_segmentations', task+'_FIRST.@con')])])
+#norm_wf.connect([(robustFOV, fast, [('out_roi', 'in_files')]),
+#                 (fast, merge2, [('tissue_class_map', 'in1'),
+#                                 ('tissue_class_files', 'in2'),
+#                                 ('restored_image', 'in3'),
+#                                 ('mixeltype', 'in4'),
+#                                 ('partial_volume_map', 'in5'),
+#                                 ('partial_volume_files', 'in6'),
+#                                 ('bias_field', 'in7'),
+#                                 ('probability_maps', 'in8')])])
+#
+#norm_wf.connect([(merge2, datasink,
+#                     [('out', task+'_FAST.@con')])])
+#
+#norm_wf.connect([(robustFOV, first, [('out_roi', 'in_file')]),
+#                 (first, datasink, [('original_segmentations', task+'_FIRST.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
