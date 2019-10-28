@@ -12,7 +12,7 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
+working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2_NoBiasCorr')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
@@ -182,5 +182,5 @@ norm_wf.connect([(robustFOV, first, [('out_roi', 'in_file')]),
 norm_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 7})
+norm_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 3})
 #norm_wf.run()
