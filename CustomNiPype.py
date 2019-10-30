@@ -9,6 +9,7 @@ import numpy as np
 import nibabel as nib
 from nipype.utils.filemanip import split_filename
 
+# ----------- UnringNii -------------------------
 class UnringNiiInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
 
@@ -54,9 +55,13 @@ class UnringNii(BaseInterface):
         outputs = self._outputs().get()
         outputs['out_file'] = getattr(self, '_out_file')
         return outputs
+# -----------------------------------------------
+
 
 # TODO: is it better to have the blood value seperate from the CBV calculation?
 
+
+# ------------- DiffNii -------------------------
 class DiffInputSpec(BaseInterfaceInputSpec):
     file1 = File(exists=True, mandatory=True)
     file2 = File(exists=True, mandatory=True)
@@ -99,53 +104,96 @@ class DiffNii(BaseInterface):
         #outputs['out_file'] = getattr(self, '_out_file')
         outputs['out_file'] = os.path.abspath(diff_file_name)
         return outputs
+# -----------------------------------------------
 
-#
-#class CBVInputSpec(BaseInterfaceInputSpec):
-#    precon_file = File(exists=True, mandatory=True)
-#    postcon_file = File(exists=True, mandatory=True)
-#    mask_file = File(exists=True, mandatory=True)
-#
-#
-#class CBVOutputSpec(TraitedSpec):
-#    cbv_file = File(exists=True, desc = 'CBV calculation')
-#    diff_file = File(exists=True, desc = 'Post minus Pre')
-#
-#class CBVcalc(BaseInterface):
-#    input_spec = CBVInputSpec
-#    output_spec = CBVOutputSpec
-#
-#    def _run_interface(self, runtime):
-#        precon_file_name = self.inputs.precon_file
-#        postcon_file_name = self.inputs.postcon_file
-#        mask_file_name = self.inputs.mask_file
-#
-#        precon_nii = nib.load(precon_file_name)
-#        postcon_nii = nib.load(postcon_file_name)
-#        blood_nii = nib.load(mask_file_name)
-#
-#        precon_img = np.array(precon_nii.get_data())
-#        postcon_img = np.array(postcon_nii.get_data())
-#        blood_roi = np.array(blood_nii.get_data())
-#
-#        diff_img = postcon_img - precon_img
-#        diff_nii = nib.Nifti1Image(diff_img, postcon_nii.affine, postcon_nii.header)
-#
-#        # TODO: define save_file_name
-#        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
-#        # a possiblity is
-#        pth, fname, ext = split_filename(fname)
-#        diff_file_name = fname + '_difference.nii'
-#        nib.save(diff_nii, diff_file_name)
-#
-#        cbv_img = diff_img
-#        return runtime
-#
-#    def _list_outputs(self):
-#        outputs = self._outputs().get()
-#        #outputs['cbv_file'] = getattr(self, '_cbv_file')
-#        outputs['cbv_file'] = os.path.abspath(diff_file_name)
-#        return outputs
-#
-#
+# -------------- DivNii -------------------------
+class DivInputSpec(BaseInterfaceInputSpec):
+    file1 = File(exists=True, mandatory=True)
+    file2 = File(exists=True, mandatory=True)
+
+class DivOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc = 'file1 divided by file2')
+
+class DivNii(BaseInterface):
+    input_spec = DivInputSpec
+    output_spec = DivOutputSpec
+
+    def _run_interface(self, runtime):
+        file1_name = self.inputs.file1
+        file2_name = self.inputs.file2
+
+        file1_nii = nib.load(file1_name)
+        file2_nii = nib.load(file2_name)
+
+        file1_nii.set_data_dtype(np.double)
+        file2_nii.set_data_dtype(np.double)
+
+        file1_img = np.array(file1_nii.get_data())
+        file2_img = np.array(file2_nii.get_data())
+
+        div_img = np.divide(file1_img, file2_img)
+        div_nii = nib.Nifti1Image(div_img, file1_nii.affine, file2_nii.header)
+
+        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+        pth, fname1, ext = split_filename(file1_name)
+        pth, fname2, ext = split_filename(file2_name)
+        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        nib.save(div_nii, div_file_name)
+        setattr(self, '_out_file', div_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        file1_name = self.inputs.file1
+        file2_name = self.inputs.file2
+        pth, fname1, ext = split_filename(file1_name)
+        pth, fname2, ext = split_filename(file2_name)
+        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        #outputs['out_file'] = getattr(self, '_out_file')
+        outputs['out_file'] = os.path.abspath(div_file_name)
+        return outputs
+# -----------------------------------------------
+
+# -------------- FFTNii -------------------------
+class FTTInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+
+class FTTOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc = 'Fast Fourier Transform')
+
+class FTTNii(BaseInterface):
+    input_spec = FTTInputSpec
+    output_spec = FTTOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+
+        in_file_nii = nib.load(in_file_name)
+
+        in_file_nii.set_data_dtype(np.double)
+
+        in_file_img = np.array(in_file_nii.get_data())
+
+        div_nii = nib.Nifti1Image(div_img, in_file_nii.affine, in_file_nii.header)
+
+        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+        pth, fname1, ext = split_filename(in_file_name)
+
+        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        nib.save(div_nii, div_file_name)
+        setattr(self, '_out_file', div_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        file1_name = self.inputs.file1
+        file2_name = self.inputs.file2
+        pth, fname1, ext = split_filename(file1_name)
+        pth, fname2, ext = split_filename(file2_name)
+        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        #outputs['out_file'] = getattr(self, '_out_file')
+        outputs['out_file'] = os.path.abspath(div_file_name)
+        return outputs
+# -----------------------------------------------
+
 
