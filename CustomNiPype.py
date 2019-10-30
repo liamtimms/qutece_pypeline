@@ -167,32 +167,29 @@ class FTTNii(BaseInterface):
 
     def _run_interface(self, runtime):
         in_file_name = self.inputs.in_file
-
         in_file_nii = nib.load(in_file_name)
-
         in_file_nii.set_data_dtype(np.double)
-
         in_file_img = np.array(in_file_nii.get_data())
 
-        div_nii = nib.Nifti1Image(div_img, in_file_nii.affine, in_file_nii.header)
+        fft_img = np.fft.fttn(in_file_img)
+
+        fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine, in_file_nii.header)
+        fft_nii.set_data_dtype(np.clongdouble)
 
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
-        pth, fname1, ext = split_filename(in_file_name)
+        pth, fname, ext = split_filename(in_file_name)
 
-        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        fft_file_name = os.path.join(fname + '_fft.nii')
         nib.save(div_nii, div_file_name)
-        setattr(self, '_out_file', div_file_name)
+        setattr(self, '_out_file', fft_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        file1_name = self.inputs.file1
-        file2_name = self.inputs.file2
-        pth, fname1, ext = split_filename(file1_name)
-        pth, fname2, ext = split_filename(file2_name)
-        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
-        #outputs['out_file'] = getattr(self, '_out_file')
-        outputs['out_file'] = os.path.abspath(div_file_name)
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        fft_file_name = os.path.join(fname + '_fft.nii')
+        outputs['out_file'] = os.path.abspath(fft_file_name)
         return outputs
 # -----------------------------------------------
 
