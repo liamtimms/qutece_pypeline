@@ -155,15 +155,15 @@ class DivNii(BaseInterface):
 # -----------------------------------------------
 
 # -------------- FFTNii -------------------------
-class FTTInputSpec(BaseInterfaceInputSpec):
+class FFTInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
 
-class FTTOutputSpec(TraitedSpec):
+class FFTOutputSpec(TraitedSpec):
     out_file = File(exists=True, desc = 'Fast Fourier Transform')
 
-class FTTNii(BaseInterface):
-    input_spec = FTTInputSpec
-    output_spec = FTTOutputSpec
+class FFTNii(BaseInterface):
+    input_spec = FFTInputSpec
+    output_spec = FFTOutputSpec
 
     def _run_interface(self, runtime):
         in_file_name = self.inputs.in_file
@@ -171,16 +171,17 @@ class FTTNii(BaseInterface):
         in_file_nii.set_data_dtype(np.double)
         in_file_img = np.array(in_file_nii.get_data())
 
-        fft_img = np.fft.fttn(in_file_img)
+        fft_img = np.fft.fftn(in_file_img)
+        fft_img = np.absolute(fft_img)
 
         fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine, in_file_nii.header)
-        fft_nii.set_data_dtype(np.clongdouble)
+        fft_nii.set_data_dtype(np.double)
 
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname, ext = split_filename(in_file_name)
 
         fft_file_name = os.path.join(fname + '_fft.nii')
-        nib.save(div_nii, div_file_name)
+        nib.save(fft_nii, fft_file_name)
         setattr(self, '_out_file', fft_file_name)
         return runtime
 

@@ -16,8 +16,8 @@ working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc3
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
-
+#subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
+subject_list = ['11']
 # session_list = ['Precon', 'Postcon']
 
 # * realigned precontrast average
@@ -37,7 +37,7 @@ qutece_hr_postcon_files = os.path.join(subdirectory,
 scantype = 'anat'
 session = 'Precon'
 subdirectory = os.path.join(working_dir,
-                            'sub-{subject_id}', 'ses-'+session)
+                            'sub-{subject_id}', 'ses-'+session, scantype)
 filestart = 'sub-{subject_id}_ses-'+ session +'_'
 tof_files  = os.path.join(subdirectory,
                                        filestart+'*TOF*.nii')
@@ -79,6 +79,8 @@ datasink = eng.Node(nio.DataSink(base_directory=output_dir,
 substitutions = [('_subject_id_', 'sub-')]
 
 datasink.inputs.substitutions = substitutions
+datasink.inputs.regexp_substitutions = [('_fft[0123456789].','')]
+
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
@@ -100,4 +102,5 @@ fft_wf.connect([(fft, datasink,
 fft_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-fft_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+#fft_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+fft_wf.run()
