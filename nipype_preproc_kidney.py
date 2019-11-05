@@ -14,11 +14,12 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('CHANGE_HERE')
+working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS_Kidney')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['05', '06', '08']
+#subject_list = ['05', '06', '08']
+subject_list = ['5']
 # session_list = ['Precon', 'Postcon']
 session_list = ['Post']
 
@@ -30,7 +31,7 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
-                                    filestart+'_SPIRIT_HR_UTE.nii')
+                                    filestart+'_SPIRiT_norm_HR_UTE.nii')
 templates = {'qutece_hr': qutece_highres_files}
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -81,3 +82,4 @@ from IPython.display import Image
 Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
 # -------------------------------------------------------
 
+preproc_wf.run()
