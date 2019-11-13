@@ -172,6 +172,7 @@ class FFTNii(BaseInterface):
         in_file_img = np.array(in_file_nii.get_data())
 
         fft_img = np.fft.fftn(in_file_img)
+        fft_img = np.fft.fftshift(fft_img)
         fft_img = np.absolute(fft_img)
 
         fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine, in_file_nii.header)
