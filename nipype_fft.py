@@ -16,8 +16,8 @@ working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc3
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-#subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
-subject_list = ['11']
+subject_list = ['01', '02', '03', '05', '04', '06', '08', '09', '10', '11']
+#subject_list = ['11']
 # session_list = ['Precon', 'Postcon']
 
 # * realigned precontrast average
