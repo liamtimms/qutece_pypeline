@@ -20,7 +20,7 @@ for sub_num in subject_list:
                 fft_img = np.array(fft_nii.get_data())
                 dim_max = fft_img.shape
                 center = [round(q/2) for q in dim_max]
-                fft_vals = [[0]*2 for i in range(np.size(fft_img))]
+                fft_vals = [[0]*2 for x in range(np.size(fft_img))]
                 pth, fname, ext = split_filename(fft_filename)
                 fft_csv_filename = os.path.join(base_path, 'manualwork', 'fftdist',
                         fname + '.csv')
@@ -34,16 +34,21 @@ for sub_num in subject_list:
                         fft_vals[n][0] = dist
                         fft_vals[n][1] = value
                         n=n+1
-                    fft_unique_dist = np.unique(fft_vals[:,0])
+                    fft_unique_dist = np.unique(np.asarray(fft_vals)[:,0])
                     n=0
+                    fft_sum_vals = [[0]*2 for y in range(np.size(fft_unique_dist))]
                     for dist in fft_unique_dist:
-                        dist_index = numpy.where(fft_vals[:,0]==dist)
+                        dist_index = np.where(np.asarray(fft_vals)[:,0]==dist)
                         curr_val = 0
-                        for i in dist_index:
-                            curr_val = curr_val + fft_vals[i, 1]
-                        fft_sum_vals[n][0] = dist
-                        fft_sum_vals[n][1] = curr_val
-                        n=n+1
+                        for j in dist_index:
+                            for i in j:
+                                print(i)
+                                i=int(i)
+                                print(i)
+                                curr_val = curr_val + fft_vals[i][1]
+                            fft_sum_vals[n][0] = dist
+                            fft_sum_vals[n][1] = curr_val
+                            n=n+1
 
                     export = pd.DataFrame(fft_sum_vals)
                     export.to_csv(fft_csv_filename, index=False)
