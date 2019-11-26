@@ -8,6 +8,7 @@ import os
 base_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2/derivatives'
 
 subject_list = ['04', '06', '08', '10', '11']
+subject_list = ['11']
 #sub_num = '11'
 for sub_num in subject_list:
     fft_directory = os.path.join(base_path, 'datasink','FFT','sub-' + sub_num)
@@ -35,6 +36,7 @@ for sub_num in subject_list:
                         fft_vals[n][1] = value
                         n=n+1
                     fft_unique_dist = np.unique(np.asarray(fft_vals)[:,0])
+                    print(np.size(fft_unique_dist))
                     n=0
                     fft_sum_vals = [[0]*2 for y in range(np.size(fft_unique_dist))]
                     for dist in fft_unique_dist:
@@ -42,9 +44,7 @@ for sub_num in subject_list:
                         curr_val = 0
                         for j in dist_index:
                             for i in j:
-                                print(i)
                                 i=int(i)
-                                print(i)
                                 curr_val = curr_val + fft_vals[i][1]
                             fft_sum_vals[n][0] = dist
                             fft_sum_vals[n][1] = curr_val
