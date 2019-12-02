@@ -14,12 +14,13 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS_Kidney')
+working_dir = os.path.abspath('/home/liam/LaptopSync/DCM2BIDS_Kidney')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 #subject_list = ['05', '06', '08']
-subject_list = ['5']
+#subject_list = ['5', '6']
+subject_list = ['3', '4', '5', '6', '8']
 # session_list = ['Precon', 'Postcon']
 session_list = ['Post']
 
@@ -32,7 +33,11 @@ filestart = 'sub-{subject_id}_ses-{session_id}'
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
                                     filestart+'_SPIRiT_norm_HR_UTE.nii')
-templates = {'qutece_hr': qutece_highres_files}
+#templates = {'qutece_hr': qutece_highres_files}
+
+qutece_breathhold_files = os.path.join(subdirectory, scantype,
+                                    filestart+'_*_norm_DIS3D_*UTE.nii')
+templates = {'qutece_breathhold': qutece_breathhold_files}
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
@@ -64,7 +69,7 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub), ('sub-%s/ses-%s/'+scantype) % (sub,
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_BiasCorrection.','')]
+datasink.inputs.regexp_substitutions = [('_bias_norm.','')]
 # -------------------------------------------------------
 
 # -----------------PreprocWorkflow------------------------
@@ -72,7 +77,7 @@ task = 'preprocessing'
 preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
-                  (selectfiles, bias_norm, [('qutece_hr', 'input_image')]),
+                  (selectfiles, bias_norm, [('qutece_breathhold', 'input_image')]),
                   (bias_norm, datasink,  [('output_image', task+'.@con')])])
 # -------------------------------------------------------
 
