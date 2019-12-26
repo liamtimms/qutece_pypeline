@@ -59,8 +59,6 @@ class UnringNii(BaseInterface):
 
 # -----------------------------------------------
 
-# TODO: is it better to have the blood value seperate from the CBV calculation?
-
 
 # ------------- DiffNii -------------------------
 class DiffInputSpec(BaseInterfaceInputSpec):
@@ -83,8 +81,8 @@ class DiffNii(BaseInterface):
         file1_nii = nib.load(file1_name)
         file2_nii = nib.load(file2_name)
 
-        file1_img = np.array(file1_nii.get_data())
-        file2_img = np.array(file2_nii.get_data())
+        file1_img = np.array(file1_nii.get_fdata())
+        file2_img = np.array(file2_nii.get_fdata())
 
         diff_img = file2_img - file1_img
         diff_nii = nib.Nifti1Image(diff_img, file1_nii.affine,
@@ -137,8 +135,8 @@ class DivNii(BaseInterface):
         file1_nii.set_data_dtype(np.double)
         file2_nii.set_data_dtype(np.double)
 
-        file1_img = np.array(file1_nii.get_data())
-        file2_img = np.array(file2_nii.get_data())
+        file1_img = np.array(file1_nii.get_fdata())
+        file2_img = np.array(file2_nii.get_fdata())
 
         div_img = np.divide(file1_img, file2_img)
         div_nii = nib.Nifti1Image(div_img, file1_nii.affine, file2_nii.header)
@@ -183,7 +181,7 @@ class FFTNii(BaseInterface):
         in_file_name = self.inputs.in_file
         in_file_nii = nib.load(in_file_name)
         in_file_nii.set_data_dtype(np.double)
-        in_file_img = np.array(in_file_nii.get_data())
+        in_file_img = np.array(in_file_nii.get_fdata())
 
         fft_img = np.fft.fftn(in_file_img)
         fft_img = np.fft.fftshift(fft_img)
@@ -222,7 +220,7 @@ class ROIAnalyzeOutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='xls file with statistical data')
 
 
-class FFTNii(BaseInterface):
+class ROIAnalyze(BaseInterface):
     input_spec = FFTInputSpec
     output_spec = FFTOutputSpec
 
@@ -230,7 +228,7 @@ class FFTNii(BaseInterface):
         in_file_name = self.inputs.in_file
         in_file_nii = nib.load(in_file_name)
         in_file_nii.set_data_dtype(np.double)
-        in_file_img = np.array(in_file_nii.get_data())
+        in_file_img = np.array(in_file_nii.get_fdata())
 
         fft_img = np.fft.fftn(in_file_img)
         fft_img = np.fft.fftshift(fft_img)
