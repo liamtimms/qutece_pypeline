@@ -195,4 +195,45 @@ class FFTNii(BaseInterface):
         return outputs
 # -----------------------------------------------
 
+# -------------- ROI Anlayze --------------------
+class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+
+class ROIAnalyzeOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc = 'xls file with statistical data')
+
+class FFTNii(BaseInterface):
+    input_spec = FFTInputSpec
+    output_spec = FFTOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        in_file_nii = nib.load(in_file_name)
+        in_file_nii.set_data_dtype(np.double)
+        in_file_img = np.array(in_file_nii.get_data())
+
+        fft_img = np.fft.fftn(in_file_img)
+        fft_img = np.fft.fftshift(fft_img)
+        fft_img = np.absolute(fft_img)
+
+        fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine, in_file_nii.header)
+        fft_nii.set_data_dtype(np.double)
+
+        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+        pth, fname, ext = split_filename(in_file_name)
+
+        fft_file_name = os.path.join(fname + '_fft.nii')
+        nib.save(fft_nii, fft_file_name)
+        setattr(self, '_out_file', fft_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        fft_file_name = os.path.join(fname + '_fft.nii')
+        outputs['out_file'] = os.path.abspath(fft_file_name)
+        return outputs
+# -----------------------------------------------
+
 
