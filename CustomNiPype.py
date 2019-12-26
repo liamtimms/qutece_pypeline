@@ -1,4 +1,3 @@
-
 from nipype.interfaces.matlab import MatlabCommand
 from nipype.interfaces.base import TraitedSpec, \
     BaseInterface, BaseInterfaceInputSpec, File
@@ -9,12 +8,14 @@ import numpy as np
 import nibabel as nib
 from nipype.utils.filemanip import split_filename
 
+
 # ----------- UnringNii -------------------------
 class UnringNiiInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
 
+
 class UnringNiiOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc = 'the unringed file')
+    out_file = File(exists=True, desc='the unringed file')
 
 
 class UnringNii(BaseInterface):
@@ -28,8 +29,7 @@ class UnringNii(BaseInterface):
         out_file_name.insert(-1, 'desc-unring')
         out_file_name = '_'.join(out_file_name)
         setattr(self, '_out_file', out_file_name)
-        d = dict(in_file=self.inputs.in_file,
-                 out_file=out_file_name)
+        d = dict(in_file=self.inputs.in_file, out_file=out_file_name)
 
         # This is your MATLAB code template
         script = Template("""in_file = '$in_file';
@@ -55,8 +55,9 @@ class UnringNii(BaseInterface):
         outputs = self._outputs().get()
         outputs['out_file'] = getattr(self, '_out_file')
         return outputs
-# -----------------------------------------------
 
+
+# -----------------------------------------------
 
 # TODO: is it better to have the blood value seperate from the CBV calculation?
 
@@ -66,8 +67,10 @@ class DiffInputSpec(BaseInterfaceInputSpec):
     file1 = File(exists=True, mandatory=True)
     file2 = File(exists=True, mandatory=True)
 
+
 class DiffOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc = 'file2 minus file1')
+    out_file = File(exists=True, desc='file2 minus file1')
+
 
 class DiffNii(BaseInterface):
     input_spec = DiffInputSpec
@@ -84,7 +87,8 @@ class DiffNii(BaseInterface):
         file2_img = np.array(file2_nii.get_data())
 
         diff_img = file2_img - file1_img
-        diff_nii = nib.Nifti1Image(diff_img, file1_nii.affine, file2_nii.header)
+        diff_nii = nib.Nifti1Image(diff_img, file1_nii.affine,
+                                   file2_nii.header)
 
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
@@ -104,15 +108,20 @@ class DiffNii(BaseInterface):
         #outputs['out_file'] = getattr(self, '_out_file')
         outputs['out_file'] = os.path.abspath(diff_file_name)
         return outputs
+
+
 # -----------------------------------------------
+
 
 # -------------- DivNii -------------------------
 class DivInputSpec(BaseInterfaceInputSpec):
     file1 = File(exists=True, mandatory=True)
     file2 = File(exists=True, mandatory=True)
 
+
 class DivOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc = 'file1 divided by file2')
+    out_file = File(exists=True, desc='file1 divided by file2')
+
 
 class DivNii(BaseInterface):
     input_spec = DivInputSpec
@@ -152,14 +161,19 @@ class DivNii(BaseInterface):
         #outputs['out_file'] = getattr(self, '_out_file')
         outputs['out_file'] = os.path.abspath(div_file_name)
         return outputs
+
+
 # -----------------------------------------------
+
 
 # -------------- FFTNii -------------------------
 class FFTInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
 
+
 class FFTOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc = 'Fast Fourier Transform')
+    out_file = File(exists=True, desc='Fast Fourier Transform')
+
 
 class FFTNii(BaseInterface):
     input_spec = FFTInputSpec
@@ -175,7 +189,8 @@ class FFTNii(BaseInterface):
         fft_img = np.fft.fftshift(fft_img)
         fft_img = np.absolute(fft_img)
 
-        fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine, in_file_nii.header)
+        fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine,
+                                  in_file_nii.header)
         fft_nii.set_data_dtype(np.double)
 
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
@@ -193,14 +208,19 @@ class FFTNii(BaseInterface):
         fft_file_name = os.path.join(fname + '_fft.nii')
         outputs['out_file'] = os.path.abspath(fft_file_name)
         return outputs
+
+
 # -----------------------------------------------
+
 
 # -------------- ROI Anlayze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
 
+
 class ROIAnalyzeOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc = 'xls file with statistical data')
+    out_file = File(exists=True, desc='xls file with statistical data')
+
 
 class FFTNii(BaseInterface):
     input_spec = FFTInputSpec
@@ -216,7 +236,8 @@ class FFTNii(BaseInterface):
         fft_img = np.fft.fftshift(fft_img)
         fft_img = np.absolute(fft_img)
 
-        fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine, in_file_nii.header)
+        fft_nii = nib.Nifti1Image(fft_img, in_file_nii.affine,
+                                  in_file_nii.header)
         fft_nii.set_data_dtype(np.double)
 
         # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
@@ -234,6 +255,6 @@ class FFTNii(BaseInterface):
         fft_file_name = os.path.join(fname + '_fft.nii')
         outputs['out_file'] = os.path.abspath(fft_file_name)
         return outputs
+
+
 # -----------------------------------------------
-
-
