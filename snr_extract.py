@@ -10,6 +10,7 @@ base_path = '/home/liam/LaptopSync/DCM2BIDS_Kidney'
 subject_list = ['3', '4', '5', '6']
 subject_list = ['3', '4']
 
+
 for sub_num in subject_list:
     data_dir = os.path.join(base_path, 'sub-' + sub_num, 'ses-Post', 'qutece')
     snr_mask_dir = os.path.join(base_path, 'derivatives', 'manual-work', 'snr','sub-' + sub_num)
@@ -25,6 +26,7 @@ for sub_num in subject_list:
 
             path, fname, ext = split_filename(filename)
             snr_fname = 'SNR_' + fname + '_Segmentation-label.nii'
+            print(snr_fname)
 
             snr_filename = os.path.join(snr_mask_dir, snr_fname)
             snr_ROI_nii = nib.load(snr_filename)
@@ -40,7 +42,7 @@ for sub_num in subject_list:
                 vals = np.reshape(crop_img, -1)
                 ave = np.nanmean(vals)
                 std = np.nanstd(vals)
-                print('for '+str(r)+' in '+ snr_fname)
+                print('for '+str(r))
                 print('ave = '+str(ave)+' with '+str(len(vals))+' points')
                 print('std = '+str(std))
                 out.append([ave, std])
@@ -48,10 +50,15 @@ for sub_num in subject_list:
                     signal = ave
                 elif r==2:
                     noise = std
+                elif r==3:
+                    tissue = ave
 
             snr = signal/noise
+            snr_tissue = tissue/noise
+            cnr = snr-snr_tissue
             print('for '+ snr_fname)
-            print('SNR = '+str(snr)+ '\n\n')
+            print('SNR = '+str(snr))#+ '\n')
+            print('CNR = '+str(cnr)+ '\n')
 
             n=n+1
 
