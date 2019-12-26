@@ -18,8 +18,8 @@ working_dir = os.path.abspath('/home/liam/LaptopSync/DCM2BIDS_Kidney')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['5']
 subject_list = ['3', '4', '5', '6', '8']
+subject_list = ['5']
 # session_list = ['Precon', 'Postcon']
 session_list = ['Post']
 
@@ -98,27 +98,27 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub), ('sub-%s/ses-%s/'+scantype) % (sub,
                for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_bias_norm.[0123456789]','')]
+datasink.inputs.regexp_substitutions = [('_bias_norm.[0123456789][0123456789]','')]
 # -------------------------------------------------------
 
 # -----------------PreprocWorkflow------------------------
 task = 'preprocessing'
 preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
-#preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-#                                             ('session_id', 'session_id')]),
-#                  (selectfiles, bias_norm, [('qutece', 'input_image')]),
-#                  (bias_norm, bias_norm2, [('output_image', 'input_image')]),
-#                  (bias_norm2, bias_norm3, [('output_image', 'input_image')]),
-#                  (bias_norm3, bias_norm4, [('output_image', 'input_image')]),
-#                  (bias_norm4, bias_norm5, [('output_image', 'input_image')]),
-#                  (bias_norm5, datasink,  [('bias_image', task+'_bias.@con')]),
-#                  (bias_norm5, datasink,  [('output_image', task+'.@con')])])
-
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
                                              ('session_id', 'session_id')]),
                   (selectfiles, bias_norm, [('qutece', 'input_image')]),
-                  (bias_norm, datasink,  [('bias_image', task+'_bias.@con')]),
-                  (bias_norm, datasink,  [('output_image', task+'.@con')])])
+                  (bias_norm, bias_norm2, [('output_image', 'input_image')]),
+                  (bias_norm2, bias_norm3, [('output_image', 'input_image')]),
+                  (bias_norm3, bias_norm4, [('output_image', 'input_image')]),
+                  (bias_norm4, bias_norm5, [('output_image', 'input_image')]),
+                  (bias_norm5, datasink,  [('bias_image', task+'_bias.@con')]),
+                  (bias_norm5, datasink,  [('output_image', task+'.@con')])])
+
+#preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
+#                                             ('session_id', 'session_id')]),
+#                  (selectfiles, bias_norm, [('qutece', 'input_image')]),
+#                  (bias_norm, datasink,  [('bias_image', task+'_bias.@con')]),
+#                  (bias_norm, datasink,  [('output_image', task+'.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
