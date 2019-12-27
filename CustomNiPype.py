@@ -5,6 +5,7 @@ import os
 from string import Template
 # import re
 import numpy as np
+import pandas as pd
 import nibabel as nib
 from nipype.utils.filemanip import split_filename
 
@@ -88,7 +89,7 @@ class DiffNii(BaseInterface):
         diff_nii = nib.Nifti1Image(diff_img, file1_nii.affine,
                                    file2_nii.header)
 
-        # from nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+        # nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
         diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
@@ -251,9 +252,11 @@ class ROIAnalyze(BaseInterface):
             n = n + 1
 
         pth, fname, ext = split_filename(scan_file_name)
-        fft_file_name = os.path.join(fname + '_fft.nii')
+        out_file_name = os.path.join(fname + '_fft.nii')
+        pd.DataFrame(out_data).to_csv(out_file_name)
+
         # nib.save(fft_nii, fft_file_name)
-        setattr(self, '_out_file', fft_file_name)
+        setattr(self, '_out_file', out_file_name)
         return runtime
 
     def _list_outputs(self):
