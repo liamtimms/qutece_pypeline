@@ -238,9 +238,7 @@ class ROIAnalyze(BaseInterface):
                                   in_file_nii.header)
         fft_nii.set_data_dtype(np.double)
 
-        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname, ext = split_filename(in_file_name)
-
         fft_file_name = os.path.join(fname + '_fft.nii')
         nib.save(fft_nii, fft_file_name)
         setattr(self, '_out_file', fft_file_name)
