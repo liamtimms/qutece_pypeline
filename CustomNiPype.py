@@ -3,7 +3,7 @@ from nipype.interfaces.base import TraitedSpec, \
     BaseInterface, BaseInterfaceInputSpec, File
 import os
 from string import Template
-import re
+# import re
 import numpy as np
 import nibabel as nib
 from nipype.utils.filemanip import split_filename
@@ -56,7 +56,6 @@ class UnringNii(BaseInterface):
         outputs['out_file'] = getattr(self, '_out_file')
         return outputs
 
-
 # -----------------------------------------------
 
 
@@ -88,7 +87,7 @@ class DiffNii(BaseInterface):
         diff_nii = nib.Nifti1Image(diff_img, file1_nii.affine,
                                    file2_nii.header)
 
-        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+        # from nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
         diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
@@ -103,7 +102,7 @@ class DiffNii(BaseInterface):
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
         diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
-        #outputs['out_file'] = getattr(self, '_out_file')
+        # outputs['out_file'] = getattr(self, '_out_file')
         outputs['out_file'] = os.path.abspath(diff_file_name)
         return outputs
 
@@ -141,7 +140,6 @@ class DivNii(BaseInterface):
         div_img = np.divide(file1_img, file2_img)
         div_nii = nib.Nifti1Image(div_img, file1_nii.affine, file2_nii.header)
 
-        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
         div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
@@ -156,7 +154,7 @@ class DivNii(BaseInterface):
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
         div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
-        #outputs['out_file'] = getattr(self, '_out_file')
+        # outputs['out_file'] = getattr(self, '_out_file')
         outputs['out_file'] = os.path.abspath(div_file_name)
         return outputs
 
@@ -191,7 +189,7 @@ class FFTNii(BaseInterface):
                                   in_file_nii.header)
         fft_nii.set_data_dtype(np.double)
 
-        # from https://nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
+        # nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname, ext = split_filename(in_file_name)
 
         fft_file_name = os.path.join(fname + '_fft.nii')
