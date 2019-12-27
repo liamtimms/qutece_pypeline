@@ -23,7 +23,7 @@ for sub_num in subject_list:
                 print(fft_filename)
                 fft_nii = nib.load(fft_filename)
                 fft_nii.set_data_dtype(np.double)
-                fft_img = np.array(fft_nii.get_data())
+                fft_img = np.array(np.double(fft_nii.get_fdata()))
                 dim_max = fft_img.shape
                 center = [round(q / 2) for q in dim_max]
                 fft_vals = [[0] * 2 for x in range(np.size(fft_img))]
@@ -43,8 +43,10 @@ for sub_num in subject_list:
                         fft_vals[n][0] = dist
                         fft_vals[n][1] = value
                         n = n + 1
-                        if n == 100 or n == 1000 or n == 10000 or n == 100000:
+                        if (n % 1000000) == 0:
                             print(n)
+                            elapsed_time = time.time() - start_time
+                            print(elapsed_time)
 
                     fft_unique_dist = np.unique(np.asarray(fft_vals)[:, 0])
                     print(np.size(fft_unique_dist))
@@ -53,8 +55,6 @@ for sub_num in subject_list:
                     fft_sum_vals = [[0] * 2
                                     for y in range(np.size(fft_unique_dist))]
 
-                    elapsed_time = time.time() - start_time
-                    print(elapsed_time)
                     for dist in fft_unique_dist:
                         dist_index = np.where(
                             np.asarray(fft_vals)[:, 0] == dist)
@@ -66,9 +66,10 @@ for sub_num in subject_list:
                             fft_sum_vals[n][0] = dist
                             fft_sum_vals[n][1] = curr_val
                             n = n + 1
-
-                    elapsed_time = time.time() - start_time
-                    print(elapsed_time)
+                            if (n % 100) == 0:
+                                print(n)
+                                elapsed_time = time.time() - start_time
+                                print(elapsed_time)
 
                     export = pd.DataFrame(fft_sum_vals)
                     export.to_csv(fft_csv_filename, index=False)
