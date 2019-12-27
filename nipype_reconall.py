@@ -1,4 +1,3 @@
-
 import os
 from nipype.workflows.smri.freesurfer import create_reconall_workflow
 
@@ -13,11 +12,11 @@ session = 'Precon'
 # * precon T1w from IntersessionCoregister_preconScans
 scanfolder = 'IntersessionCoregister_preconScans'
 subdirectory = os.path.join(temp_dir, scanfolder)
-filestart = 'sub-'+ subject +'_ses-'+ session +'_'
-precon_T1w_files  = os.path.join(subdirectory,'sub-'+subject,'rr'+filestart+'T1w.nii')
+filestart = 'sub-' + subject + '_ses-' + session + '_'
+precon_T1w_files = os.path.join(subdirectory, 'sub-' + subject,
+                                'rr' + filestart + 'T1w.nii')
 
 recon_all = create_reconall_workflow()
-recon_all.inputs.inputspec.subject_id = 'sub-'+subject
+recon_all.inputs.inputspec.subject_id = 'sub-' + subject
 recon_all.inputs.inputspec.subjects_dir = subdirectory
-recon_all.inputs.inputspec.T1_files = precon_T1w_files 
-
+recon_all.inputs.inputspec.T1_files = precon_T1w_files

@@ -8,10 +8,11 @@ import os
 base_path = '/mnt/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2/derivatives'
 
 subject_list = ['04', '06', '08', '10', '11']
-#subject_list = ['11']
-#sub_num = '11'
+subject_list = ['11']
+# sub_num = '11'
 for sub_num in subject_list:
-    fft_directory = os.path.join(base_path, 'datasink','FFT','sub-' + sub_num)
+    fft_directory = os.path.join(base_path, 'datasink', 'FFT',
+                                 'sub-' + sub_num)
     for name in os.listdir(fft_directory):
         if os.path.isfile(os.path.join(fft_directory, name)):
                 fft_filename = os.path.join(fft_directory, name)
@@ -53,4 +54,3 @@ for sub_num in subject_list:
 
                         export = pd.DataFrame(fft_sum_vals)
                         export.to_csv(fft_csv_filename, index=False)
-
