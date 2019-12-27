@@ -1,11 +1,11 @@
 # Preprocessing Pipeline
 # -----------------Imports-------------------------------
 import os
-import CustomNiPype as cnp
+# import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
-import nipype.interfaces.freesurfer as fs
-import nipype.interfaces.fsl as fsl
+# import nipype.interfaces.spm as spm
+# import nipype.interfaces.freesurfer as fs
+# import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
@@ -13,7 +13,11 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/home/liam/LaptopSync/DCM2BIDS_Kidney')
+# Define subject list, session list and relevent file types
+# Assuming BIDs format (code in 'code/nipype' folder)
+# we can navigate to the relative path
+upper_dir = os.path.realpath('../..')
+working_dir = os.path.abspath(upper_dir)
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -26,16 +30,16 @@ subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
 
 # TODO: probably best to run all of the non-UTE scans through these
-# same corrections that makes it more fair and also might technically help coreg
+# same corrections makes it more fair and also might technically help coreg
 
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
                                     filestart + '_SPIRiT_norm_HR_UTE.nii')
-#templates = {'qutece_hr': qutece_highres_files}
+# templates = {'qutece_hr': qutece_highres_files}
 
 qutece_breathhold_files = os.path.join(subdirectory, scantype,
                                        filestart + '_*_norm_DIS3D_*UTE.nii')
-#templates = {'qutece_breathhold': qutece_breathhold_files}
+# templates = {'qutece_breathhold': qutece_breathhold_files}
 
 qutece_files = os.path.join(subdirectory, scantype, filestart + '_*UTE.nii')
 templates = {'qutece': qutece_files}
@@ -122,7 +126,7 @@ preproc_wf.connect([
     (bias_norm5, datasink, [('output_image', task + '.@con')])
 ])
 
-#preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
+# preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
 #                                             ('session_id', 'session_id')]),
 #                  (selectfiles, bias_norm, [('qutece', 'input_image')]),
 #                  (bias_norm, datasink,  [('bias_image', task+'_bias.@con')]),
@@ -131,8 +135,8 @@ preproc_wf.connect([
 
 # -------------------WorkflowPlotting--------------------
 preproc_wf.write_graph(graph2use='flat')
-from IPython.display import Image
-Image(filename=working_dir + "/workflow/" + task + "/graph_detailed.png")
+# from IPython.display import Image
+# Image(filename=working_dir + "/workflow/" + task + "/graph_detailed.png")
 # -------------------------------------------------------
 
 preproc_wf.run(plugin='MultiProc')
