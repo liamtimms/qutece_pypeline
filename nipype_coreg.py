@@ -1,4 +1,3 @@
-
 # Coregistration Pipeline
 # -----------------Imports-------------------------------
 import os
@@ -13,7 +12,8 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
+working_dir = os.path.abspath(
+    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -24,107 +24,105 @@ subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
 
 scantype = 'anat'
-T1w_files = os.path.join(subdirectory, scantype,
-                                    filestart + '_T1w.nii')
+T1w_files = os.path.join(subdirectory, scantype, filestart + '_T1w.nii')
 
-nonT1w_files = os.path.join(subdirectory, scantype,
-                                    filestart + '_*[!w]*.nii')
+nonT1w_files = os.path.join(subdirectory, scantype, filestart + '_*[!w]*.nii')
 
-
-subdirectory = os.path.join(temp_dir, 'realignmean',
-                            'sub-{subject_id}', 'ses-{session_id}', 'qutece')
-filestart = 'mean'+'sub-{subject_id}_ses-{session_id}_'
+subdirectory = os.path.join(temp_dir, 'realignmean', 'sub-{subject_id}',
+                            'ses-{session_id}', 'qutece')
+filestart = 'mean' + 'sub-{subject_id}_ses-{session_id}_'
 
 scantype = 'qutece'
-qutece_mean_files = os.path.join(subdirectory,
-                                    filestart+'*fast*.nii')
+qutece_mean_files = os.path.join(subdirectory, filestart + '*fast*.nii')
 
-templates = {'qutece_mean': qutece_mean_files,
-             'T1w': T1w_files,
-             'nonT1w': nonT1w_files}
-
+templates = {
+    'qutece_mean': qutece_mean_files,
+    'T1w': T1w_files,
+    'nonT1w': nonT1w_files
+}
 
 # Infosource - a function free node to iterate over the list of subject names
-infosource = eng.Node(utl.IdentityInterface(fields=['subject_id', 'session_id']),
-                  name="infosource")
+infosource = eng.Node(
+    utl.IdentityInterface(fields=['subject_id', 'session_id']),
+    name="infosource")
 infosource.iterables = [('subject_id', subject_list),
                         ('session_id', session_list)]
 
 # Selectfiles to provide specific scans with in a subject to other functions
 selectfiles = eng.Node(nio.SelectFiles(templates,
-                               base_directory=working_dir,
-                               sort_filelist=True, raise_on_empty=True),
-                   name="SelectFiles")
+                                       base_directory=working_dir,
+                                       sort_filelist=True,
+                                       raise_on_empty=True),
+                       name="SelectFiles")
 # -------------------------------------------------------
 
 # -----------------------CoregisterNodes-----------------
-coreg_to_ute = eng.Node(spm.Coregister(), name = 'coreg_to_ute')
+coreg_to_ute = eng.Node(spm.Coregister(), name='coreg_to_ute')
 coreg_to_ute.inputs.write_interp = 7
 coreg_to_ute.inputs.separation = [6, 3, 2]
 
-coreg_to_anat = eng.MapNode(spm.Coregister(), name = 'coreg_to_anat', iterfield = 'source')
+coreg_to_anat = eng.MapNode(spm.Coregister(),
+                            name='coreg_to_anat',
+                            iterfield='source')
 coreg_to_anat.inputs.write_interp = 7
 coreg_to_anat.inputs.separation = [6, 3, 2]
 # -------------------------------------------------------
 
 # -----------------------BiasFieldCorrection-------------
 bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
-                     name = 'bias_norm', iterfield=['input_image'])
+                        name='bias_norm',
+                        iterfield=['input_image'])
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
-merge = eng.Node(utl.Merge(2), name = 'merge')
+merge = eng.Node(utl.Merge(2), name='merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
 # Datasink - creates output folder for important outputs
 datasink = eng.Node(nio.DataSink(base_directory=output_dir,
-                         container=temp_dir),
-                name="datasink")
+                                 container=temp_dir),
+                    name="datasink")
 # Use the following DataSink output substitutions
 substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
 
-subjFolders = [('ses-%ssub-%s' % (ses, sub),
-                'sub-%s/ses-%s' % (sub, ses))
-               for ses in session_list
-               for sub in subject_list]
+subjFolders = [('ses-%ssub-%s' % (ses, sub), 'sub-%s/ses-%s' % (sub, ses))
+               for ses in session_list for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_coreg_to_anat.',''),('_bias_norm.','')]
+datasink.inputs.regexp_substitutions = [('_coreg_to_anat.', ''),
+                                        ('_bias_norm.', '')]
 #datasink.inputs.regexp_substitutions = []
 # -------------------------------------------------------
 
 # -----------------CoregistrationWorkflow----------------
 task = 'IntrasessionCoregister'
-coreg_wf = eng.Workflow(name = task)
+coreg_wf = eng.Workflow(name=task)
 coreg_wf.base_dir = working_dir + '/workflow'
 
 coreg_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                              ('session_id', 'session_id')])])
+                                             ('session_id', 'session_id')])])
 
 coreg_wf.connect([(selectfiles, coreg_to_ute, [('qutece_mean', 'target'),
-                                          ('T1w', 'source')])])
+                                               ('T1w', 'source')])])
 
-coreg_wf.connect([(coreg_to_ute, coreg_to_anat, [('coregistered_source', 'target')])])
+coreg_wf.connect([(coreg_to_ute, coreg_to_anat, [('coregistered_source',
+                                                  'target')])])
 
 coreg_wf.connect([(selectfiles, coreg_to_anat, [('nonT1w', 'source')])])
 
-coreg_wf.connect([(coreg_to_ute, merge,
-                     [('coregistered_source', 'in1')])])
+coreg_wf.connect([(coreg_to_ute, merge, [('coregistered_source', 'in1')])])
 
-coreg_wf.connect([(coreg_to_anat, merge,
-                     [('coregistered_source', 'in2')])])
+coreg_wf.connect([(coreg_to_anat, merge, [('coregistered_source', 'in2')])])
 
-coreg_wf.connect([(merge, bias_norm,
-                     [('out', 'input_image')])])
+coreg_wf.connect([(merge, bias_norm, [('out', 'input_image')])])
 
-coreg_wf.connect([(bias_norm, datasink,
-                     [('output_image', task+'.@con')])])
+coreg_wf.connect([(bias_norm, datasink, [('output_image', task + '.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
 coreg_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
-coreg_wf.run(plugin = 'MultiProc', plugin_args = {'n_procs' : 5})
+coreg_wf.run(plugin='MultiProc', plugin_args={'n_procs': 5})

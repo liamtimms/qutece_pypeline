@@ -2,9 +2,9 @@ import shutil
 import os
 import subprocess
 parent_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis'
-dcm_dir = os.path.join(parent_path,'DCM_working')
-bids_dir = os.path.join(parent_path,'DCM2BIDS2')
-CONFIG_FILE = os.path.join(parent_path,'ConfigV2.json')
+dcm_dir = os.path.join(parent_path, 'DCM_working')
+bids_dir = os.path.join(parent_path, 'DCM2BIDS2')
+CONFIG_FILE = os.path.join(parent_path, 'ConfigV2.json')
 
 if not os.path.exists(bids_dir):
     os.mkdir(bids_dir)
@@ -14,7 +14,7 @@ os.getcwd()
 
 command = 'dcm2bids_scaffold'
 os.system(command)
-print('Created BIDS folders inside:'+os.getcwd())
+print('Created BIDS folders inside:' + os.getcwd())
 
 pat_folders = os.listdir(dcm_dir)
 bids_folders = os.listdir(bids_dir)
@@ -29,7 +29,7 @@ for pat_folder in pat_folders:
         if not "." in f:
             sess_dcm_dir = os.path.join(pat_dir, f)
             session_type = f
-            subject_num = pat_folder[2:4] # extract subject number
+            subject_num = pat_folder[2:4]  # extract subject number
 
             if ("sub-" + subject_num) not in bids_folders:
                 # To keep it consistent with Dcm2Bids conventions:
