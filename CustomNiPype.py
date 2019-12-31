@@ -85,6 +85,9 @@ class DiffNii(BaseInterface):
         file1_img = np.array(file1_nii.get_fdata())
         file2_img = np.array(file2_nii.get_fdata())
 
+        #if file1_img.size()~=file2_img.size():
+        #    nii2 = nil.resample_to_img(nii2, nii1)
+
         diff_img = file2_img - file1_img
         diff_nii = nib.Nifti1Image(diff_img, file1_nii.affine,
                                    file2_nii.header)
