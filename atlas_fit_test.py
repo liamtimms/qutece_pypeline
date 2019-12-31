@@ -1,4 +1,6 @@
-# Need to check atlas fit, may not be a Pipeline
+# Need to optimize parameters for atlas fit,
+# may not be a Pipeline due to data size issues
+
 # -----------------Imports-------------------------------
 import os
 import CustomNiPype as cnp
@@ -15,26 +17,39 @@ import nipype.interfaces.io as nio
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
+upper_dir = os.path.realpath('../..')
+
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
-subject_list = ['02', '03', '05', '06', '10']
-#subject_list =['11']
+subject_list = ['03', '11']
 
 # Atlas Label
-atlas_file = '/home/liam/Documents/MATLAB/MatlabToolboxes/spm12/tpm/mask_ICV.nii'
+atlas_file = os.path.abspath('/opt/spm12/tpm/mask_ICV.nii/')
 
-# * precon T1w brain label cropped out from Ju's manual work and now normalized
-scanfolder = 'SpatialNormalization_allOtherScans'
+# Precon T1w brain-label Ju made
+
+# Precon T1w scan from which she made the label
+
+# precon T1w brain label cropped out from Ju's manual work and now normalized
+scanfolder = 'ManualBrainCrop'
+session = 'Precon'
+filestart = 'sub-{subject_id}_ses-' + session + '_'
+subdirectory = os.path.join(temp_dir, scanfolder)
+precon_T1w_brain_label_files = os.path.join(
+    subdirectory, 'rr' + filestart + 'T1w_brain-label.nii')
+
+# precon T1w brain coregistered to postcon
+scanfolder = 'IntersessionCoregister_preconScans'
 session = 'Precon'
 filestart = 'sub-{subject_id}_ses-' + session + '_'
 subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-precon_T1w_brain_label_files = os.path.join(
-    subdirectory, 'wrr' + filestart + 'T1w_brain-label.nii')
+precon_T1w_file = os.path.join(subdirectory, 'rr' + filestart + 'T1w.nii')
 
 templates = {
-    'atlas_file': atlas_file,
-    'T1w_precon_brain_label': precon_T1w_brain_label_files
+    'atlas': atlas_file,
+    'T1w_precon_brain_label': precon_T1w_brain_label_files,
+    'T1w_precon': precon_T1w_file
 }
 
 # Infosource - a function free node to iterate over the list of subject names
@@ -65,29 +80,73 @@ def scan_subtract(file1, file2):
     img2 = nii2.get_fdata()
 
     diff_img = img2 - img1
-    diff_nii = nib.Nifti1Image(diff_img, postcon_nii.affine,
-                               postcon_nii.header)
-
+    diff_nii = nib.Nifti1Image(diff_img, nii1.affine, nii1.header)
     return diff_img, diff_nii
+
 
 difference = eng.Node(utl.Function(), name='difference')
 # -------------------------------------------------------
 
+# -----------------------NormalizeNode-------------------
+normalize = eng.Node(spm.Normalize12(), name='normalize')
+normalize.inputs.write_interp = 7
+normalize.inputs.write_voxel_sizes = [1, 1, 1]
+normalize.inputs.sampling_distance = 2
+
+def factorlist1(f):
+    matrix = [1, 1, 1, 1, 1]
+    for i in matrix.size():
+        factors = matrix(i) * f
+
+base_params=[0, 0.0001, 0.5, 0.005, 0.02]
+warp_list = []
+warp_list.append(base_params)
+for f in (.01, .1, 10, 100):
+    factors = [1, 1 * f, 1, 1, 1]
+    factors = [1, 1, 1 * f, 1, 1]
+    factors = [1, 1, 1, 1 * f, 1]
+    factors = [1, 1, 1, 1, 1 * f]
+
+    factors = [1, 1 * f, 1 * f, 1, 1]
+    factors = [1, 1, 1 * f, 1 * f, 1]
+    factors = [1, 1, 1, 1 * f, 1 * f]
+    factors = [1, 1 * f, 1, 1, 1 * f]
+
+    factors = [1, 1 * f, 1 * f, 1 * f, 1]
+    factors = [1, 1, 1 * f, 1 * f, 1 * f]
+    factors = [1, 1 * f, 1, 1 * f, 1 * f]
+    factors = [1, 1 * f, 1 * f, 1, 1 * f]
+
+    factors = [1, 1 * f, 1 * f, 1 * f, 1 * f]
+
+warp_list.append([0, 0.0001 * 100, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5 * 100, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005 * 100, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005, 0.02 * 100])
+warp_list.append([0, 0.0001 / 100, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5 / 100, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005 / 100, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005, 0.02 / 100])
+warp_list.append([1, 0.0001, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001 * 1000, 0.5, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005, 0.02 / 1000])
+
+warp_list.append([0, 0.0001 * 100, 0.5 * 100, 0.005, 0.02])
+warp_list.append([0, 0.0001, 0.5 * 100, 0.005 * 100, 0.02])
+warp_list.append([0, 0.0001, 0.5, 0.005 * 100, 0.02 * 100])
+warp_list.append([0, 0.0001 * 100, 0.5, 0.005, 0.02 * 100])
+
+warp_list.append([0, 0.0001 * 1000, 0.5, 0.005, 0.02 * 1000])
+warp_list.append([0, 0.0001 * 1000, 0.5, 0.005, 0.02 * 100])
+warp_list.append([0, 0.0001 * 100, 0.5, 0.005, 0.02 * 1000])
+
+normalize.iterables = ('warping_regularization', warp_list)
+
+# -------------------------------------------------------
+
 # -----------------------Merge---------------------------
-merge = eng.Node(utl.Merge(5), name='merge')
+merge = eng.Node(utl.Merge(2), name='merge')
 merge.ravel_inputs = True
-# -------------------------------------------------------
-
-# -----------------------FAST----------------------------
-fast = eng.Node(fsl.FAST(), name='fast')
-fast.inputs.no_bias = True
-fast.inputs.segment_iters = 45
-fast.inputs.output_type = 'NIFTI'
-# -------------------------------------------------------
-
-# -----------------------Merge---------------------------
-merge2 = eng.Node(utl.Merge(8), name='merge2')
-merge2.ravel_inputs = True
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
@@ -105,33 +164,21 @@ datasink.inputs.substitutions = substitutions
 # -------------------------------------------------------
 
 # -----------------NormalizationWorkflow-----------------
-task = 'SpatialNormalization'
-norm_wf = eng.Workflow(name=task)
-norm_wf.base_dir = working_dir + '/workflow'
+task = 'AtlasOptimizing'
+atlas_opt_wf = eng.Workflow(name=task)
+atlas_opt_wf.base_dir = working_dir + '/workflow'
 
-norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
-norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),
-                                       ('qutece_postcon', 'in2'),
-                                       ('nonT1w_precon', 'in3'),
-                                       ('T1w_precon_brain_label', 'in4'),
-                                       ('T1w_precon', 'in5')])])
+atlas_opt_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])
+                      ])
 
-norm_wf.connect([(selectfiles, normalize, [('T1w_precon_brain',
-                                            'image_to_align')])])
-norm_wf.connect([(merge, normalize, [('out', 'apply_to_files')])])
-norm_wf.connect([(normalize, datasink,
-                  [('normalized_image', task + '_preconT1w.@con'),
-                   ('normalized_files', task + '_allOtherScans.@con')])])
+atlas_opt_wf.connect([(selectfiles, merge, [('T1w_precon_brain_label', 'in1'),
+                                            ('T1w_precon', 'in2')])])
 
-norm_wf.connect([(selectfiles, fast, [('T1w_precon_brain', 'in_files')]),
-                 (fast, merge2, [('tissue_class_map', 'in1'),
-                                 ('tissue_class_files', 'in2'),
-                                 ('restored_image', 'in3'),
-                                 ('mixeltype', 'in4'),
-                                 ('partial_volume_map', 'in5'),
-                                 ('partial_volume_files', 'in6'),
-                                 ('bias_field', 'in7'),
-                                 ('probability_maps', 'in8')])])
+atlas_opt_wf.connect([(selectfiles, normalize,
+                       [('T1w_precon', 'image_to_align'),
+                        ('T1w_precon_brain_label', 'apply_to_files')])])
 
-norm_wf.connect([(merge2, datasink, [('out', task + '_FAST.@con')])])
+atlas_opt_wf.connect([(normalize, datasink,
+                       [('normalized_image', task + '_preconT1w.@con'),
+                        ('normalized_files', task + '_allOtherScans.@con')])])
 # -------------------------------------------------------
