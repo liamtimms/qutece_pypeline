@@ -8,16 +8,16 @@ import nibabel as nib
 import nilearn as nil
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
-import nipype.interfaces.freesurfer as fs
-import nipype.interfaces.fsl as fsl
+# import nipype.interfaces.freesurfer as fs
+# import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 upper_dir = os.path.realpath('../..')
+working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
 
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
