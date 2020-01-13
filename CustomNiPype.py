@@ -1,6 +1,6 @@
 from nipype.interfaces.matlab import MatlabCommand
 from nipype.interfaces.base import TraitedSpec, \
-    BaseInterface, BaseInterfaceInputSpec, File
+    BaseInterface, BaseInterfaceInputSpec, File, traits
 import os
 from string import Template
 # import re
@@ -270,5 +270,53 @@ class ROIAnalyze(BaseInterface):
         outputs['out_file'] = os.path.abspath(fft_file_name)
         return outputs
 
+
+# -----------------------------------------------
+
+
+
+# -----------------------------------------------
+class LowerSNRInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+    std = traits.Float(mandatory=True, desc='std of noise to add')
+
+
+
+class LowerSNROutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='Adding Gaussian Noise')
+
+
+
+class LowerSNRNii(BaseInterface):
+    input_spec = LowerSNRInputSpec
+    output_spec = LowerSNROutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        in_file_nii = nib.load(in_file_name)
+        in_file_nii.set_data_dtype(np.double)
+        in_file_img = np.array(in_file_nii.get_fdata())
+
+        noise = np.random.normal(0, self.inputs.std, in_file_img.shape)
+        noisey_img = in_file_img + noise
+
+        noisey_nii = nib.Nifti1Image(noisey_img, in_file_nii.affine,
+                                  in_file_nii.header)
+        noisey_nii.set_data_dtype(np.double)
+
+        pth, fname, ext = split_filename(in_file_name)
+
+        noisey_file_name = os.path.join(fname + '_noisey.nii')
+        nib.save(noisey_nii, noisey_file_name)
+        setattr(self, '_out_file', noisey_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        noisey_file_name = os.path.join(fname + '_noisey.nii')
+        outputs['out_file'] = os.path.abspath(noisey_file_name)
+        return outputs
 
 # -----------------------------------------------
