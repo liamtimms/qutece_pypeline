@@ -24,7 +24,7 @@ def calc_dist_from_center(img):
 
 base_path = os.path.abspath(
     '/mnt/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2/derivatives')
-subject_list = ['04', '06', '08', '10', '11']
+subject_list = ['01', '02', '03', '05', '04', '06', '07', '08', '10', '11']
 # subject_list = ['11']
 # sub_num = '11'
 start_time = time.time()
