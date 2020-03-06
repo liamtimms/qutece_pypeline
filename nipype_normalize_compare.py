@@ -22,6 +22,7 @@ output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
 subject_list = ['03', '11']
+# subject_list = ['02', '03', '04', '11']
 subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
 
 # session_list = ['Precon', 'Postcon']
@@ -78,22 +79,26 @@ robustFOV = eng.Node(fsl.RobustFOV(), name='robustFOV')
 robustFOV.inputs.output_type = 'NIFTI'
 # -------------------------------------------------------
 
-frac_list = [0.01, 0.15, 0.3, 0.5]
+# frac_list1 = [0.2, 0.4]
+# frac_list2 = [0.01, 0.05, 0.1]
+# grad_list = [-0.5, 0]
 
 # -----------------------NoseStrip----------------------
 nosestrip = eng.Node(fsl.BET(), name='nosestrip')
-nosestrip.inputs.vertical_gradient = -0.5
+nosestrip.inputs.vertical_gradient = 0
+nosestrip.inputs.robust = True
 nosestrip.inputs.output_type = 'NIFTI'
-nosestrip.iterables = ('frac', frac_list)
+nosestrip.inputs.frac = 0.2
+# nosestrip.iterables = [('frac', frac_list1), ('vertical_gradient', grad_list)]
 # -------------------------------------------------------
 
 # -----------------------SkullStrip----------------------
 skullstrip = eng.Node(fsl.BET(), name='skullstrip')
-skullstrip.inputs.frac = 0.15
 skullstrip.inputs.vertical_gradient = -0.5
 skullstrip.inputs.robust = True
 skullstrip.inputs.output_type = 'NIFTI'
-skullstrip.iterables = ('frac', frac_list)
+skullstrip.inputs.frac = 0.1
+# skullstrip.iterables = [('frac', frac_list2), ('vertical_gradient', grad_list)]
 # -------------------------------------------------------
 
 # -----------------LinearRegistration--------------------
@@ -112,7 +117,7 @@ fast.inputs.output_type = 'NIFTI'
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
-merge1 = eng.Node(utl.Merge(2), name='merge')
+merge1 = eng.Node(utl.Merge(6), name='merge')
 merge1.ravel_inputs = True
 # -------------------------------------------------------
 
@@ -142,6 +147,7 @@ substitutions = [('_subject_id_', 'sub-')]
 subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub)) for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
+datasink.inputs.regexp_substitutions = [('_png_slice.', '')]
 # -------------------------------------------------------
 
 # -----------------NormalizationWorkflow-----------------
@@ -164,18 +170,19 @@ norm_wf.connect([
     (flirt, fnirt, [('out_file', 'in_file')]),
     # (flirt, fast, [('out_file', 'in_files')]),
     # (fast, first, [('out_file', 'in_files')]),
-    (flirt, datasink, [('out_file', task + '_flirt.@con'),
+    (flirt, datasink, [('out_file', task + '_flirt3.@con'),
                        ('out_matrix_file', task + '_flirt_transform.@con')]),
     #    (normalize, datasink, [('normalized_image', task + '_spm.@con')]),
-    (fnirt, datasink, [('warped_file', task + '_fnirt.@con'),
-                       ('field_file', task + '_fnirt_transform.@con')]),
+    (fnirt, datasink, [('warped_file', task + '_fnirt3.@con'),
+                       ('field_file', task + '_fnirt3_transform.@con')]),
     (robustFOV, merge1, [('out_roi', 'in1')]),
     (nosestrip, merge1, [('out_file', 'in2')]),
     (skullstrip, merge1, [('out_file', 'in3')]),
     (flirt, merge1, [('out_file', 'in4')]),
     (fnirt, merge1, [('warped_file', 'in5')]),
+    (selectfiles, merge1, [('mni_brain', 'in6')]),
     (merge1, png_slice, [('out', 'in_file')]),
-    (png_slice, datasink, [('out_file', task + '_pngs.@con')])
+    (png_slice, datasink, [('out_file', task + '_pngs3.@con')])
 ])
 # -------------------------------------------------------
 
@@ -184,5 +191,5 @@ norm_wf.write_graph(graph2use='flat')
 # -------------------------------------------------------
 
 norm_wf.run(plugin='MultiProc', plugin_args={'n_procs': 3})
+#norm_wf.run()
 os.system('notify-send SpatialNormalization done')
-# norm_wf.run()
