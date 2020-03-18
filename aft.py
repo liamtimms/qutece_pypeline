@@ -1,5 +1,6 @@
 import os
 import nibabel as nib
+import nipype.interfaces.spm as spm
 
 upper_dir = os.path.realpath('../..')
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
@@ -23,7 +24,18 @@ precon_T1w_file = os.path.join(subdirectory, 'rr' + filestart + 'T1w.nii')
 atlas_nii = nib.load(atlas_file)
 atlas_img = atlas_nii.get_fdata()
 
+SPM_default_params = [0, 0.001, 0.5, 0.05, 0.2]
+base_params=[0, 0.0001, 0.5, 0.005, 0.02]
+
+f1_list = [0]
+f2_list = [
+
 for sub in subject_list:
-    precon_T1w_filename = precon_T1w_file.replace('{subject_id', sub)
+    precon_T2w_filename = precon_T1w_file.replace('{subject_id', sub)
+    for
+
+
+
+
 
 
