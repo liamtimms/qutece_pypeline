@@ -1,0 +1,6 @@
+#!/bin/bash
+
+files=$(ls "$PWD/sub-06/"*/*/*_flirt.png)
+
+montage -pointsize 9 -label '%d' $files \
+    -tile 4x4 -shadow -geometry +5+5 sub-06.png
