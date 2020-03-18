@@ -116,19 +116,19 @@ fast = eng.Node(fsl.FAST(), name='fast')
 fast.inputs.output_type = 'NIFTI'
 # -------------------------------------------------------
 
-# -----------------------Merge---------------------------
-merge1 = eng.Node(utl.Merge(6), name='merge')
-merge1.ravel_inputs = True
-# -------------------------------------------------------
-
 # ----------------------FIRST----------------------------
 first = eng.Node(fsl.FIRST(), name='first')
 first.inputs.output_type = 'NIFTI'
 # -------------------------------------------------------
 
 # -----------------------Merge---------------------------
-merge2 = eng.Node(utl.Merge(2), name='merge')
-merge2.ravel_inputs = True
+merge_for_png = eng.Node(utl.Merge(6), name='merge_for_png')
+merge_for_png.ravel_inputs = True
+# -------------------------------------------------------
+
+# -----------------------Merge---------------------------
+merge_FAST = eng.Node(utl.Merge(8), name='merge_FAST')
+merge_FAST.ravel_inputs = True
 # -------------------------------------------------------
 
 # ----------------------PNGSlicer------------------------
@@ -161,28 +161,34 @@ norm_wf.connect([
     (selectfiles, fnirt, [('mni_brain', 'ref_file')]),
     (selectfiles, reorient, [('T1w_precon', 'in_file')]),
     (reorient, robustFOV, [('out_file', 'in_file')]),
-    #    (robustFOV, flirt, [('out_roi', 'in_file')]),
-    #    (robustFOV, normalize, [('out_roi', 'image_to_align')]),
     (robustFOV, nosestrip, [('out_roi', 'in_file')]),
     (nosestrip, skullstrip, [('out_file', 'in_file')]),
     (skullstrip, flirt, [('out_file', 'in_file')]),
-    #    (skullstrip, normalize, [('out_file', 'image_to_align')]),
     (flirt, fnirt, [('out_file', 'in_file')]),
-    # (flirt, fast, [('out_file', 'in_files')]),
-    # (fast, first, [('out_file', 'in_files')]),
-    (flirt, datasink, [('out_file', task + '_flirt3.@con'),
+    (flirt, fast, [('out_file', 'in_files')]),
+    (flirt, datasink, [('out_file', task + '_flirt.@con'),
                        ('out_matrix_file', task + '_flirt_transform.@con')]),
-    #    (normalize, datasink, [('normalized_image', task + '_spm.@con')]),
-    (fnirt, datasink, [('warped_file', task + '_fnirt3.@con'),
-                       ('field_file', task + '_fnirt3_transform.@con')]),
-    (robustFOV, merge1, [('out_roi', 'in1')]),
-    (nosestrip, merge1, [('out_file', 'in2')]),
-    (skullstrip, merge1, [('out_file', 'in3')]),
-    (flirt, merge1, [('out_file', 'in4')]),
-    (fnirt, merge1, [('warped_file', 'in5')]),
-    (selectfiles, merge1, [('mni_brain', 'in6')]),
-    (merge1, png_slice, [('out', 'in_file')]),
-    (png_slice, datasink, [('out_file', task + '_pngs3.@con')])
+    (fnirt, datasink, [('warped_file', task + '_fnirt.@con'),
+                       ('field_file', task + '_fnirt_transform.@con')]),
+
+    (fast, merge_FAST, [('bias_field',  'in1'),
+                        ('mixeltype', 'in2'),
+                        ('partial_volume_files', 'in3'),
+                        ('partial_volume_map', 'in4'),
+                        ('probability_maps', 'in5'),
+                        ('restored_image', 'in6'),
+                        ('tissue_class_files', 'in7'),
+                        ('tissue_class_map', 'in8')]),
+    (merge_FAST, datasink, [('out', task + '_FAST_outs.@con')]),
+
+    (robustFOV, merge_for_png, [('out_roi', 'in1')]),
+    (nosestrip, merge_for_png, [('out_file', 'in2')]),
+    (skullstrip, merge_for_png, [('out_file', 'in')]),
+    (flirt, merge_for_png, [('out_file', 'in4')]),
+    (fnirt, merge_for_png, [('warped_file', 'in5')]),
+    (selectfiles, merge_for_png, [('mni_brain', 'in6')]),
+    (merge_for_png, png_slice, [('out', 'in_file')]),
+    (png_slice, datasink, [('out_file', task + '_pngs.@con')])
 ])
 # -------------------------------------------------------
 
