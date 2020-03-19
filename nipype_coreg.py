@@ -19,8 +19,9 @@ working_dir = os.path.abspath(upper_dir)
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
 subject_list = ['03', '11']
+subject_list = ['02', '04', '08', '10', '11']
+subject_list = ['02', '03', '04', '06', '08', '09', '10', '11']
 session_list = ['Precon', 'Postcon']
 
 filestart = 'sub-{subject_id}_ses-{session_id}'
