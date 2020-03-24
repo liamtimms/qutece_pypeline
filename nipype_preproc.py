@@ -5,7 +5,7 @@ import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 # import nipype.interfaces.freesurfer as fs
-# import nipype.interfaces.fsl as fsl
+import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
@@ -13,6 +13,8 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
+
+fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
 def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
@@ -128,20 +130,29 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
     realign.inputs.write_interp = 7
     # -------------------------------------------------------
 
+    # ---------------------Reorient----------------------
+    reorient = eng.MapNode(fsl.Reorient2Std(),
+                           name='reorient',
+                           iterfield=['in_file'])
+    reorient.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
     datasink = eng.Node(nio.DataSink(base_directory=output_dir,
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
+    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
+                     ('divby_average_desc-unring_bias_reoriented', 'desc-preproc')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub),
                     ('sub-%s/ses-%s/' + scantype) % (sub, ses))
                    for ses in session_list for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
     datasink.inputs.regexp_substitutions = [('_BiasCorrection.', ''),
-                                            ('_bias_norm.*/', '')]
+                                            ('_bias_norm.*/', ''),
+                                            ('_reorient.*/', '')]
     # -------------------------------------------------------
 
     # -----------------PreprocWorkflow------------------------
@@ -173,8 +184,8 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
         (merge, unring_nii, [('out', 'in_file')]),
         (unring_nii, realign, [('out_file', 'in_files')]),
         (realign, merge2, [('realigned_files', 'in2')]),
-        (merge2, datasink, [('out', task + '.@con')])
-        # ('mean_image', 'realignmean.@con')])
+        (merge2, reorient, [('out', 'in_file')]),
+        (reorient,  datasink, [('out_file', task + '.@con')])
     ])
     # -------------------------------------------------------
 
@@ -182,7 +193,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
     preproc_wf.write_graph(graph2use='flat')
     # -------------------------------------------------------
 
-    if num_cores == 1:
+    if num_cores < 2:
         preproc_wf.run()
     else:
         preproc_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
