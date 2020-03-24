@@ -6,18 +6,18 @@ import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.ants as ants
 # import nipype.interfaces.freesurfer as fs
+import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
-# -----------------Inputs--------------------------------
-# Define subject list, session list and relevent file types
-# working_dir = os.path.abspath(
-#    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
-
 
 def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
 
+    # -----------------Inputs--------------------------------
+    # Define subject list, session list and relevent file types
+    # working_dir = os.path.abspath(
+    #    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -108,6 +108,25 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
                             iterfield=['input_image'])
     # -------------------------------------------------------
 
+    # -----------------LinearRegistration--------------------
+    flirt = eng.Node(fsl.FLIRT(), name='flirt')
+    flirt.inputs.dof = 6  # Rigid Transform
+    flirt.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # # -----------------------AntsResgistration---------------
+    # ants_reg = eng.Node(ants.Registration(), name='ants_reg')
+    # ants_reg.inputs.metric = ['Mattes']*2
+    # ants_reg.inputs.metric_weight = [1]*2 # Default (value ignored currently by ANTs)
+    # # ants_reg.inputs.number_of_iterations = [[1500, 200], [100, 50, 30]]
+    # ants_reg.inputs.shrink_factors = [[2,1], [3,2,1]]
+    # ants_reg.inputs.smoothing_sigmas = [[1,0], [2,1,0]]
+    # ants_reg.inputs.transforms = ['Rigid', 'Rigid']
+
+    # ants_reg.inputs.transform_parameters = [(2.0,), (0.25, 3.0, 0.0)]
+    # ants_reg.inputs.number_of_iterations = [[1500, 200], [100, 50, 30]]
+    # # -------------------------------------------------------
+
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
@@ -146,6 +165,15 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
         (coreg_to_anat, merge, [('coregistered_source', 'in2')]),
         (merge, bias_norm, [('out', 'input_image')]),
         (bias_norm, datasink, [('output_image', task + '.@con')])
+
+        # (coreg_to_ute, datasink, [('coregistered_source', task + '_coreg.@con')]),
+        # (selectfiles, flirt, [('qutece_hr', 'reference')]),
+        # (selectfiles, flirt, [('T1w', 'in_file')]),
+        # (flirt, datasink, [('out_file', task + '_flirt.@con')])
+
+        # (selectfiles, ants_reg, [('qutece_hr', 'fixed_image')]),
+        # (selectfiles, ants_reg, [('T1w', 'moving_image')]),
+        # (ants_reg, datasink, [('warped_image', task + '_ants.@con')])
     ])
     # -------------------------------------------------------
 
@@ -153,4 +181,7 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
     coreg_wf.write_graph(graph2use='flat')
     # -------------------------------------------------------
 
-    coreg_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    if num_cores < 2:
+        coreg_wf.run()
+    else:
+        coreg_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
