@@ -3,8 +3,8 @@
 import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
-import nipype.interfaces.freesurfer as fs
+# import nipype.interfaces.spm as spm
+# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
@@ -74,6 +74,14 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
     #difference.iterables = [('file1', ['precon_UTE_files']), ('file2', ['postcon_UTE_files'])] # this is pseudo code not real
     # -------------------------------------------------------
 
+    # -----------------------PNGSlices-----------------------
+    scan_slicer = eng.MapNode(fsl.Slicer(),
+                              name='scan_slicer',
+                              iterfield='in_file')
+    scan_slicer.inputs.middle_slices = True
+    # scan_slicer.inputs.colour_map = '/opt/fsl/etc/luts/renderhot.lut'
+    # -------------------------------------------------------
+
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
     datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -86,7 +94,8 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_difference.??/', '')]
+    datasink.inputs.regexp_substitutions = [('_difference.*/', ''),
+                                            ('_scan_slicer.*/', '')]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -94,12 +103,15 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
     diff_wf = eng.Workflow(name=task)
     diff_wf.base_dir = working_dir + '/workflow'
 
-    diff_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')]),
-                     (selectfiles, average_niis, [('qutece_pre', 'images')]),
-                     (average_niis, difference, [('output_average_image',
-                                                  'file1')]),
-                     (selectfiles, difference, [('qutece_postcon', 'file2')]),
-                     (difference, datasink, [('out_file', task + '.@con')])])
+    diff_wf.connect([
+        (infosource, selectfiles, [('subject_id', 'subject_id')]),
+        (selectfiles, average_niis, [('qutece_pre', 'images')]),
+        (average_niis, difference, [('output_average_image', 'file1')]),
+        (selectfiles, difference, [('qutece_post', 'file2')]),
+        (difference, datasink, [('out_file', task + '.@con')]),
+        (difference, scan_slicer, [('out_file', 'in_file')]),
+        (scan_slicer, datasink, [('out_file', task + '_PNG.@con')])
+    ])
     # -------------------------------------------------------
 
     # -------------------WorkflowPlotting--------------------
@@ -107,6 +119,6 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
     # -------------------------------------------------------
 
     if num_cores < 2:
-        preproc_wf.run()
+        diff_wf.run()
     else:
-        preproc_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+        diff_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})

@@ -27,7 +27,12 @@ os.system("notify-send IntrasessionCoregistration done")
 IntersesCoreg_workflow(working_dir, subject_list, num_cores)
 os.system("notify-send IntrasessionCoregistration done")
 
+num_cores = 1
 scan_type='hr'
 ScanDiff_workflow(working_dir, subject_list, session_list, num_cores, scan_type)
 scan_type='fast'
 ScanDiff_workflow(working_dir, subject_list, session_list, num_cores, scan_type)
+os.system("notify-send ScanDiff done")
+
+num_cores = 2
+Normalization_workflow(working_dir, subject_list, num_cores)
