@@ -108,11 +108,11 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
                             iterfield=['input_image'])
     # -------------------------------------------------------
 
-    # -----------------LinearRegistration--------------------
-    flirt = eng.Node(fsl.FLIRT(), name='flirt')
-    flirt.inputs.dof = 6  # Rigid Transform
-    flirt.inputs.output_type = 'NIFTI'
-    # -------------------------------------------------------
+    # # -----------------LinearRegistration--------------------
+    # flirt = eng.Node(fsl.FLIRT(), name='flirt')
+    # flirt.inputs.dof = 6  # Rigid Transform
+    # flirt.inputs.output_type = 'NIFTI'
+    # # -------------------------------------------------------
 
     # # -----------------------AntsResgistration---------------
     # ants_reg = eng.Node(ants.Registration(), name='ants_reg')
