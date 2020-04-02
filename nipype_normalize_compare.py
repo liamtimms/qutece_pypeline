@@ -102,7 +102,7 @@ def Normalization_workflow(working_dir, subject_list, num_cores):
     skullstrip.inputs.vertical_gradient = -0.5
     skullstrip.inputs.robust = True
     skullstrip.inputs.output_type = 'NIFTI'
-    skullstrip.inputs.frac = 0.1
+    skullstrip.inputs.frac = 0.2
     # skullstrip.iterables = [('frac', frac_list2), ('vertical_gradient', grad_list)]
     # -------------------------------------------------------
 
