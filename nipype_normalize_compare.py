@@ -68,7 +68,7 @@ def Normalization_workflow(working_dir, subject_list, num_cores):
     # -------------------------------------------------------
 
     # FSL
-    # ---------------------Reorient----------------------
+    # ---------------------FixNANs----------------------
     maths = eng.Node(fsl.maths.MathsCommand(), name='maths')
     maths.inputs.nan2zeros = True
     maths.inputs.output_type = 'NIFTI'
