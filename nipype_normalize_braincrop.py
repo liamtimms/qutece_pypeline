@@ -83,7 +83,7 @@ def BrainCrop_workflow(working_dir, subject_list, num_cores):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_png_slice.', '')]
+    datasink.inputs.regexp_substitutions = [('_skullstrip*/', '')]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
