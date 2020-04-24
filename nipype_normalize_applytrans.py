@@ -33,11 +33,32 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
     precon_UTE_files = os.path.join(
         subdirectory, 'rrr' + filestart + '*' + scan_type + '*UTE*.nii')
 
+    session = 'Precon'
+    subdirectory = os.path.join(temp_dir,
+                                'IntersessionCoregister_preconScansSPM_SPM',
+                                'sub-{subject_id}')
+    # subdirectory = os.path.join('sub-{subject_id}', 'ses-Precon')
+    filestart = 'sub-{subject_id}_ses-Precon'
+    T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')
+    TOF_files = os.path.join(subdirectory, 'rrr' + filestart + '*_TOF*.nii')
+    FLAIR_files = os.path.join(subdirectory,
+                               'rrr' + filestart + '*_FLAIR*.nii')
+
+    subdirectory = os.path.join(output_dir, 'manualwork',
+                                'WholeBrainSeg_FromNoseSkullStrip')
+    brain_mask_files = os.path.join(subdirectory,
+                                    'rrr' + filestart + '*_T1w*-label.nii')
+
     scanfolder = 'SpatialNormalization_SemiAuto_flirt_transform'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
     linear_matrix_files = os.path.join(subdirectory,
                                        'rrr' + filestart + '*.mat')
-
+    # MASK
+    filestart = 'sub-{subject_id}_ses-Precon'
+    subdirectory = os.path.join(output_dir, 'manualwork',
+                                'WholeBrainSeg_FromNoseSkullStrip')
+    brain_mask_files = os.path.join(subdirectory,
+                                    'rrr' + filestart + '*_T1w*-label.nii')
     # + postcon scans
     session = 'Postcon'
     # * preprocessing (sub-??, ses-Postcon, qutece)
@@ -49,6 +70,14 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
         subdirectory, 'qutece',
         'r' + filestart + '*' + scan_type + '*UTE*.nii')
 
+    # Difference files
+    scanfolder = 'postminuspre_' + scan_type
+    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
+    filestart = 'sub-{subject_id}_ses-' + session + '_'
+    difference_files = os.path.join(
+        subdirectory,
+        'r' + filestart + '*' + scan_type + '*UTE*minus_average.nii')
+
     MNI_file = os.path.abspath('/opt/fsl/data/standard/MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.abspath(
         '/opt/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz')
@@ -56,6 +85,11 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
     templates = {
         'postcon_UTE': postcon_UTE_files,
         'precon_UTE': precon_UTE_files,
+        'difference': difference_files,
+        'T1w_precon': T1w_files,
+        'TOF': TOF_files,
+        'FLAIR': FLAIR_files,
+        'brain_mask': brain_mask_files,
         'linear_matrix': linear_matrix_files,
         'mni_head': MNI_file,
         'mni_brain': MNI_brain_file
@@ -76,9 +110,29 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
 
     # FSL
     # ---------------------FixNANs----------------------
-    maths = eng.MapNode(fsl.maths.MathsCommand(), name='maths', iterfield=['in_file'])
+    maths = eng.MapNode(fsl.maths.MathsCommand(),
+                        name='maths',
+                        iterfield=['in_file'])
     maths.inputs.nan2zeros = True
     maths.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # ---------------------ApplyMask----------------------
+    applymask = eng.MapNode(fsl.ApplyMask(),
+                            name='applymask',
+                            iterfield=['in_file'])
+    applymask.inputs.nan2zeros = True
+    applymask.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # -----------------------Merge---------------------------
+    merge = eng.Node(utl.Merge(6), name='merge')
+    merge.ravel_inputs = True
+    # -------------------------------------------------------
+
+    # -----------------------Merge---------------------------
+    merge2 = eng.Node(utl.Merge(2), name='merge2')
+    merge2.ravel_inputs = True
     # -------------------------------------------------------
 
     # -----------------LinearTransform--------------------
@@ -115,8 +169,15 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
         (selectfiles, apply_linear, [('mni_brain', 'reference'),
                                      ('linear_matrix', 'in_matrix_file')]),
-        (selectfiles, maths, [('postcon_UTE', 'in_file')]),
-        (maths, apply_linear, [('out_file', 'in_file')]),
+        (selectfiles, merge, [('postcon_UTE', 'in1'), ('T1w_precon', 'in2'),
+                              ('TOF', 'in3'), ('FLAIR', 'in4'),
+                              ('precon_UTE', 'in5'), ('difference', 'in6')]),
+        (selectfiles, applymask, [('brain_mask', 'mask_file')]),
+        (merge, applymask, [('out', 'in_file')]),
+        (merge, merge2, [('out', 'in1')]),
+        (applymask, merge2, [('out_file', 'in2')]),
+        (merge2, apply_linear, [('out', 'in_file')]),
+        # (applymask, apply_linear, [('out_file', 'in_file')]),
         (apply_linear, datasink, [('out_file', task + '_linear.@con')])
     ])
     # -------------------------------------------------------
