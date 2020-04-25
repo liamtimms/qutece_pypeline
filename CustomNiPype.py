@@ -254,8 +254,13 @@ class ROIAnalyze(BaseInterface):
             out_data[n][3] = std
             n = n + 1
 
-        pth, fname, ext = split_filename(scan_file_name)
-        out_file_name = os.path.join(fname + '_fft.nii')
+        pth, scan_fname, ext = split_filename(scan_file_name)
+        pth, roi_fname, ext = split_filename(ROI_file_name)
+        out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
+        if len(out_file_name) > 200:
+            out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
+                                         roi_fname + '.csv')
+
         pd.DataFrame(out_data).to_csv(out_file_name)
 
         # nib.save(fft_nii, fft_file_name)
@@ -264,15 +269,19 @@ class ROIAnalyze(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        roi_file_name = self.inputs.roi_file
-        pth, fname, ext = split_filename(roi_file_name)
-        fft_file_name = os.path.join(fname + '_fft.nii')
-        outputs['out_file'] = os.path.abspath(fft_file_name)
+        ROI_file_name = self.inputs.roi_file
+        scan_file_name = self.inputs.scan_file
+        pth, scan_fname, ext = split_filename(scan_file_name)
+        pth, roi_fname, ext = split_filename(ROI_file_name)
+        out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
+        if len(out_file_name) > 200:
+            out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
+                                         roi_fname + '.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
 # -----------------------------------------------
-
 
 
 # -----------------------------------------------
@@ -281,10 +290,8 @@ class LowerSNRInputSpec(BaseInterfaceInputSpec):
     std = traits.Float(mandatory=True, desc='std of noise to add')
 
 
-
 class LowerSNROutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='Adding Gaussian Noise')
-
 
 
 class LowerSNRNii(BaseInterface):
@@ -301,7 +308,7 @@ class LowerSNRNii(BaseInterface):
         noisey_img = in_file_img + noise
 
         noisey_nii = nib.Nifti1Image(noisey_img, in_file_nii.affine,
-                                  in_file_nii.header)
+                                     in_file_nii.header)
         noisey_nii.set_data_dtype(np.double)
 
         pth, fname, ext = split_filename(in_file_name)
@@ -318,5 +325,6 @@ class LowerSNRNii(BaseInterface):
         noisey_file_name = os.path.join(fname + '_noisey.nii')
         outputs['out_file'] = os.path.abspath(noisey_file_name)
         return outputs
+
 
 # -----------------------------------------------
