@@ -1,6 +1,6 @@
 from nipype.interfaces.matlab import MatlabCommand
 from nipype.interfaces.base import TraitedSpec, \
-    BaseInterface, BaseInterfaceInputSpec, File, traits
+    BaseInterface, BaseInterfaceInputSpec, File, InputMultiObject, traits
 import os
 from string import Template
 # import re
@@ -278,7 +278,41 @@ class ROIAnalyze(BaseInterface):
 
 # -----------------------------------------------
 
+# -------------- CSV Concatenate --------------------
+class CSVConcatenateInputSpec(BaseInterfaceInputSpec):
+    in_files = InputMultiObject(exists=True, mandatory=True, desc='list of csvs')
 
+
+class CSVConcatenateOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='concatenated csv')
+
+
+class CSVConcatenate(BaseInterface):
+    input_spec = CSVConcatenateInputSpec
+    output_spec = CSVConcatenateOutputSpec
+
+    def _run_interface(self, runtime):
+        in_files = self.inputs.in_files
+        df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files )
+        concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
+
+        # grab fname info from first file in the input list
+        pth, fname, ext = split_filename(in_files[0])
+        out_file_name= os.path.join(fname + '_concatenated.csv')
+        concatenated_df.to_csv(out_file_name)
+
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_files = self.inputs.in_files
+        pth, fname, ext = split_filename(in_files[0])
+        out_file_name= os.path.join(fname + '_concatenated.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+# -----------------------------------------------
 
 # -----------------------------------------------
 class LowerSNRInputSpec(BaseInterfaceInputSpec):
