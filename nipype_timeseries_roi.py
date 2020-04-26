@@ -3,6 +3,7 @@
 import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
+import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
@@ -24,8 +25,6 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     subdirectory = os.path.join(temp_dir, 'NormalizationTransform_fast_linear',
                                 'sub-{subject_id}')
     filestart = 'sub-{subject_id}_ses-{session_id}'
-
-    # TODO: figuring out iterations
     qutece_fast_files = os.path.join(subdirectory,
                                      '_r' + filestart + '*fast*_run-*[0123456789]_*flirt.nii')
 
@@ -54,7 +53,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     templates = {
         'qutece_fast': qutece_fast_files,
         'ROI': ROI_files
-    }
+                }
 
     # Infosource - a function free node to iterate over the list of subject names
     infosource = eng.Node(utl.IdentityInterface(fields=['subject_id','session_id']),
@@ -69,10 +68,45 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                            raise_on_empty=True),
                            name="SelectFiles")
 
+    # --------------------ROI_Analyze----------------------------
+    roi_analyze_fast = eng.MapNode(interface=cnp.ROIAnalyze(),
+                                   name='roi_analyze_fast',
+                                   iterfield=['scan_file'])
+    # -------------------------------------------------------
+
+    # ------------------------Output-------------------------
+    # Datasink - creates output folder for important outputs
+    datasink = eng.Node(nio.DataSink(base_directory=output_dir,
+                                     container=temp_dir),
+                        name="datasink")
+    # Use the following DataSink output substitutions
+    #substitutions = [('_subject_id_', 'sub-')]
+
+    #subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
+    #               for sub in subject_list]
+    #substitutions.extend(subjFolders)
+    #datasink.inputs.substitutions = substitutions
+    #datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
+    # -------------------------------------------------------
+
+
     # -----------------TimeSeriesWorkflow------------------------
     task = 'timeseries'
     timeseries_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
     timeseries_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),
-    ])
+        (selectfiles, roi_analyze_fast, [('ROI', 'roi_file'),
+                                         ('qutece_fast', 'scan_file')]),
+        (roi_analyze_fast, datasink, [('out_file', task + '_roi_analyze.@con')])
+        ])
+
+    # -------------------WorkflowPlotting--------------------
+    timeseries_wf.write_graph(graph2use='flat')
+
+    # -------------------------------------------------------
+
+    if num_cores < 2:
+        timeseries_wf.run()
+    else:
+        timeseries_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})

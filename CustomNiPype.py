@@ -236,10 +236,13 @@ class ROIAnalyze(BaseInterface):
         scan_file_nii = nib.load(scan_file_name)
         scan_img = np.array(scan_file_nii.get_data())
         unique_roi = np.unique(ROI_file_img)
-        out_data = np.empty(np.size(unique_roi), 3)
+        out_data = np.empty([np.size(unique_roi), 3])
 
         n = 0
-        for r in np.unique(ROI_file_img):
+        for r in unique_roi:
+	    # r is label in roi
+	    # n counts for number of labels
+
             roi = (ROI_file_img == r).astype(int)
             roi = roi.astype('float')
             # zero can be a true value so mask with nan
@@ -249,13 +252,13 @@ class ROIAnalyze(BaseInterface):
             vals = np.reshape(crop_img, -1)
             ave = np.nanmean(vals)
             std = np.nanstd(vals)
-            out_data[n][1] = r
-            out_data[n][2] = ave
-            out_data[n][3] = std
+            out_data[n][0] = r
+            out_data[n][1] = ave
+            out_data[n][2] = std
             n = n + 1
 
         pth, fname, ext = split_filename(scan_file_name)
-        out_file_name = os.path.join(fname + '_fft.nii')
+        out_file_name = os.path.join(fname + '.csv')
         pd.DataFrame(out_data).to_csv(out_file_name)
 
         # nib.save(fft_nii, fft_file_name)
@@ -264,10 +267,12 @@ class ROIAnalyze(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        roi_file_name = self.inputs.roi_file
-        pth, fname, ext = split_filename(roi_file_name)
-        fft_file_name = os.path.join(fname + '_fft.nii')
-        outputs['out_file'] = os.path.abspath(fft_file_name)
+        # roi_file_name = self.inputs.roi_file
+        # pth, fname, ext = split_filename(roi_file_name)
+        scan_file_name = self.inputs.scan_file
+        pth, fname, ext = split_filename(scan_file_name)
+        out_file_name = os.path.join(fname + '.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
