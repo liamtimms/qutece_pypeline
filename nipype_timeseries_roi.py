@@ -68,11 +68,18 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                            raise_on_empty=True),
                            name="SelectFiles")
 
-    # --------------------ROI_Analyze----------------------------
+    # --------------------ROI_Analyze------------------------
     roi_analyze_fast = eng.MapNode(interface=cnp.ROIAnalyze(),
                                    name='roi_analyze_fast',
                                    iterfield=['scan_file'])
     # -------------------------------------------------------
+
+
+    # -----------------CSV_Concatenate-----------------------
+    csv_concatenate = eng.Node(interface=cnp.CSVConcatenate(),
+                                   name='csv_concatenate')
+    # -------------------------------------------------------
+
 
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
@@ -86,11 +93,12 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                    for ses in session_list for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_roi_analyze_fast.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_roi_analyze_fast.*/', ''),
+                                            ('_csv_concatenate.*/', '')]
     # -------------------------------------------------------
 
 
-    # -----------------TimeSeriesWorkflow------------------------
+    # -----------------TimeSeriesWorkflow--------------------
     task = 'timeseries'
     timeseries_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
     timeseries_wf.connect([
@@ -98,7 +106,9 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                    ('session_id', 'session_id')]),
         (selectfiles, roi_analyze_fast, [('ROI', 'roi_file'),
                                          ('qutece_fast', 'scan_file')]),
-        (roi_analyze_fast, datasink, [('out_file', task + '_ROI_analyze.@con')])
+        (roi_analyze_fast, datasink, [('out_file', task + '_ROI_analyze.@con')]),
+        (roi_analyze_fast, csv_concatenate, [('out_file', 'in_files')]),
+        (csv_concatenate, datasink, [('out_file', task + '_conc_csv.@con')])
         ])
 
     # -------------------WorkflowPlotting--------------------
