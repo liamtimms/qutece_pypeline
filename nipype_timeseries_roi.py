@@ -80,13 +80,13 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    #substitutions = [('_subject_id_', 'sub-')]
-
-    #subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
-    #               for sub in subject_list]
-    #substitutions.extend(subjFolders)
-    #datasink.inputs.substitutions = substitutions
-    #datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
+    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
+    subjFolders = [('ses-%ssub-%s' % (ses, sub),
+                    ('sub-%s/ses-%s/') % (sub, ses))
+                   for ses in session_list for sub in subject_list]
+    substitutions.extend(subjFolders)
+    datasink.inputs.substitutions = substitutions
+    datasink.inputs.regexp_substitutions = [('_roi_analyze_fast.*/', '')]
     # -------------------------------------------------------
 
 
@@ -98,7 +98,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                    ('session_id', 'session_id')]),
         (selectfiles, roi_analyze_fast, [('ROI', 'roi_file'),
                                          ('qutece_fast', 'scan_file')]),
-        (roi_analyze_fast, datasink, [('out_file', task + '_roi_analyze.@con')])
+        (roi_analyze_fast, datasink, [('out_file', task + '_ROI_analyze.@con')])
         ])
 
     # -------------------WorkflowPlotting--------------------
