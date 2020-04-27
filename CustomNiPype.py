@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import nibabel as nib
 from nipype.utils.filemanip import split_filename
+import matplotlib.pyplot as plt
 
 
 # ----------- UnringNii -------------------------
@@ -257,8 +258,15 @@ class ROIAnalyze(BaseInterface):
             out_data[n][2] = std
             n = n + 1
 
-        pth, fname, ext = split_filename(scan_file_name)
-        out_file_name = os.path.join(fname + '.csv')
+        #  pth, fname, ext = split_filename(scan_file_name)
+        #  out_file_name = os.path.join(fname + '.csv')
+        pth, scan_fname, ext = split_filename(scan_file_name)
+        pth, roi_fname, ext = split_filename(ROI_file_name)
+        out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
+        if len(out_file_name) > 200:
+            out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
+                                         roi_fname + '.csv')
+
         pd.DataFrame(out_data).to_csv(out_file_name)
 
         # nib.save(fft_nii, fft_file_name)
@@ -267,14 +275,23 @@ class ROIAnalyze(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        # roi_file_name = self.inputs.roi_file
-        # pth, fname, ext = split_filename(roi_file_name)
-        scan_file_name = self.inputs.scan_file
-        pth, fname, ext = split_filename(scan_file_name)
-        out_file_name = os.path.join(fname + '.csv')
-        outputs['out_file'] = os.path.abspath(out_file_name)
-        return outputs
 
+        ROI_file_name = self.inputs.roi_file
+        scan_file_name = self.inputs.scan_file
+        pth, scan_fname, ext = split_filename(scan_file_name)
+        pth, roi_fname, ext = split_filename(ROI_file_name)
+        out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
+        if len(out_file_name) > 200:
+            out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
+                                         roi_fname + '.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+
+        # scan_file_name = self.inputs.scan_file
+        # pth, fname, ext = split_filename(scan_file_name)
+        # out_file_name = os.path.join(fname + '.csv')
+        # outputs['out_file'] = os.path.abspath(out_file_name)
+
+        return outputs
 
 # -----------------------------------------------
 
@@ -284,8 +301,8 @@ class CSVConcatenateInputSpec(BaseInterfaceInputSpec):
 
 
 class CSVConcatenateOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='concatenated csv')
-
+    out_csv = File(exists=True, desc='concatenated csv')
+    out_fig = File(exists=True, disc='timeseries plots')
 
 class CSVConcatenate(BaseInterface):
     input_spec = CSVConcatenateInputSpec
@@ -295,21 +312,41 @@ class CSVConcatenate(BaseInterface):
         in_files = self.inputs.in_files
         df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files )
         concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
+        concatenated_df.columns = ['ind', 'label', 'mean', 'std']
+        concatenated_df = concatenated_df.astype({'label': 'int'})
 
         # grab fname info from first file in the input list
         pth, fname, ext = split_filename(in_files[0])
-        out_file_name= os.path.join(fname + '_concatenated.csv')
-        concatenated_df.to_csv(out_file_name)
+        out_csv_name= os.path.join(fname + '_concatenated.csv')
+        concatenated_df.to_csv(out_csv_name)
 
-        setattr(self, '_out_file', out_file_name)
+        # plot time series
+        unique_label = np.unique(concatenated_df['label'])
+        fig = plt.figure(figsize=(6,4))
+        ax = fig.add_subplot(111)
+        for n in unique_label:
+            condition = concatenated_df['label']==n
+            mean = concatenated_df[condition]['mean']
+            std = concatenated_df[condition]['std']
+            plt.errorbar(range(1,len(mean)+1), mean, yerr=std, label='label = ' + str(n))
+            ax.set_xlabel('Index of runs')
+            ax.set_ylabel('S.I.')
+            ax.legend()
+        out_fig_name = os.path.join(fname + '_concatenated.png')
+        plt.savefig(out_fig_name, bbox_inches='tight')
+
+        setattr(self, '_out_csv', out_csv_name)
+        setattr(self, '_out_fig', out_fig_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
-        out_file_name= os.path.join(fname + '_concatenated.csv')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_csv_name = os.path.join(fname + '_concatenated.csv')
+        out_fig_name = os.path.join(fname + '_concatenated.png')
+        outputs['out_csv'] = os.path.abspath(out_csv_name)
+        outputs['out_fig'] = os.path.abspath(out_fig_name)
         return outputs
 
 # -----------------------------------------------
