@@ -108,7 +108,8 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                          ('qutece_fast', 'scan_file')]),
         (roi_analyze_fast, datasink, [('out_file', task + '_ROI_analyze.@con')]),
         (roi_analyze_fast, csv_concatenate, [('out_file', 'in_files')]),
-        (csv_concatenate, datasink, [('out_file', task + '_conc_csv.@con')])
+        (csv_concatenate, datasink, [('out_csv', task + '_conc_csv.@con'),
+                                     ('out_fig', task + '_conc_csv_fig.@con') ])
         ])
 
     # -------------------WorkflowPlotting--------------------
