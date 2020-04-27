@@ -33,7 +33,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     subdirectory = os.path.join(output_dir, 'manualwork',
                                 'WholeBrainSeg_FromNoseSkullStrip')
     ROI_brain_files = os.path.join(subdirectory,
-                                    'rrr' + filestart + '*_T1w*-label.nii')
+                                    'rrr' + 'sub-{subject_id}' + '*_T1w*-label.nii')
 
 
     # Define blood masks
