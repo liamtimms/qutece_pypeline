@@ -28,7 +28,7 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
                                 'ses-{session_id}', scantype)
 
     qutece_hr_files = os.path.join(subdirectory,
-                                   'rmean' + filestart + '*hr_*UTE*.nii')
+                                   '*mean' + filestart + '*hr_*UTE*.nii')
 
     # scantype = 'qutece'
     # qutece_fast_files = os.path.join(

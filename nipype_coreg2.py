@@ -25,7 +25,7 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
                                 'ses-' + session, scantype)
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     qutece_mean_precon_file = os.path.join(
-        subdirectory, 'rmean' + filestart + '*hr*UTE*.nii')
+        subdirectory, '*mean' + filestart + '*hr*UTE*.nii')
 
     # * realigned precontrast scans
     subdirectory = os.path.join(temp_dir, 'preprocessing', 'sub-{subject_id}',
@@ -40,7 +40,7 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
                                 'ses-' + session, scantype)
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     qutece_mean_postcon_file = os.path.join(
-        subdirectory, 'rmean' + filestart + '*hr*UTE*.nii')
+        subdirectory, '*mean' + filestart + '*hr*UTE*.nii')
 
     # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
 
