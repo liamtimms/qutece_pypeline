@@ -1,6 +1,6 @@
 from nipype.interfaces.matlab import MatlabCommand
 from nipype.interfaces.base import TraitedSpec, \
-    BaseInterface, BaseInterfaceInputSpec, File, traits
+    BaseInterface, BaseInterfaceInputSpec, File, InputMultiObject, traits
 import os
 from string import Template
 # import re
@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import nibabel as nib
 from nipype.utils.filemanip import split_filename
+import matplotlib.pyplot as plt
 
 
 # ----------- UnringNii -------------------------
@@ -236,10 +237,13 @@ class ROIAnalyze(BaseInterface):
         scan_file_nii = nib.load(scan_file_name)
         scan_img = np.array(scan_file_nii.get_data())
         unique_roi = np.unique(ROI_file_img)
-        out_data = np.empty(np.size(unique_roi), 3)
+        out_data = np.empty([np.size(unique_roi), 3])
 
         n = 0
-        for r in np.unique(ROI_file_img):
+        for r in unique_roi:
+	    # r is label in roi
+	    # n counts for number of labels
+
             roi = (ROI_file_img == r).astype(int)
             roi = roi.astype('float')
             # zero can be a true value so mask with nan
@@ -249,11 +253,13 @@ class ROIAnalyze(BaseInterface):
             vals = np.reshape(crop_img, -1)
             ave = np.nanmean(vals)
             std = np.nanstd(vals)
-            out_data[n][1] = r
-            out_data[n][2] = ave
-            out_data[n][3] = std
+            out_data[n][0] = r
+            out_data[n][1] = ave
+            out_data[n][2] = std
             n = n + 1
 
+        #  pth, fname, ext = split_filename(scan_file_name)
+        #  out_file_name = os.path.join(fname + '.csv')
         pth, scan_fname, ext = split_filename(scan_file_name)
         pth, roi_fname, ext = split_filename(ROI_file_name)
         out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
@@ -269,6 +275,7 @@ class ROIAnalyze(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
+
         ROI_file_name = self.inputs.roi_file
         scan_file_name = self.inputs.scan_file
         pth, scan_fname, ext = split_filename(scan_file_name)
@@ -278,11 +285,71 @@ class ROIAnalyze(BaseInterface):
             out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
                                          roi_fname + '.csv')
         outputs['out_file'] = os.path.abspath(out_file_name)
-        return outputs
 
+        # scan_file_name = self.inputs.scan_file
+        # pth, fname, ext = split_filename(scan_file_name)
+        # out_file_name = os.path.join(fname + '.csv')
+        # outputs['out_file'] = os.path.abspath(out_file_name)
+
+        return outputs
 
 # -----------------------------------------------
 
+# -------------- CSV Concatenate --------------------
+class CSVConcatenateInputSpec(BaseInterfaceInputSpec):
+    in_files = InputMultiObject(exists=True, mandatory=True, desc='list of csvs')
+
+
+class CSVConcatenateOutputSpec(TraitedSpec):
+    out_csv = File(exists=True, desc='concatenated csv')
+    out_fig = File(exists=True, disc='timeseries plots')
+
+class CSVConcatenate(BaseInterface):
+    input_spec = CSVConcatenateInputSpec
+    output_spec = CSVConcatenateOutputSpec
+
+    def _run_interface(self, runtime):
+        in_files = self.inputs.in_files
+        df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files )
+        concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
+        concatenated_df.columns = ['ind', 'label', 'mean', 'std']
+        concatenated_df = concatenated_df.astype({'label': 'int'})
+
+        # grab fname info from first file in the input list
+        pth, fname, ext = split_filename(in_files[0])
+        out_csv_name= os.path.join(fname + '_concatenated.csv')
+        concatenated_df.to_csv(out_csv_name)
+
+        # plot time series
+        unique_label = np.unique(concatenated_df['label'])
+        fig = plt.figure(figsize=(6,4))
+        ax = fig.add_subplot(111)
+        for n in unique_label:
+            condition = concatenated_df['label']==n
+            mean = concatenated_df[condition]['mean']
+            std = concatenated_df[condition]['std']
+            plt.errorbar(range(1,len(mean)+1), mean, yerr=std, label='label = ' + str(n))
+            ax.set_xlabel('Index of runs')
+            ax.set_ylabel('S.I.')
+            ax.legend()
+        out_fig_name = os.path.join(fname + '_concatenated.png')
+        plt.savefig(out_fig_name, bbox_inches='tight')
+
+        setattr(self, '_out_csv', out_csv_name)
+        setattr(self, '_out_fig', out_fig_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_files = self.inputs.in_files
+        pth, fname, ext = split_filename(in_files[0])
+        out_csv_name = os.path.join(fname + '_concatenated.csv')
+        out_fig_name = os.path.join(fname + '_concatenated.png')
+        outputs['out_csv'] = os.path.abspath(out_csv_name)
+        outputs['out_fig'] = os.path.abspath(out_fig_name)
+        return outputs
+
+# -----------------------------------------------
 
 # -----------------------------------------------
 class LowerSNRInputSpec(BaseInterfaceInputSpec):
@@ -290,8 +357,10 @@ class LowerSNRInputSpec(BaseInterfaceInputSpec):
     std = traits.Float(mandatory=True, desc='std of noise to add')
 
 
+
 class LowerSNROutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='Adding Gaussian Noise')
+
 
 
 class LowerSNRNii(BaseInterface):
@@ -308,7 +377,7 @@ class LowerSNRNii(BaseInterface):
         noisey_img = in_file_img + noise
 
         noisey_nii = nib.Nifti1Image(noisey_img, in_file_nii.affine,
-                                     in_file_nii.header)
+                                  in_file_nii.header)
         noisey_nii.set_data_dtype(np.double)
 
         pth, fname, ext = split_filename(in_file_name)
@@ -325,6 +394,5 @@ class LowerSNRNii(BaseInterface):
         noisey_file_name = os.path.join(fname + '_noisey.nii')
         outputs['out_file'] = os.path.abspath(noisey_file_name)
         return outputs
-
 
 # -----------------------------------------------
