@@ -17,9 +17,8 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 # UTE version should take option for either hr or fast
 
 
-def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-                        scan_type):
-
+def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
+    scan_type = 'anat'
     # -----------------Inputs--------------------------------
     # Define subject list, session list and relevent file types
     # working_dir = os.path.abspath(
@@ -27,49 +26,44 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
-    MNI_file = os.path.abspath('/opt/fsl/data/standard/MNI152_T1_1mm.nii.gz')
-    MNI_brain_file = os.path.abspath(
-        '/opt/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz')
+    session = 'Precon'
+    # * precon T1w from IntersessionCoregister_preconScans
+    filestart = 'sub-{subject_id}_ses-' + session + '_'
+    scanfolder = 'IntersessionCoregister_preconScansSPM_SPM'
+    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
+    T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')
+    TOF_files = os.path.join(subdirectory, 'rrr' + filestart + '*_TOF*.nii')
+    FLAIR_files = os.path.join(subdirectory,
+                               'rrr' + filestart + '*_FLAIR*.nii')
 
+    subdirectory = os.path.join(output_dir, 'manualwork',
+                                'WholeBrainSeg_FromNoseSkullStrip')
+    brain_mask_files = os.path.join(subdirectory,
+                                    'rrr' + filestart + '*_T1w*-label.nii')
+
+    scanfolder = 'SpatialNormalization_SemiAuto_flirt_transform'
+    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
+    linear_matrix_files = os.path.join(subdirectory,
+                                       'rrr' + filestart + '*.mat')
     # MASK
     filestart = 'sub-{subject_id}_ses-Precon'
     subdirectory = os.path.join(output_dir, 'manualwork',
                                 'WholeBrainSeg_FromNoseSkullStrip')
     brain_mask_files = os.path.join(subdirectory,
                                     'rrr' + filestart + '*_T1w*-label.nii')
-    # Transforms
-    scanfolder = 'SpatialNormalization_SemiAuto_flirt_transform'
-    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-    linear_matrix_files = os.path.join(subdirectory,
-                                       'rrr' + filestart + '*.mat')
 
-    # * precon T1w from IntersessionCoregister_preconScans
-    session = 'Precon'
-    filestart = 'sub-{subject_id}_ses-' + session + '_'
-    scanfolder = 'IntersessionCoregister_preconScansSPM_SPM'
-    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-
-    precon_UTE_files = os.path.join(
-        subdirectory, 'rrr' + filestart + '*' + scan_type + '*UTE*.nii')
-
-    # + postcon scans
-    session = 'Postcon'
-    # * preprocessing (sub-??, ses-Postcon, qutece)
-    scanfolder = 'preprocessing'
-    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
-                                'ses-' + session)
-    filestart = 'sub-{subject_id}_ses-' + session + '_'
-    postcon_UTE_files = os.path.join(
-        subdirectory, 'qutece',
-        'r' + filestart + '*' + scan_type + '*UTE*.nii')
+    MNI_file = os.path.abspath('/opt/fsl/data/standard/MNI152_T1_1mm.nii.gz')
+    MNI_brain_file = os.path.abspath(
+        '/opt/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz')
 
     templates = {
-        'mni_head': MNI_file,
-        'mni_brain': MNI_brain_file,
-        'linear_matrix': linear_matrix_files,
+        'T1w_precon': T1w_files,
+        'TOF': TOF_files,
+        'FLAIR': FLAIR_files,
         'brain_mask': brain_mask_files,
-        'postcon_UTE': postcon_UTE_files,
-        'precon_UTE': precon_UTE_files
+        'linear_matrix': linear_matrix_files,
+        'mni_head': MNI_file,
+        'mni_brain': MNI_brain_file
     }
 
     # Infosource - a function free node to iterate over the list of subject names
@@ -103,7 +97,7 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
     # -------------------------------------------------------
 
     # -----------------------Merge---------------------------
-    merge = eng.Node(utl.Merge(2), name='merge')
+    merge = eng.Node(utl.Merge(3), name='merge')
     merge.ravel_inputs = True
     # -------------------------------------------------------
 
@@ -146,12 +140,14 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
         (selectfiles, apply_linear, [('mni_brain', 'reference'),
                                      ('linear_matrix', 'in_matrix_file')]),
-        (selectfiles, merge, [('postcon_UTE', 'in1'), ('precon_UTE', 'in2')]),
+        (selectfiles, merge, [('T1w_precon', 'in1'), ('TOF', 'in2'),
+                              ('FLAIR', 'in3')]),
         (selectfiles, applymask, [('brain_mask', 'mask_file')]),
         (merge, applymask, [('out', 'in_file')]),
         (merge, merge2, [('out', 'in1')]),
         (applymask, merge2, [('out_file', 'in2')]),
         (merge2, apply_linear, [('out', 'in_file')]),
+        # (applymask, apply_linear, [('out_file', 'in_file')]),
         (apply_linear, datasink, [('out_file', task + '_linear.@con')])
     ])
     # -------------------------------------------------------
