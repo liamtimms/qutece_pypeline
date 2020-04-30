@@ -332,7 +332,7 @@ class CSVConcatenate(BaseInterface):
             ax.set_xlabel('Index of runs')
             ax.set_ylabel('S.I.')
             ax.legend()
-        out_fig_name = os.path.join(fname + '_concatenated.png')
+        out_fig_name = os.path.join(fname + '_timeseries.png')
         plt.savefig(out_fig_name, bbox_inches='tight')
 
         setattr(self, '_out_csv', out_csv_name)
@@ -344,7 +344,7 @@ class CSVConcatenate(BaseInterface):
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
         out_csv_name = os.path.join(fname + '_concatenated.csv')
-        out_fig_name = os.path.join(fname + '_concatenated.png')
+        out_fig_name = os.path.join(fname + '_timeseries.png')
         outputs['out_csv'] = os.path.abspath(out_csv_name)
         outputs['out_fig'] = os.path.abspath(out_fig_name)
         return outputs
