@@ -38,7 +38,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
 
     # Define blood masks
     # sub-02_fast_run-01_blood-flirt-label.nii
-    subdirectory = os.path.join(output_dir, 'manualwork', 'BloodSeg_fastscans',
+    subdirectory = os.path.join(output_dir, 'manualwork', 'BloodSeg_fast',
                                 'sub-{subject_id}')
     ROI_blood_files = os.path.join(subdirectory,
                                     'sub-{subject_id}_*flirt-label.nii')
@@ -80,6 +80,10 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                    name='csv_concatenate')
     # -------------------------------------------------------
 
+    # -----------------------Merge---------------------------
+    merge = eng.Node(utl.Merge(2), name='merge')
+    merge.ravel_inputs = True
+    # -------------------------------------------------------
 
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
@@ -87,14 +91,14 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
-    subjFolders = [('ses-%ssub-%s' % (ses, sub),
-                    ('sub-%s/ses-%s/') % (sub, ses))
+    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
+                     ('_run-01', '')]
+    subjFolders = [('ses-%ssub-%s' % (ses, sub), 'sub-%s/' % sub)
                    for ses in session_list for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_roi_analyze_fast.*/', ''),
-                                            ('_csv_concatenate.*/', '')]
+    # datasink.inputs.regexp_substitutions = [('_roi_analyze_fast.*/', ''),
+    #                                         ('_csv_concatenate.*/', '')]
     # -------------------------------------------------------
 
 
@@ -106,11 +110,11 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                                    ('session_id', 'session_id')]),
         (selectfiles, roi_analyze_fast, [('ROI', 'roi_file'),
                                          ('qutece_fast', 'scan_file')]),
-        (roi_analyze_fast, datasink, [('out_file', task + '_ROI_analyze.@con')]),
         (roi_analyze_fast, csv_concatenate, [('out_file', 'in_files')]),
-        (csv_concatenate, datasink, [('out_csv', task + '_conc_csv.@con'),
-                                     ('out_fig', task + '_conc_csv_fig.@con') ])
-        ])
+        (csv_concatenate, merge, [('out_csv', 'in1'),
+                                  ('out_fig', 'in2')]),
+        (merge, datasink, [('out', task + '.@con')])
+    ])
 
     # -------------------WorkflowPlotting--------------------
     timeseries_wf.write_graph(graph2use='flat')
