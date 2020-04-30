@@ -31,15 +31,11 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     scanfolder = 'IntersessionCoregister_preconScansSPM_SPM'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-    T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')
-    TOF_files = os.path.join(subdirectory, 'rrr' + filestart + '*_TOF*.nii')
+    T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*T1w*.nii')
+    TOF_files = os.path.join(subdirectory, 'rrr' + filestart + '*TOF*.nii')
     FLAIR_files = os.path.join(subdirectory,
-                               'rrr' + filestart + '*_FLAIR*.nii')
+                               'rrr' + filestart + '*FLAIR*.nii')
 
-    subdirectory = os.path.join(output_dir, 'manualwork',
-                                'WholeBrainSeg_FromNoseSkullStrip')
-    brain_mask_files = os.path.join(subdirectory,
-                                    'rrr' + filestart + '*_T1w*-label.nii')
 
     scanfolder = 'SpatialNormalization_SemiAuto_flirt_transform'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
@@ -50,7 +46,7 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
     subdirectory = os.path.join(output_dir, 'manualwork',
                                 'WholeBrainSeg_FromNoseSkullStrip')
     brain_mask_files = os.path.join(subdirectory,
-                                    'rrr' + filestart + '*_T1w*-label.nii')
+                                    'rrr' + filestart + '*T1w*-label.nii')
 
     MNI_file = os.path.abspath('/opt/fsl/data/standard/MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.abspath(
