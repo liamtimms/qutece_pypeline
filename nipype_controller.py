@@ -9,6 +9,8 @@ from nipype_scan_diff import ScanDiff_workflow
 from nipype_normalize_braincrop import BrainCrop_workflow
 from nipype_normalize_semiauto import Normalization_workflow
 from nipype_normalize_applytrans import ApplyTrans_workflow
+from nipype_normalize_applytrans_nonUTE import ApplyTransAnat_workflow
+from nipype_timeseries_roi import TimeSeries_ROI_workflow
 from textme import textme
 
 upper_dir = os.path.realpath('../..')
@@ -18,21 +20,21 @@ session_list = ['Precon', 'Postcon']
 num_cores = 1
 # Subjects with both hr and fast scans
 subject_list = ['02', '03', '04', '06', '11']
-Preproc_workflow(working_dir, subject_list, session_list, num_cores)
+# Preproc_workflow(working_dir, subject_list, session_list, num_cores)
 
 # Subjects without Fast Scans
 subject_list = ['05', '07', '09']
-PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores)
+# PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores)
 
 # Subjects with only 1 precon
 session_list = ['Postcon']
 subject_list = ['08', '10']
-Preproc_workflow(working_dir, subject_list, session_list, num_cores)
+# Preproc_workflow(working_dir, subject_list, session_list, num_cores)
 
 # num_cores = 5
 subject_list = ['08']
 session_list = ['Precon']
-Preproc08_workflow(working_dir, subject_list, session_list, num_cores)
+# Preproc08_workflow(working_dir, subject_list, session_list, num_cores)
 # subject_list = ['10']
 # # Preproc10_workflow(working_dir, subject_list, session_list, num_cores)
 # os.system("notify-send Preprocessing done")
@@ -43,39 +45,47 @@ Preproc08_workflow(working_dir, subject_list, session_list, num_cores)
 subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
 # subject_list = ['02', '03', '04', '06', '11']
 # Extremely important to not start too many FLIRTs in parrallel
-IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores)
-os.system("notify-send IntrasessionCoregistration done")
+# IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores)
+# os.system("notify-send IntrasessionCoregistration done")
 
-IntersesCoreg_workflow(working_dir, subject_list, num_cores)
-os.system("notify-send IntersessionCoregistration done")
-os.system("espeak 'Intersession Coregistration done' > /dev/null")
+# IntersesCoreg_workflow(working_dir, subject_list, num_cores)
+# os.system("notify-send IntersessionCoregistration done")
+# os.system("espeak 'Intersession Coregistration done' > /dev/null")
 
-#
-# # # scan_type = 'hr'
-# # # ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
-# # #                   scan_type)
-# # # scan_type = 'fast'
-# # # ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
-# # #                   scan_type)
-# # # os.system("notify-send ScanDiff done")
+# scan_type = 'hr'
+# ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
+#                   scan_type)
+# scan_type = 'fast'
+# ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
+#                   scan_type)
+# os.system("notify-send ScanDiff done")
 
-num_cores = 3
+# num_cores = 3
 BrainCrop_workflow(working_dir, subject_list, num_cores)
-os.system("notify-send BrainCrop done")
+os.system("notify-send 'BrainCrop done'")
 
-# # ## AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
-# # num_cores = 4
-# # Normalization_workflow(working_dir, subject_list, num_cores)
-# # os.system("notify-send Norm done")
-# #
-# # num_cores = 4
-# # scan_type = 'hr'
-# # ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-# #                     scan_type)
-# # # scan_type = 'fast'
-# # # ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-# # #                     scan_type)
-# #
-# # os.system("notify-send Transforms done")
+# AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
+# Normalization_workflow(working_dir, subject_list, num_cores)
+# os.system("notify-send 'Norm done'")
 
-os.system("espeak 'pipeline run done'")
+scan_type = 'hr'
+ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
+                    scan_type)
+
+num_cores = 7
+ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores)
+
+num_cores = 1
+subject_list = ['02', '03', '04', '06', '11']
+scan_type = 'fast'
+ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
+                    scan_type)
+
+os.system("notify-send Transforms done")
+
+# ROI_type = 'brain'
+# scan_type = 'fast'
+# TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
+#                        scan_type, ROI_type)
+
+# os.system("espeak 'pipeline run done'")
