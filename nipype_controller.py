@@ -61,31 +61,35 @@ subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
 # os.system("notify-send ScanDiff done")
 
 # num_cores = 3
-BrainCrop_workflow(working_dir, subject_list, num_cores)
-os.system("notify-send 'BrainCrop done'")
-
-# AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
-# Normalization_workflow(working_dir, subject_list, num_cores)
-# os.system("notify-send 'Norm done'")
-
-scan_type = 'hr'
-ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-                    scan_type)
-
-num_cores = 7
-ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores)
-
-num_cores = 1
-subject_list = ['02', '03', '04', '06', '11']
-scan_type = 'fast'
-ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-                    scan_type)
-
-os.system("notify-send Transforms done")
-
-# ROI_type = 'brain'
+# BrainCrop_workflow(working_dir, subject_list, num_cores)
+# os.system("notify-send 'BrainCrop done'")
+#
+# # AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
+# # Normalization_workflow(working_dir, subject_list, num_cores)
+# # os.system("notify-send 'Norm done'")
+#
+# scan_type = 'hr'
+# ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
+#                     scan_type)
+#
+# ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores)
+#
+# num_cores = 1
+# subject_list = ['02', '03', '04', '06', '11']
 # scan_type = 'fast'
-# TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
-#                        scan_type, ROI_type)
+# ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
+#                     scan_type)
+#
+# os.system("notify-send Transforms done")
+
+ROI_types = ['brain', 'blood']
+scan_types = ['hr']
+subject_list = ['11']
+session_list = ['Precon', 'Postcon']
+num_cores = 1
+for ROI_type in ROI_types:
+    for scan_type in scan_types:
+        TimeSeries_ROI_workflow(working_dir, subject_list, session_list,
+                                num_cores, scan_type, ROI_type)
 
 # os.system("espeak 'pipeline run done'")
