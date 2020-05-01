@@ -113,7 +113,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),
         (selectfiles, roi_analyze, [('ROI', 'roi_file'),
-                                         ('qutece_scan', 'scan_file')]),
+                                    ('qutece_scan', 'scan_file')]),
         (roi_analyze, csv_concatenate, [('out_file', 'in_files')]),
         (csv_concatenate, merge, [('out_csv', 'in1'), ('out_fig', 'in2')]),
         (merge, datasink, [('out', task + '.@con')])
