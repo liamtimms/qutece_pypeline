@@ -351,6 +351,63 @@ class CSVConcatenate(BaseInterface):
 
 # -----------------------------------------------
 
+# -------------- CBV whole brain ------------------
+class CBVwhBrainInputSpec(BaseInterfaceInputSpec):
+    in1 = File(exists=True, mandatory=True, desc='csv of brain')
+    in2 = File(exists=True, mandatory=True, desc='csv of blood')
+
+class CBVwhBrainOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='calculated CBV')
+
+class CBVwhBrain(BaseInterface):
+    input_spec = CBVwhBrainInputSpec
+    output_spec = CBVwhBrainOutputSpec
+
+    def _run_interface(self, runtime):
+        brain_csv_file = self.inputs.in1
+        blood_csv_file = self.inputs.in2
+        df_brain = pd.read_csv(brain_csv_file)
+        df_blood = pd.read_csv(blood_csv_file)
+
+        df_brain.columns = ['ind1', 'ind2', 'label', 'mean', 'std']
+        df_blood.columns = ['ind1', 'ind2', 'label', 'mean', 'std']
+        df_brain = df_brain.astype({'label': 'int'})
+        df_blood = df_blood.astype({'label': 'int'})
+        isbrain = df_brain['label']==1
+        isblood = df_blood['label']==1
+
+        deltaSIbrain = df_brain[isbrain]['mean'].to_numpy()
+        std_deltaSIbrain = df_brain[isbrain]['std'].to_numpy()
+        deltaSIblood = df_blood[isblood]['mean'].to_numpy()
+        std_deltaSIblood = df_blood[isblood]['std'].to_numpy()
+        cbv = deltaSIbrain / deltaSIblood
+        err_cbv = np.sqrt(np.square(std_deltaSIbrain / deltaSIbrain)
+                    + np.square(std_deltaSIblood / deltaSIblood))
+
+        df_CBV = pd.DataFrame({'deltaSIbrain': deltaSIbrain,
+                               'std_deltaSIbrain': std_deltaSIbrain,
+                               'deltaSIblood': deltaSIblood,
+                               'std_deltaSIblood': std_deltaSIblood,
+                               'CBV': cbv,
+                               'err_CBV': err_cbv})
+
+        pth, fname, ext = split_filename(brain_csv_file)
+        out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
+        df_CBV.to_csv(out_file_name)
+
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        brain_csv_file = self.inputs.in1
+        pth, fname, ext = split_filename(brain_csv_file)
+        out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+# -----------------------------------------------
+
 # -----------------------------------------------
 class LowerSNRInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
