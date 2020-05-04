@@ -241,8 +241,8 @@ class ROIAnalyze(BaseInterface):
 
         n = 0
         for r in unique_roi:
-	    # r is label in roi
-	    # n counts for number of labels
+            # r is label in roi
+            # n counts for number of labels
 
             roi = (ROI_file_img == r).astype(int)
             roi = roi.astype('float')
@@ -293,16 +293,21 @@ class ROIAnalyze(BaseInterface):
 
         return outputs
 
+
 # -----------------------------------------------
+
 
 # -------------- CSV Concatenate --------------------
 class CSVConcatenateInputSpec(BaseInterfaceInputSpec):
-    in_files = InputMultiObject(exists=True, mandatory=True, desc='list of csvs')
+    in_files = InputMultiObject(exists=True,
+                                mandatory=True,
+                                desc='list of csvs')
 
 
 class CSVConcatenateOutputSpec(TraitedSpec):
     out_csv = File(exists=True, desc='concatenated csv')
     out_fig = File(exists=True, disc='timeseries plots')
+
 
 class CSVConcatenate(BaseInterface):
     input_spec = CSVConcatenateInputSpec
@@ -310,29 +315,33 @@ class CSVConcatenate(BaseInterface):
 
     def _run_interface(self, runtime):
         in_files = self.inputs.in_files
-        df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files )
+        df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files)
         concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
         concatenated_df.columns = ['ind', 'label', 'mean', 'std']
         concatenated_df = concatenated_df.astype({'label': 'int'})
 
         # grab fname info from first file in the input list
         pth, fname, ext = split_filename(in_files[0])
-        out_csv_name= os.path.join(fname + '_concatenated.csv')
+        out_csv_name = os.path.join(fname + '_concatenated.csv')
         concatenated_df.to_csv(out_csv_name)
 
         # plot time series
         unique_label = np.unique(concatenated_df['label'])
-        fig = plt.figure(figsize=(6,4))
+        fig = plt.figure(figsize=(6, 4))
         ax = fig.add_subplot(111)
         for n in unique_label:
-            condition = concatenated_df['label']==n
+            condition = concatenated_df['label'] == n
             mean = concatenated_df[condition]['mean']
             std = concatenated_df[condition]['std']
-            plt.errorbar(range(1,len(mean)+1), mean, yerr=std, label='label = ' + str(n))
+            plt.errorbar(range(1,
+                               len(mean) + 1),
+                         mean,
+                         yerr=std,
+                         label='label = ' + str(n))
             ax.set_xlabel('Index of runs')
             ax.set_ylabel('S.I.')
             ax.legend()
-        out_fig_name = os.path.join(fname + '_concatenated.png')
+        out_fig_name = os.path.join(fname + '_timeseries.png')
         plt.savefig(out_fig_name, bbox_inches='tight')
 
         setattr(self, '_out_csv', out_csv_name)
@@ -344,12 +353,132 @@ class CSVConcatenate(BaseInterface):
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
         out_csv_name = os.path.join(fname + '_concatenated.csv')
-        out_fig_name = os.path.join(fname + '_concatenated.png')
+        out_fig_name = os.path.join(fname + '_timeseries.png')
         outputs['out_csv'] = os.path.abspath(out_csv_name)
         outputs['out_fig'] = os.path.abspath(out_fig_name)
         return outputs
 
+
 # -----------------------------------------------
+
+
+# -------------- CBV whole brain ------------------
+class CBVwhBrainInputSpec(BaseInterfaceInputSpec):
+    in1 = File(exists=True, mandatory=True, desc='csv of brain')
+    in2 = File(exists=True, mandatory=True, desc='csv of blood')
+
+
+class CBVwhBrainOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='calculated CBV')
+
+
+class CBVwhBrain(BaseInterface):
+    input_spec = CBVwhBrainInputSpec
+    output_spec = CBVwhBrainOutputSpec
+
+    def _run_interface(self, runtime):
+        brain_csv_file = self.inputs.in1
+        blood_csv_file = self.inputs.in2
+        df_brain = pd.read_csv(brain_csv_file)
+        df_blood = pd.read_csv(blood_csv_file)
+
+        df_brain.columns = ['ind1', 'ind2', 'label', 'mean', 'std']
+        df_blood.columns = ['ind1', 'ind2', 'label', 'mean', 'std']
+        df_brain = df_brain.astype({'label': 'int'})
+        df_blood = df_blood.astype({'label': 'int'})
+        isbrain = df_brain['label'] == 1
+        isblood = df_blood['label'] == 1
+
+        deltaSIbrain = df_brain[isbrain]['mean'].to_numpy()
+        std_deltaSIbrain = df_brain[isbrain]['std'].to_numpy()
+        deltaSIblood = df_blood[isblood]['mean'].to_numpy()
+        std_deltaSIblood = df_blood[isblood]['std'].to_numpy()
+        cbv = deltaSIbrain / deltaSIblood
+        err_cbv = np.sqrt(
+            np.square(std_deltaSIbrain / deltaSIbrain) +
+            np.square(std_deltaSIblood / deltaSIblood))
+
+        df_CBV = pd.DataFrame({
+            'deltaSIbrain': deltaSIbrain,
+            'std_deltaSIbrain': std_deltaSIbrain,
+            'deltaSIblood': deltaSIblood,
+            'std_deltaSIblood': std_deltaSIblood,
+            'CBV': cbv,
+            'err_CBV': err_cbv
+        })
+
+        pth, fname, ext = split_filename(brain_csv_file)
+        out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
+        df_CBV.to_csv(out_file_name)
+
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        brain_csv_file = self.inputs.in1
+        pth, fname, ext = split_filename(brain_csv_file)
+        out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+
+# -------------- CBV Map ------------------
+class CBVmapInputSpec(BaseInterfaceInputSpec):
+    difference = File(exists=True,
+                      mandatory=True,
+                      desc='post minus pre scan nii')
+    blood_mask = File(exists=True, mandatory=True, desc='mask of blood')
+
+
+class CBVmapOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='calculated CBV map')
+
+
+class CBVmap(BaseInterface):
+    input_spec = CBVmapInputSpec
+    output_spec = CBVmapOutputSpec
+
+    def _run_interface(self, runtime):
+        difference_file_name = self.inputs.difference
+        difference_file_nii = nib.load(difference_file_name)
+        difference_img = np.array(difference_file_nii.get_fdata())
+
+        ROI_file_name = self.inputs.blood_mask
+        ROI_file_nii = nib.load(ROI_file_name)
+        ROI_file_img = np.array(ROI_file_nii.get_fdata())
+        roi = (ROI_file_img == 1).astype(int)
+        roi = roi.astype('float')
+        # zero can be a true value so mask with nan
+        roi[roi == 0] = np.nan
+        crop_img = np.multiply(difference_img, roi)
+        vals = np.reshape(crop_img, -1)
+        deltaSIblood = np.nanmean(vals)
+
+        cbv_img = difference_img / deltaSIblood
+        cbv_nii = nib.Nifti1Image(cbv_img, difference_file_nii.affine,
+                                  difference_file_nii.header)
+
+        pth, fname, ext = split_filename(difference_file_name)
+        out_file_name = os.path.join(fname + '_CBVmap.nii')
+        nib.save(cbv_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        difference_file_name = self.inputs.difference
+        outputs = self._outputs().get()
+        pth, fname, ext = split_filename(difference_file_name)
+        out_file_name = os.path.join(fname + '_CBVmap.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+
+# -----------------------------------------------
+
 
 # -----------------------------------------------
 class LowerSNRInputSpec(BaseInterfaceInputSpec):
@@ -357,10 +486,8 @@ class LowerSNRInputSpec(BaseInterfaceInputSpec):
     std = traits.Float(mandatory=True, desc='std of noise to add')
 
 
-
 class LowerSNROutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='Adding Gaussian Noise')
-
 
 
 class LowerSNRNii(BaseInterface):
@@ -377,7 +504,7 @@ class LowerSNRNii(BaseInterface):
         noisey_img = in_file_img + noise
 
         noisey_nii = nib.Nifti1Image(noisey_img, in_file_nii.affine,
-                                  in_file_nii.header)
+                                     in_file_nii.header)
         noisey_nii.set_data_dtype(np.double)
 
         pth, fname, ext = split_filename(in_file_name)
@@ -394,5 +521,6 @@ class LowerSNRNii(BaseInterface):
         noisey_file_name = os.path.join(fname + '_noisey.nii')
         outputs['out_file'] = os.path.abspath(noisey_file_name)
         return outputs
+
 
 # -----------------------------------------------
