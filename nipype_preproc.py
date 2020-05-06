@@ -113,6 +113,15 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
     merge2.ravel_inputs = True
     # -------------------------------------------------------
 
+    # FSL
+    # ---------------------FixNANs----------------------
+    maths = eng.MapNode(fsl.maths.MathsCommand(),
+                        name='maths',
+                        iterfield=['in_file'])
+    maths.inputs.nan2zeros = True
+    maths.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
     # -----------------------UnringNode----------------------
     unring_nii = eng.MapNode(interface=cnp.UnringNii(),
                              name='unring_nii',
