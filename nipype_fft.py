@@ -11,8 +11,7 @@ import nipype.interfaces.io as nio
 
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
-working_dir = os.path.abspath(
-    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
+working_dir = os.path.abspath('../..')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -59,6 +58,12 @@ merge = eng.Node(utl.Merge(2), name='merge')
 merge.ravel_inputs = True
 # -------------------------------------------------------
 
+# -----------------------ResampNode-----------------
+resamp = eng.MapNode(interface=cnp.ResampNii(),
+                     name='resamp',
+                     iterfield=['in_file'])
+# -------------------------------------------------------
+
 # -----------------------FFTNode-----------------
 fft = eng.MapNode(interface=cnp.FFTNii(), name='fft', iterfield=['in_file'])
 # -------------------------------------------------------
@@ -76,7 +81,7 @@ datasink.inputs.regexp_substitutions = [('_fft[0123456789].', '')]
 
 # -------------------------------------------------------
 
-# -----------------CoregistrationWorkflow----------------
+# -----------------FFT Workflow----------------
 task = 'FFT'
 fft_wf = eng.Workflow(name=task)
 fft_wf.base_dir = working_dir + '/workflow'
@@ -84,7 +89,8 @@ fft_wf.base_dir = working_dir + '/workflow'
 fft_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 fft_wf.connect([(selectfiles, merge, [('qutece_postcon', 'in1'),
                                       ('tof', 'in2')])])
-fft_wf.connect([(merge, fft, [('out', 'in_file')])])
+fft_wf.connect([(merge, resamp, [('out', 'in_file')])])
+fft_wf.connect([(resamp, fft, [('out_file', 'in_file')])])
 fft_wf.connect([(fft, datasink, [('out_file', task + '.@con')])])
 
 # -------------------------------------------------------

@@ -7,6 +7,7 @@ from string import Template
 import numpy as np
 import pandas as pd
 import nibabel as nib
+import nilearn as nil
 from nipype.utils.filemanip import split_filename
 import matplotlib.pyplot as plt
 
@@ -214,6 +215,47 @@ class FFTNii(BaseInterface):
 # -----------------------------------------------
 
 
+# -------------- ResampNii -------------------------
+class ResampInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+
+
+class ResampOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='Fast Fourier Transform')
+
+
+class ResampNii(BaseInterface):
+    input_spec = ResampInputSpec
+    output_spec = ResampOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        in_file_nii = nib.load(in_file_name)
+        in_file_nii.header
+
+        in_target_affine = np.diag((1, 1, 1))
+
+        resamp_nii = nil.image.resample_img(in_file_nii,
+                                            target_affine=in_target_affine)
+
+        pth, fname, ext = split_filename(in_file_name)
+        resamp_file_name = os.path.join(fname + '_resamp.nii')
+        nib.save(resamp_nii, resamp_file_name)
+        setattr(self, '_out_file', resamp_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        resamp_file_name = os.path.join(fname + '_resamp.nii')
+        outputs['out_file'] = os.path.abspath(resamp_file_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+
 # -------------- ROI Anlayze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
     roi_file = File(exists=True, mandatory=True)
@@ -364,8 +406,8 @@ class CSVConcatenate(BaseInterface):
 
 # -------------- CBV whole brain ------------------
 class CBVwhBrainInputSpec(BaseInterfaceInputSpec):
-    in1 = File(exists=True, mandatory=True, desc='csv of brain')
-    in2 = File(exists=True, mandatory=True, desc='csv of blood')
+    brain_csv = File(exists=True, mandatory=True, desc='csv of brain')
+    blood_csv = File(exists=True, mandatory=True, desc='csv of blood')
 
 
 class CBVwhBrainOutputSpec(TraitedSpec):
@@ -377,8 +419,8 @@ class CBVwhBrain(BaseInterface):
     output_spec = CBVwhBrainOutputSpec
 
     def _run_interface(self, runtime):
-        brain_csv_file = self.inputs.in1
-        blood_csv_file = self.inputs.in2
+        brain_csv_file = self.inputs.brain_csv
+        blood_csv_file = self.inputs.blood_csv
         df_brain = pd.read_csv(brain_csv_file)
         df_blood = pd.read_csv(blood_csv_file)
 
@@ -416,7 +458,7 @@ class CBVwhBrain(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        brain_csv_file = self.inputs.in1
+        brain_csv_file = self.inputs.brain_csv
         pth, fname, ext = split_filename(brain_csv_file)
         out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
         outputs['out_file'] = os.path.abspath(out_file_name)
