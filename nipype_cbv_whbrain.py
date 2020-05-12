@@ -12,7 +12,7 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def CBV_WholeBrain_worflow(working_dir, subject_list, num_cores, scan_type):
+def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
 
     # -----------------Inputs--------------------------------
     # Define subject list, session list and relevent file types
@@ -32,28 +32,32 @@ def CBV_WholeBrain_worflow(working_dir, subject_list, num_cores, scan_type):
     subdirectory = os.path.join(output_dir, 'manualwork', 'BloodSeg_fast',
                                 'sub-{subject_id}')
     blood_mask_files = os.path.join(subdirectory,
-                                   'sub-{subject_id}_*flirt*-label.nii')
+                                    'sub-{subject_id}_*flirt*-label.nii')
 
     # precon UTE
     scanfolder = 'NormalizationTransform_' + scan_type + '_linear'
     session = 'Precon'
     filestart = 'sub-{subject_id}_ses-' + session + '_'
+    fileend = 'UTE_desc-preproc_flirt.nii'
+    if scan_type == 'hr':
+        fileend = '_UTE_divby_average_bias_reoriented_flirt.nii'
+
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
     precon_UTE_files = os.path.join(
-        subdirectory, '_rrr' + filestart + '*' + scan_type + '*UTE*masked*.nii')
+        subdirectory, '_rrr' + filestart + '*' + scan_type + '*' + fileend)
 
     # postcon UTE
     session = 'Postcon'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     postcon_UTE_files = os.path.join(
-            subdirectory, '_r' + filestart + '*' + scan_type + '*UTE*masked*.nii')
+        subdirectory, '_r' + filestart + '*' + scan_type + '*' + fileend)
 
     templates = {
-            'brain_mask': brain_mask_files,
-            'blood_mask': blood_mask_files,
-            'postcon_UTE': postcon_UTE_files,
-            'precon_UTE': precon_UTE_files
+        'brain_mask': brain_mask_files,
+        'blood_mask': blood_mask_files,
+        'postcon_UTE': postcon_UTE_files,
+        'precon_UTE': precon_UTE_files
     }
 
     # Infosource - a function free node to iterate over the list of subject names
@@ -70,8 +74,7 @@ def CBV_WholeBrain_worflow(working_dir, subject_list, num_cores, scan_type):
     # -------------------------------------------------------
 
     # -----------------------AverageImages-------------
-    average_niis = eng.Node(ants.AverageImages(),
-                                 name='average_niis')
+    average_niis = eng.Node(ants.AverageImages(), name='average_niis')
     average_niis.inputs.dimension = 3
     average_niis.inputs.normalize = False
     # -------------------------------------------------------
@@ -84,32 +87,33 @@ def CBV_WholeBrain_worflow(working_dir, subject_list, num_cores, scan_type):
 
     # --------------ROI_Analyze_WholeBrain-------------------
     roi_analyze_whbrain = eng.MapNode(interface=cnp.ROIAnalyze(),
-                              name='roi_analyze_whbrain',
-                              iterfield=['scan_file'])
+                                      name='roi_analyze_whbrain',
+                                      iterfield=['scan_file'])
     # -------------------------------------------------------
 
     # -----------------ROI_Analyze_Blood---------------------
     roi_analyze_blood = eng.MapNode(interface=cnp.ROIAnalyze(),
-                              name='roi_analyze_blood',
-                              iterfield=['scan_file'])
+                                    name='roi_analyze_blood',
+                                    iterfield=['scan_file'])
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat1 = eng.Node(interface=cnp.CSVConcatenate(),
-                                name='concat1')
+    concat_brain = eng.Node(interface=cnp.CSVConcatenate(), name='concat_brain')
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat2 = eng.Node(interface=cnp.CSVConcatenate(),
-                               name='concat2')
+    concat_blood = eng.Node(interface=cnp.CSVConcatenate(), name='concat_blood')
     # -------------------------------------------------------
-
 
     # ----------------------CBV----------------------------
     cbv = eng.Node(interface=cnp.CBVwhBrain(), name='cbv')
     # -------------------------------------------------------
 
-
+    # ----------------------CBV----------------------------
+    cbv_map = eng.MapNode(interface=cnp.CBVmap(),
+                          name='cbv_map',
+                          iterfield=['difference'])
+    # -------------------------------------------------------
 
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
@@ -124,7 +128,7 @@ def CBV_WholeBrain_worflow(working_dir, subject_list, num_cores, scan_type):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_difference.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_difference.*/', ''), ('_cbv_map.*/', '')]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -138,18 +142,20 @@ def CBV_WholeBrain_worflow(working_dir, subject_list, num_cores, scan_type):
         (average_niis, difference, [('output_average_image', 'file1')]),
         (selectfiles, difference, [('postcon_UTE', 'file2')]),
         (difference, datasink, [('out_file', task + '_postminuspre.@con')]),
-
         (difference, roi_analyze_whbrain, [('out_file', 'scan_file')]),
         (selectfiles, roi_analyze_whbrain, [('brain_mask', 'roi_file')]),
-        (roi_analyze_whbrain, concat1, [('out_file', 'in_files')]),
-
+        (roi_analyze_whbrain, concat_brain, [('out_file', 'in_files')]),
         (difference, roi_analyze_blood, [('out_file', 'scan_file')]),
         (selectfiles, roi_analyze_blood, [('blood_mask', 'roi_file')]),
-        (roi_analyze_blood, concat2, [('out_file', 'in_files')]),
+        (roi_analyze_blood, concat_blood, [('out_file', 'in_files')]),
+        (concat_brain, cbv, [('out_csv', 'in1')]),
+        (concat_blood, cbv, [('out_csv', 'in2')]),
+        (cbv, datasink, [('out_file', task + '.@con')]),
 
-        (concat1, cbv, [('out_csv', 'in1')]),
-        (concat2, cbv, [('out_csv', 'in2')]),
-        (cbv, datasink, [('out_file', task + '.@con')])
+        (difference, cbv_map, [('out_file', 'difference')]),
+        (selectfiles, cbv_map, [('blood_mask', 'blood_mask')]),
+        (cbv_map, datasink, [('out_file', task + '_cbvmap.@con')])
+
     ])
     # -------------------------------------------------------
 
