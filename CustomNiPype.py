@@ -7,7 +7,7 @@ from string import Template
 import numpy as np
 import pandas as pd
 import nibabel as nib
-import nilearn as nil
+import nilearn.image as nilimg
 from nipype.utils.filemanip import split_filename
 import matplotlib.pyplot as plt
 
@@ -221,7 +221,7 @@ class ResampInputSpec(BaseInterfaceInputSpec):
 
 
 class ResampOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Fast Fourier Transform')
+    out_file = File(exists=True, desc='Resampled nii')
 
 
 class ResampNii(BaseInterface):
@@ -231,25 +231,95 @@ class ResampNii(BaseInterface):
     def _run_interface(self, runtime):
         in_file_name = self.inputs.in_file
         in_file_nii = nib.load(in_file_name)
-        in_file_nii.header
 
-        in_target_affine = np.diag((1, 1, 1))
+        # Rescale affine and feed into resample function
+        in_file_voxdim = in_file_nii.header['pixdim'][1:4]
+        resamp_file_voxdim = np.array([1, 1, 1])
+        target_affine = nib.affines.rescale_affine(in_file_nii.affine,
+                                                   in_file_voxdim,
+                                                   resamp_file_voxdim)
 
-        resamp_nii = nil.image.resample_img(in_file_nii,
-                                            target_affine=in_target_affine)
+        resamp_nii = nilimg.resample_img(in_file_nii, target_affine)
+        resamp_img = np.array(resamp_nii.get_fdata())
 
         pth, fname, ext = split_filename(in_file_name)
-        resamp_file_name = os.path.join(fname + '_resamp.nii')
-        nib.save(resamp_nii, resamp_file_name)
-        setattr(self, '_out_file', resamp_file_name)
+        out_file_name = os.path.join(fname + '_resamp.nii')
+        # nib.save(trimmed_nii, out_file_name)
+        nib.save(resamp_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        resamp_file_name = os.path.join(fname + '_resamp.nii')
-        outputs['out_file'] = os.path.abspath(resamp_file_name)
+        out_file_name = os.path.join(fname + '_resamp.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+
+# -------------- TrimNii -------------------------
+class TrimInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+    trim_width = traits.Int(default_value=2,
+                            desc='Width of image edge to be cut')
+
+
+class TrimOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='Trimmed nii')
+
+
+class TrimNii(BaseInterface):
+    input_spec = TrimInputSpec
+    output_spec = TrimOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        in_file_nii = nib.load(in_file_name)
+        in_file_img = np.array(in_file_nii.get_fdata())
+
+        width = self.inputs.trim_width
+        x_dim, y_dim, z_dim = in_file_img.shape
+        x_range = range(width, x_dim - width)
+        y_range = range(width, y_dim - width)
+        z_range = range(width, z_dim - width)
+        trimmed_img = in_file_img[x_range, :, :]
+        trimmed_img = trimmed_img[:, y_range, :]
+        trimmed_img = trimmed_img[:, :, z_range]
+
+        trimmed_nii = nib.Nifti1Image(trimmed_img, in_file_nii.affine,
+                                      in_file_nii.header)
+
+        # Update dimension info in trimmed image header
+        x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
+        dim_in_header = np.array([
+            3,
+            x_dim_trm,
+            y_dim_trm,
+            z_dim_trm,
+            1,
+            1,
+            1,
+            1,
+        ])
+        dim_in_header = dim_in_header.astype(int)
+        in_file_nii.header['dim'] = dim_in_header
+
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_trimmed.nii')
+        nib.save(trimmed_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_trimmed.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
