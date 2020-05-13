@@ -98,11 +98,11 @@ def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat1 = eng.Node(interface=cnp.CSVConcatenate(), name='concat1')
+    concat_brain = eng.Node(interface=cnp.CSVConcatenate(), name='concat_brain')
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat2 = eng.Node(interface=cnp.CSVConcatenate(), name='concat2')
+    concat_blood = eng.Node(interface=cnp.CSVConcatenate(), name='concat_blood')
     # -------------------------------------------------------
 
     # ----------------------CBV----------------------------
@@ -144,12 +144,12 @@ def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
         (difference, datasink, [('out_file', task + '_postminuspre.@con')]),
         (difference, roi_analyze_whbrain, [('out_file', 'scan_file')]),
         (selectfiles, roi_analyze_whbrain, [('brain_mask', 'roi_file')]),
-        (roi_analyze_whbrain, concat1, [('out_file', 'in_files')]),
+        (roi_analyze_whbrain, concat_brain, [('out_file', 'in_files')]),
         (difference, roi_analyze_blood, [('out_file', 'scan_file')]),
         (selectfiles, roi_analyze_blood, [('blood_mask', 'roi_file')]),
-        (roi_analyze_blood, concat2, [('out_file', 'in_files')]),
-        (concat1, cbv, [('out_csv', 'in1')]),
-        (concat2, cbv, [('out_csv', 'in2')]),
+        (roi_analyze_blood, concat_blood, [('out_file', 'in_files')]),
+        (concat_brain, cbv, [('out_csv', 'in1')]),
+        (concat_blood, cbv, [('out_csv', 'in2')]),
         (cbv, datasink, [('out_file', task + '.@con')]),
 
         (difference, cbv_map, [('out_file', 'difference')]),
