@@ -15,8 +15,8 @@ working_dir = os.path.abspath('../..')
 output_dir = os.path.join(working_dir, 'derivatives/')
 temp_dir = os.path.join(output_dir, 'datasink/')
 
-subject_list = ['01', '02', '03', '05', '04', '06', '08', '09', '10', '11']
-subject_list = ['02', '05', '09', '11']
+subject_list = ['02', '03', '05', '04', '06', '08', '09', '10', '11']
+# subject_list = ['02', '05', '09', '11']
 # session_list = ['Precon', 'Postcon']
 
 # * realigned precontrast average
