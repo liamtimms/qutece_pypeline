@@ -127,17 +127,17 @@ def Normalization_workflow(working_dir, subject_list, num_cores):
     norm_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
         (selectfiles, flirt, [('mni_brain', 'reference')]),
-        (selectfiles, fnirt, [('mni_brain', 'ref_file')]),
+        # (selectfiles, fnirt, [('mni_brain', 'ref_file')]),
         (selectfiles, applymask, [('T1w_precon', 'in_file'),
                                   ('brain_mask', 'mask_file')]),
         (applymask, flirt, [('out_file', 'in_file')]),
-        (flirt, fnirt, [('out_file', 'in_file')]),
+        # (flirt, fnirt, [('out_file', 'in_file')]),
         # (flirt, fast, [('out_file', 'in_files')]),
         (flirt, datasink, [('out_file', task + '_flirt.@con'),
                            ('out_matrix_file', task + '_flirt_transform.@con')]
-         ),
-        (fnirt, datasink, [('warped_file', task + '_fnirt.@con'),
-                           ('field_file', task + '_fnirt_transform.@con')])
+         )
+        # (fnirt, datasink, [('warped_file', task + '_fnirt.@con'),
+        #                   ('field_file', task + '_fnirt_transform.@con')])
         # (fast, merge_FAST, [('bias_field', 'in1'), ('mixeltype', 'in2'),
         #                     ('partial_volume_files', 'in3'),
         #                     ('partial_volume_map', 'in4'),
