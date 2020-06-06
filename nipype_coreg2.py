@@ -4,7 +4,6 @@ import os
 # import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
@@ -42,8 +41,6 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
     qutece_mean_postcon_file = os.path.join(
         subdirectory, '*mean' + filestart + '*hr*UTE*.nii')
 
-    # directory: '\WorkingBIDS\derivatives\datasink\IntrasessionCoregister_T1w\sub-11\ses-Precon'
-
     # * precon IntrasessionCoregister_T1w
     scantype = 'anat'
     session = 'Precon'
@@ -59,12 +56,12 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
         'anat': anat_files
     }
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -73,7 +70,10 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
     # -------------------------------------------------------
 
     # -----------------------CoregisterNodes-----------------
-    #coreg_to_postcon = eng.JoinNode(spm.Coregister(), name = 'coreg_to_postcon', joinsource= 'selectfiles', joinfield = 'apply_to_files')
+    # coreg_to_postcon = eng.JoinNode(spm.Coregister(),
+    #                                 name = 'coreg_to_postcon',
+    #                                 joinsource= 'selectfiles',
+    #                                 joinfield = 'apply_to_files')
     coreg_to_postcon = eng.Node(spm.Coregister(), name='coreg_to_postcon')
     coreg_to_postcon.inputs.write_interp = 7
     coreg_to_postcon.inputs.separation = [6, 3, 2]

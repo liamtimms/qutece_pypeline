@@ -20,7 +20,8 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
-    # subdirectory = os.path.join(temp_dir, 'NormalizationTransform_fast_linear',
+    # subdirectory = os.path.join(temp_dir,
+    #                            'NormalizationTransform_fast_linear',
     #                            'sub-{subject_id}', 'ses-{session_id}')
     subdirectory = os.path.join(
         temp_dir, 'NormalizationTransform_' + scan_type + '_linear',
@@ -53,14 +54,14 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     # file name substitutions
     templates = {'qutece_scan': qutece_scan_files, 'ROI': ROI_files}
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(
         utl.IdentityInterface(fields=['subject_id', 'session_id']),
         name="infosource")
     infosource.iterables = [('subject_id', subject_list),
                             ('session_id', session_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -69,8 +70,8 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
 
     # --------------------ROI_Analyze------------------------
     roi_analyze = eng.MapNode(interface=cnp.ROIAnalyze(),
-                                   name='roi_analyze',
-                                   iterfield=['scan_file'])
+                              name='roi_analyze',
+                              iterfield=['scan_file'])
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
@@ -97,7 +98,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                    for ses in session_list for sub in subject_list]
     rmbloodSegName = [('ROI-sub-%s_fast_blood-flirt-label' % sub, 'blood')
                       for sub in subject_list]
-    rmbrainSegName = [('ROI-sub-%s_ses-Precon_T1w_corrected_masked_flirt'\
+    rmbrainSegName = [('ROI-sub-%s_ses-Precon_T1w_corrected_masked_flirt'
                       '_Segmentation-label' % sub, 'brain')
                       for sub in subject_list]
     substitutions.extend(subjFolders + rmbloodSegName + rmbrainSegName)
@@ -121,7 +122,6 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
 
     # -------------------WorkflowPlotting--------------------
     timeseries_wf.write_graph(graph2use='flat')
-
     # -------------------------------------------------------
 
     if num_cores < 2:

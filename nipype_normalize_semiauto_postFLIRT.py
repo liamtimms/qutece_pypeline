@@ -3,10 +3,7 @@
 import os
 # import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
-import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 
@@ -54,7 +51,7 @@ def Normalization_workflow_PostFLIRT(working_dir, subject_list, num_cores):
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -140,13 +137,12 @@ def Normalization_workflow_PostFLIRT(working_dir, subject_list, num_cores):
         (selectfiles, fnirt, [('mni_head', 'ref_file'),
                               ('mni_mask', 'refmask_file')]),
         (maths, fnirt, [('out_file', 'in_file')]),
-
         (selectfiles, applymask, [('T1w_precon', 'in_file'),
                                   ('brain_mask', 'mask_file')]),
         (applymask, fast, [('out_file', 'in_files')]),
         # (flirt, fnirt, [('out_file', 'in_file')]),
         # (flirt, datasink, [('out_file', task + '_flirt.@con'),
-        #                    ('out_matrix_file', task + '_flirt_transform.@con')
+        #                   ('out_matrix_file', task + '_flirt_transform.@con')
         #                    ]),
         (fnirt, datasink, [('warped_file', task + '_fnirt_dil.@con'),
                            ('field_file', task + '_fnirt_transform.@con')]),

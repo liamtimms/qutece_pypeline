@@ -72,12 +72,12 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
         'precon_UTE': precon_UTE_files
     }
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,

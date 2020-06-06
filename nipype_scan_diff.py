@@ -3,8 +3,6 @@
 import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-# import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
@@ -48,12 +46,12 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
         'qutece_post': postcon_UTE_files
     }
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -71,7 +69,9 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
     difference = eng.MapNode(cnp.DiffNii(),
                              name='difference',
                              iterfield='file2')
-    #difference.iterables = [('file1', ['precon_UTE_files']), ('file2', ['postcon_UTE_files'])] # this is pseudo code not real
+    # difference.iterables =
+    # [('file1', ['precon_UTE_files']),
+    # ('file2', ['postcon_UTE_files'])] # this is pseudo code not real
     # -------------------------------------------------------
 
     # -----------------------PNGSlices-----------------------

@@ -29,8 +29,8 @@ def Preproc08_workflow(working_dir, subject_list, session_list, num_cores):
     qutece_fast_files = os.path.join(
         subdirectory, scantype, filestart + '*fast*_run-*[0123456789]_UTE.nii')
 
-    qutece_hr_files = os.path.join(
-        subdirectory, scantype, filestart + '*hr*UTE.nii')
+    qutece_hr_files = os.path.join(subdirectory, scantype,
+                                   filestart + '*hr*UTE.nii')
 
     templates = {
         'qutece_fast': qutece_fast_files,
@@ -52,7 +52,7 @@ def Preproc08_workflow(working_dir, subject_list, session_list, num_cores):
                            name="selectfiles")
     # -------------------------------------------------------
 
-    ### FAST ###
+    # FAST SCANS
     # -----------------------AverageImages-------------
     average_niis_fast = eng.Node(ants.AverageImages(),
                                  name='average_niis_fast')
@@ -73,7 +73,7 @@ def Preproc08_workflow(working_dir, subject_list, session_list, num_cores):
                                    iterfield=['file1'])
     # -------------------------------------------------------
 
-    ### HR ####
+    # HR SCANS
     # -----------------------AverageImages-------------
     average_niis_hr = eng.Node(ants.AverageImages(), name='average_niis_hr')
     average_niis_hr.inputs.dimension = 3
@@ -92,7 +92,7 @@ def Preproc08_workflow(working_dir, subject_list, session_list, num_cores):
                                  iterfield=['file1'])
     # -------------------------------------------------------
 
-    ### Merge ###
+    # MERGING OF HR AND FAST
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True

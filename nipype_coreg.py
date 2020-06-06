@@ -5,8 +5,6 @@ import os
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.ants as ants
-# import nipype.interfaces.freesurfer as fs
-import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
@@ -42,10 +40,6 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
     T1w_files = os.path.join(subdirectory, scantype, filestart + '_T1w.nii')
     nonT1w_files = os.path.join(subdirectory, scantype,
                                 filestart + '*_[TFS][OLW]*.nii')
-    TOF_files = os.path.join(subdirectory, scantype, filestart + '*_TOF*.nii')
-    FLAIR_files = os.path.join(subdirectory, scantype,
-                               filestart + '*_FLAIR*.nii')
-    SWI_files = os.path.join(subdirectory, scantype, filestart + '*_SWI*.nii')
 
     templates = {
         #   'qutece_fast': qutece_fast_files,
@@ -56,16 +50,15 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
         #    'FLAIR': FLAIR_files,
         #    'SWI': SWI_files
     }
-    # Preprocessing and Realignment
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(
         utl.IdentityInterface(fields=['subject_id', 'session_id']),
         name="infosource")
     infosource.iterables = [('subject_id', subject_list),
                             ('session_id', session_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -117,7 +110,8 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
     # # -----------------------AntsResgistration---------------
     # ants_reg = eng.Node(ants.Registration(), name='ants_reg')
     # ants_reg.inputs.metric = ['Mattes']*2
-    # ants_reg.inputs.metric_weight = [1]*2 # Default (value ignored currently by ANTs)
+    # ants_reg.inputs.metric_weight = [1]*2
+    # Default (value ignored currently by ANTs)
     # # ants_reg.inputs.number_of_iterations = [[1500, 200], [100, 50, 30]]
     # ants_reg.inputs.shrink_factors = [[2,1], [3,2,1]]
     # ants_reg.inputs.smoothing_sigmas = [[1,0], [2,1,0]]
@@ -166,7 +160,8 @@ def IntrasesCoreg_workflow(working_dir, subject_list, session_list, num_cores):
         (merge, bias_norm, [('out', 'input_image')]),
         (bias_norm, datasink, [('output_image', task + '.@con')])
 
-        # (coreg_to_ute, datasink, [('coregistered_source', task + '_coreg.@con')]),
+        # (coreg_to_ute, datasink, [('coregistered_source',
+        #                            'task + '_coreg.@con')]),
         # (selectfiles, flirt, [('qutece_hr', 'reference')]),
         # (selectfiles, flirt, [('T1w', 'in_file')]),
         # (flirt, datasink, [('out_file', task + '_flirt.@con')])

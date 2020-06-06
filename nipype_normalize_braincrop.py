@@ -1,4 +1,4 @@
-# Normalization Pipeline '
+# BrainCrop Pipeline
 # -----------------Imports-------------------------------
 import os
 import nipype.pipeline.engine as eng
@@ -30,7 +30,7 @@ def BrainCrop_workflow(working_dir, subject_list, num_cores):
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,

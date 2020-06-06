@@ -52,7 +52,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                            name="selectfiles")
     # -------------------------------------------------------
 
-    ### FAST ###
+    # FAST SCANS
     # -----------------------AverageImages-------------
     average_niis_fast = eng.Node(ants.AverageImages(),
                                  name='average_niis_fast')
@@ -73,7 +73,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                                    iterfield=['file1'])
     # -------------------------------------------------------
 
-    ### HR ####
+    # HR SCANS
     # -----------------------AverageImages-------------
     average_niis_hr = eng.Node(ants.AverageImages(), name='average_niis_hr')
     average_niis_hr.inputs.dimension = 3
@@ -103,7 +103,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
     realign_hr.inputs.write_interp = 7
     # -------------------------------------------------------
 
-    ### Merge ###
+    # MERGING OF HR AND FAST
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
@@ -153,7 +153,8 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                         name="datasink")
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
-                     ('divby_average_desc-unring_bias_reoriented', 'desc-preproc')]
+                     ('divby_average_desc-unring_bias_reoriented',
+                      'desc-preproc')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub),
                     ('sub-%s/ses-%s/' + scantype) % (sub, ses))
                    for ses in session_list for sub in subject_list]
@@ -194,7 +195,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
         (unring_nii, realign, [('out_file', 'in_files')]),
         (realign, merge2, [('realigned_files', 'in2')]),
         (merge2, reorient, [('out', 'in_file')]),
-        (reorient,  datasink, [('out_file', task + '.@con')])
+        (reorient, datasink, [('out_file', task + '.@con')])
     ])
     # -------------------------------------------------------
 

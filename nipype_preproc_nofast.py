@@ -46,7 +46,7 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
                            name="selectfiles")
     # -------------------------------------------------------
 
-    ### HR ####
+    # HR SCANS
     # -----------------------AverageImages-------------
     average_niis_hr = eng.Node(ants.AverageImages(), name='average_niis_hr')
     average_niis_hr.inputs.dimension = 3
@@ -102,7 +102,7 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
     realign.inputs.write_interp = 7
     # -------------------------------------------------------
 
-    ### Merge ###
+    # MERGING OF HR AND FAST
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True

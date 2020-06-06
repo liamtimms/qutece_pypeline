@@ -3,8 +3,7 @@
 import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
+# import nipype.interfaces.spm as spm
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
@@ -26,8 +25,8 @@ def Preproc10_workflow(working_dir, subject_list, session_list, num_cores):
     filestart = 'sub-{subject_id}_ses-{session_id}'
 
     scantype = 'qutece'
-    qutece_hr_files = os.path.join(
-        subdirectory, scantype, filestart + '*hr*UTE.nii')
+    qutece_hr_files = os.path.join(subdirectory, scantype,
+                                   filestart + '*hr*UTE.nii')
 
     templates = {'qutece_hr': qutece_hr_files}
 
@@ -46,7 +45,7 @@ def Preproc10_workflow(working_dir, subject_list, session_list, num_cores):
                            name="selectfiles")
     # -------------------------------------------------------
 
-    ### HR ####
+    # HR SCANS
     # -----------------------AverageImages-------------
     average_niis_hr = eng.Node(ants.AverageImages(), name='average_niis_hr')
     average_niis_hr.inputs.dimension = 3
@@ -80,7 +79,7 @@ def Preproc10_workflow(working_dir, subject_list, session_list, num_cores):
                              iterfield=['in_file'])
     # -------------------------------------------------------
 
-    ### Merge ###
+    # MERGING OF HR AND FAST
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
