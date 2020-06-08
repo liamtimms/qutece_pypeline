@@ -1,7 +1,6 @@
 # Interscan Coregister Pipeline
 # -----------------Imports-------------------------------
 import os
-# import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
 import nipype.interfaces.fsl as fsl
@@ -9,11 +8,12 @@ import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
+fsl.FSLCommand.set_default_output_type('NIFTI')
 
-def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
+
+def pre_to_post_coregister(working_dir, subject_list, num_cores):
+
     # -----------------Inputs--------------------------------
-    # Define subject list, session list and relevent file types
-
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -44,7 +44,7 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
     # * precon IntrasessionCoregister_T1w
     scantype = 'anat'
     session = 'Precon'
-    subdirectory = os.path.join(temp_dir, 'IntrasessionCoregister',
+    subdirectory = os.path.join(temp_dir, 'intrasession_coregister',
                                 'sub-{subject_id}', 'ses-' + session)
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     anat_files = os.path.join(subdirectory, 'r' + filestart + '*.nii')
@@ -70,10 +70,6 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
     # -------------------------------------------------------
 
     # -----------------------CoregisterNodes-----------------
-    # coreg_to_postcon = eng.JoinNode(spm.Coregister(),
-    #                                 name = 'coreg_to_postcon',
-    #                                 joinsource= 'selectfiles',
-    #                                 joinfield = 'apply_to_files')
     coreg_to_postcon = eng.Node(spm.Coregister(), name='coreg_to_postcon')
     coreg_to_postcon.inputs.write_interp = 7
     coreg_to_postcon.inputs.separation = [6, 3, 2]
@@ -81,12 +77,6 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
     coreg_to_postcon2 = eng.Node(spm.Coregister(), name='coreg_to_postcon2')
     coreg_to_postcon2.inputs.write_interp = 7
     coreg_to_postcon2.inputs.separation = [6, 3, 2]
-    # -------------------------------------------------------
-
-    # -----------------LinearRegistration--------------------
-    flirt = eng.Node(fsl.FLIRT(), name='flirt')
-    flirt.inputs.dof = 6  # rigid body transform
-    flirt.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
     # -----------------------Merge---------------------------
@@ -101,12 +91,11 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
                         name="datasink")
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-')]
-
     datasink.inputs.substitutions = substitutions
     # -------------------------------------------------------
 
     # -----------------CoregistrationWorkflow----------------
-    task = 'IntersessionCoregister'
+    task = 'pre_to_post_coregister'
     coreg2_wf = eng.Workflow(name=task)
     coreg2_wf.base_dir = working_dir + '/workflow'
 
@@ -116,24 +105,13 @@ def IntersesCoreg_workflow(working_dir, subject_list, num_cores):
         (selectfiles, coreg_to_postcon, [('qutece_postcon_mean', 'target'),
                                          ('qutece_precon_mean', 'source')]),
         (merge, coreg_to_postcon, [('out', 'apply_to_files')]),
-        # (coreg_to_postcon, datasink,
-        #  [('coregistered_source', task + '_preconUTEmean.@con'),
-        #   ('coregistered_files', task + '_preconScans.@con')]),
         (selectfiles, coreg_to_postcon2, [('qutece_postcon_mean', 'target')]),
         (coreg_to_postcon, coreg_to_postcon2,
          [('coregistered_source', 'source'),
           ('coregistered_files', 'apply_to_files')]),
-        (coreg_to_postcon2, datasink,
-         [('coregistered_source', task + '_preconUTEmeanSPM_SPM.@con'),
-          ('coregistered_files', task + '_preconScansSPM_SPM.@con')]),
+        (coreg_to_postcon2, datasink, [('coregistered_files',
+                                        task + '_precon.@con')]),
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    coreg2_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        coreg2_wf.run()
-    else:
-        coreg2_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    return coreg2_wf
