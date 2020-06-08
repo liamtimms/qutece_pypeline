@@ -1,12 +1,8 @@
 # Trans Pipeline
 # -----------------Imports-------------------------------
 import os
-# import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-# import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
-# import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
@@ -152,11 +148,4 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    trans_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        trans_wf.run()
-    else:
-        trans_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    return trans_wf
