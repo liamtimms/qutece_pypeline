@@ -3,7 +3,6 @@ from nipype.interfaces.base import TraitedSpec, \
     BaseInterface, BaseInterfaceInputSpec, File, InputMultiObject, traits
 import os
 from string import Template
-# import re
 import numpy as np
 import pandas as pd
 import nibabel as nib
@@ -11,6 +10,19 @@ import nilearn.image as nilimg
 from nipype.utils.filemanip import split_filename
 import matplotlib.pyplot as plt
 
+
+# -------------------WorkflowRunner--------------
+def workflow_runner(workflow, num_cores):
+
+    workflow.write_graph(graph2use='flat')
+
+    if num_cores < 2:
+        workflow.run()
+    else:
+        workflow.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+
+    os.system("notify-send " + workflow.name + " done")
+# -------------------------------------------------------
 
 # ----------- UnringNii -------------------------
 class UnringNiiInputSpec(BaseInterfaceInputSpec):
