@@ -17,13 +17,10 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 # UTE version should take option for either hr or fast
 
 
-def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-                        scan_type):
+def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
+                       scan_type):
 
     # -----------------Inputs--------------------------------
-    # Define subject list, session list and relevent file types
-    # working_dir = os.path.abspath(
-    #    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -31,7 +28,7 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
     MNI_brain_file = os.path.abspath(
         '/opt/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz')
 
-    # MASK
+    # Mask
     filestart = 'sub-{subject_id}_ses-Precon'
     subdirectory = os.path.join(output_dir, 'manualwork',
                                 'WholeBrainSeg_FromNoseSkullStrip')
@@ -52,9 +49,8 @@ def ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
     precon_UTE_files = os.path.join(
         subdirectory, 'rrr' + filestart + '*' + scan_type + '*UTE*.nii')
 
-    # + postcon scans
+    # UTE Files
     session = 'Postcon'
-    # * preprocessing (sub-??, ses-Postcon, qutece)
     scanfolder = 'preprocessing'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
                                 'ses-' + session)
