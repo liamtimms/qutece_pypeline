@@ -9,8 +9,7 @@ import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
 
-def intrasession_coregister(working_dir, subject_list, session_list,
-                            num_cores):
+def intrasession_coregister(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')

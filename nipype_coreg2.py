@@ -11,7 +11,7 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def pre_to_post_coregister(working_dir, subject_list, num_cores):
+def pre_to_post_coregister(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')

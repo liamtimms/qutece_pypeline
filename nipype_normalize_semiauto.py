@@ -1,7 +1,6 @@
-# Normalization Pipeline '
+# Linear Transform Calculation Pipeline
 # -----------------Imports-------------------------------
 import os
-# import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
@@ -12,10 +11,9 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 # -------------------------------------------------------
 
 
-def Normalization_workflow(working_dir, subject_list, num_cores):
+def flirt(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    # Define subject list, session list and relevent file types
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
@@ -153,11 +151,4 @@ def Normalization_workflow(working_dir, subject_list, num_cores):
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    norm_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        norm_wf.run()
-    else:
-        norm_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    return norm_wf

@@ -13,7 +13,7 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def preproc(working_dir, subject_list, session_list, num_cores):
+def preproc(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')

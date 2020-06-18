@@ -8,8 +8,8 @@ from nipype_coreg import intrasession_coregister
 from nipype_coreg2 import pre_to_post_coregister
 # from nipype_scan_diff import ScanDiff_workflow
 from nipype_normalize_braincrop import braincrop
-# from nipype_normalize_semiauto import Normalization_workflow
-# from nipype_normalize_semiauto_postFLIRT import Normalization_workflow_PostFLIRT
+from nipype_normalize_semiauto import flirt
+from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
 # from nipype_normalize_applytrans import ApplyTrans_workflow
 # from nipype_normalize_applytrans_nonUTE import ApplyTransAnat_workflow
 # from nipype_timeseries_roi import TimeSeries_ROI_workflow
@@ -27,7 +27,7 @@ num_cores = 5
 # Subjects with both hr and fast scans
 # subject_list = ['02', '03', '04', '06', '11']
 subject_list = ['11']
-preproc_wf = preproc(working_dir, subject_list, session_list, num_cores)
+preproc_wf = preproc(working_dir, subject_list, session_list)
 cnp.workflow_runner(preproc_wf, num_cores)
 
 # # Subjects without Fast Scans
@@ -46,23 +46,21 @@ cnp.workflow_runner(preproc_wf, num_cores)
 # # subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
 # # # subject_list = ['02', '03', '04', '06', '11']
 
-coreg_wf = intrasession_coregister(working_dir, subject_list, session_list,
-                                   num_cores)
+coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
 cnp.workflow_runner(coreg_wf, num_cores)
 
-coreg2_wf = pre_to_post_coregister(working_dir, subject_list, num_cores)
+coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
 cnp.workflow_runner(coreg2_wf, num_cores)
 
-braincrop_wf = braincrop(working_dir, subject_list, num_cores)
+braincrop_wf = braincrop(working_dir, subject_list)
 cnp.workflow_runner(braincrop_wf, num_cores)
 
 # # AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
 # subject_list = ['08', '09', '10']
 # subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
-# num_cores = 5
-# Normalization_workflow(working_dir, subject_list, num_cores)
-# os.system("notify-send 'Norm done'")
-#
+flirt_wf = flirt(working_dir, subject_list)
+cnp.workflow_runner(flirt_wf, num_cores)
+
 # num_cores = 1
 # scan_type = 'hr'
 # ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
