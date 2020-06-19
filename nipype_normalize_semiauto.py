@@ -19,15 +19,15 @@ def flirt(working_dir, subject_list):
 
     session = 'Precon'
     subdirectory = os.path.join(temp_dir,
-                                'IntersessionCoregister_preconScansSPM_SPM',
+                                'pre_to_post_coregister_precon',
                                 'sub-{subject_id}')
     # subdirectory = os.path.join('sub-{subject_id}', 'ses-Precon')
     filestart = 'sub-{subject_id}_ses-' + session
 
     T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')
 
-    subdirectory = os.path.join(output_dir, 'manualwork',
-                                'WholeBrainSeg_FromNoseSkullStrip')
+    subdirectory = os.path.join(output_dir, 'manual_work', 'segmentations',
+                                'brain_preFLIRT')
     brain_mask_files = os.path.join(subdirectory,
                                     'rrr' + filestart + '*_T1w*-label.nii')
 
@@ -114,7 +114,7 @@ def flirt(working_dir, subject_list):
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
-    task = 'SpatialNormalization_SemiAuto'
+    task = 'FLIRT_semiauto'
     norm_wf = eng.Workflow(name=task)
     norm_wf.base_dir = working_dir + '/workflow'
 
@@ -127,8 +127,8 @@ def flirt(working_dir, subject_list):
         (applymask, flirt, [('out_file', 'in_file')]),
         # (flirt, fnirt, [('out_file', 'in_file')]),
         # (flirt, fast, [('out_file', 'in_files')]),
-        (flirt, datasink, [('out_file', task + '_flirt.@con'),
-                           ('out_matrix_file', task + '_flirt_transform.@con')]
+        (flirt, datasink, [('out_file', task + '.@con'),
+                           ('out_matrix_file', task + '_matrix.@con')]
          )
         # (fnirt, datasink, [('warped_file', task + '_fnirt.@con'),
         #                   ('field_file', task + '_fnirt_transform.@con')])

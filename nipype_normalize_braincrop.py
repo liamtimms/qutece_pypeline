@@ -76,7 +76,7 @@ def braincrop(working_dir, subject_list):
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-'),
                      ('_corrected_maths_reoriented_ROI_brain_brain',
-                      'desc-preproc-braincrop')]
+                      '_desc-preproc-braincrop')]
 
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
                    for sub in subject_list]

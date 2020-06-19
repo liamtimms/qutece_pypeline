@@ -124,7 +124,7 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list,
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
-    task = 'NormalizationTransform_' + scan_type
+    task = 'linear_transformed_' + scan_type
     trans_wf = eng.Workflow(name=task)
     trans_wf.base_dir = working_dir + '/workflow'
 
