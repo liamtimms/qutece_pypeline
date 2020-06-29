@@ -12,8 +12,7 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
-                      scan_type):
+def post_pre_difference(working_dir, subject_list, session_list, scan_type, scanfolder):
 
     # -----------------Inputs--------------------------------
     # Define subject list, session list and relevent file types
@@ -23,17 +22,13 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
     temp_dir = os.path.join(output_dir, 'datasink/')
 
     session = 'Precon'
-    # * precon T1w from IntersessionCoregister_preconScans
-    filestart = 'sub-{subject_id}_ses-' + session + '_'
-    scanfolder = 'IntersessionCoregister_preconScansSPM_SPM'
+    filestart = '*sub-{subject_id}_ses-' + session + '_'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-
     precon_UTE_files = os.path.join(
-        subdirectory, 'rrr' + filestart + '*' + scan_type + '*UTE*.nii')
-    # + postcon scans
+        subdirectory, filestart + '*' + scan_type + '*UTE*.nii')
+
+
     session = 'Postcon'
-    # * preprocessing (sub-??, ses-Postcon, qutece)
-    scanfolder = 'preprocessing'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
                                 'ses-' + session)
     filestart = 'sub-{subject_id}_ses-' + session + '_'
@@ -114,11 +109,4 @@ def ScanDiff_workflow(working_dir, subject_list, session_list, num_cores,
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    diff_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        diff_wf.run()
-    else:
-        diff_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    return diff_wf

@@ -6,11 +6,11 @@ from nipype_preproc import preproc
 # from nipype_preproc_10 import Preproc10_workflow
 from nipype_coreg import intrasession_coregister
 from nipype_coreg2 import pre_to_post_coregister
-# from nipype_scan_diff import ScanDiff_workflow
 from nipype_normalize_braincrop import braincrop
-from nipype_normalize_semiauto import flirt
-from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
-# from nipype_normalize_applytrans import ApplyTrans_workflow
+from nipype_normalize_semiauto import calc_transforms
+from nipype_scan_diff import post_pre_difference
+# from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
+from nipype_normalize_applytrans import apply_linear_trans
 # from nipype_normalize_applytrans_nonUTE import ApplyTransAnat_workflow
 # from nipype_timeseries_roi import TimeSeries_ROI_workflow
 # from nipype_cbv_whbrain import CBV_WholeBrain_workflow
@@ -21,77 +21,87 @@ from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
 upper_dir = os.path.realpath('../..')
 working_dir = os.path.abspath(upper_dir)
 session_list = ['Precon', 'Postcon']
+workflow_list = []
+workflow_list_2 = []
 
-num_cores = 5
+num_cores = 1
 
 # Subjects with both hr and fast scans
 # subject_list = ['02', '03', '04', '06', '11']
 subject_list = ['11']
 preproc_wf = preproc(working_dir, subject_list, session_list)
-cnp.workflow_runner(preproc_wf, num_cores)
+workflow_list.append(preproc_wf)
+# cnp.workflow_runner(preproc_wf, num_cores)
 
-# # Subjects without Fast Scans
-# #subject_list = ['05', '07', '09']
-# #PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores)
-# num_cores = 5
+# # # Subjects without Fast Scans
+# # #subject_list = ['05', '07', '09']
+# # #PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores)
+# # num_cores = 5
+# #
+# # # # Subjects with only 1 precon
+# # #session_list = ['Precon']
+# # #subject_list = ['08']
+# # #Preproc08_workflow(working_dir, subject_list, session_list, num_cores)
+# # #subject_list = ['10']
+# # #Preproc10_workflow(working_dir, subject_list, session_list, num_cores)
 #
-# # # Subjects with only 1 precon
-# #session_list = ['Precon']
-# #subject_list = ['08']
-# #Preproc08_workflow(working_dir, subject_list, session_list, num_cores)
-# #subject_list = ['10']
-# #Preproc10_workflow(working_dir, subject_list, session_list, num_cores)
-
-# #num_cores = 1
-# # subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
-# # # subject_list = ['02', '03', '04', '06', '11']
+# # #num_cores = 1
+# # # subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
+# # # # subject_list = ['02', '03', '04', '06', '11']
 
 coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
-cnp.workflow_runner(coreg_wf, num_cores)
+workflow_list.append(coreg_wf)
 
 coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
-cnp.workflow_runner(coreg2_wf, num_cores)
+workflow_list.append(coreg2_wf)
 
 braincrop_wf = braincrop(working_dir, subject_list)
-cnp.workflow_runner(braincrop_wf, num_cores)
+workflow_list.append(braincrop_wf)
 
-# # AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
-# subject_list = ['08', '09', '10']
-# subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
-flirt_wf = flirt(working_dir, subject_list)
-cnp.workflow_runner(flirt_wf, num_cores)
+# # # AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
+# # subject_list = ['08', '09', '10']
+# # subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
+# # flirt_wf = flirt(working_dir, subject_list)
+# # cnp.workflow_runner(flirt_wf, num_cores)
 
-# num_cores = 1
-# scan_type = 'hr'
-# ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-#                     scan_type)
-#
-# ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores)
-#
-# Normalization_workflow_PostFLIRT(working_dir, subject_list, num_cores)
-#
-# num_cores = 1
-# subject_list = ['02', '03', '04', '06', '11']
-# scan_type = 'fast'
-# ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
-#                     scan_type)
-#
-# os.system("notify-send Transforms done")
-#
-# ROI_types = ['brain', 'blood']
-# scan_types = ['hr']
-# subject_list = ['11']
-# session_list = ['Precon', 'Postcon']
-# num_cores = 1
-# for ROI_type in ROI_types:
-#     for scan_type in scan_types:
-#         TimeSeries_ROI_workflow(working_dir, subject_list, session_list,
-#                                 num_cores, scan_type, ROI_type)
-#
-# subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
-# subject_list = ['02', '03', '04', '06', '09', '11']
-#
-# scan_type = 'hr'
-# CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
-#
+calc_transforms_wf = calc_transforms(working_dir, subject_list)
+workflow_list_2.append(calc_transforms_wf)
+
+# # num_cores = 1
+# # scan_type = 'hr'
+# # ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
+# #                     scan_type)
+# #
+# # ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores)
+# #
+# # Normalization_workflow_PostFLIRT(working_dir, subject_list, num_cores)
+# #
+# # num_cores = 1
+# # subject_list = ['02', '03', '04', '06', '11']
+# # scan_type = 'fast'
+# # ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
+# #                     scan_type)
+# #
+# # os.system("notify-send Transforms done")
+# #
+# # ROI_types = ['brain', 'blood']
+# # scan_types = ['hr']
+# # subject_list = ['11']
+# # session_list = ['Precon', 'Postcon']
+# # num_cores = 1
+# # for ROI_type in ROI_types:
+# #     for scan_type in scan_types:
+# #         TimeSeries_ROI_workflow(working_dir, subject_list, session_list,
+# #                                 num_cores, scan_type, ROI_type)
+# #
+# # subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
+# # subject_list = ['02', '03', '04', '06', '09', '11']
+# #
+# # scan_type = 'hr'
+# # CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
+# #
+
+for workflow in workflow_list:
+    cnp.workflow_runner(workflow, num_cores)
+
 # os.system("espeak 'pipeline run done'")
