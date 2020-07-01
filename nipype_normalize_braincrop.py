@@ -16,7 +16,7 @@ def braincrop(working_dir, subject_list):
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
-    subdirectory = os.path.join(temp_dir, 'pre_to_post_coregister_precon',
+    subdirectory = os.path.join(temp_dir, 'pre_to_post_coregister',
                                 'sub-{subject_id}')
     filestart = 'sub-{subject_id}_ses-Precon'
     T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')

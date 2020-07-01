@@ -110,7 +110,7 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
-    task = 'linear_transfomed' + scan_type
+    task = 'linear_transfomed_' + scan_type
     trans_wf = eng.Workflow(name=task)
     trans_wf.base_dir = working_dir + '/workflow'
 

@@ -18,7 +18,7 @@ def calc_transforms(working_dir, subject_list):
     temp_dir = os.path.join(output_dir, 'datasink/')
 
     session = 'Precon'
-    subdirectory = os.path.join(temp_dir, 'pre_to_post_coregister_precon',
+    subdirectory = os.path.join(temp_dir, 'pre_to_post_coregister',
                                 'sub-{subject_id}')
     # subdirectory = os.path.join('sub-{subject_id}', 'ses-Precon')
     filestart = 'sub-{subject_id}_ses-' + session
