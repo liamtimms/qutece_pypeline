@@ -13,8 +13,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 # UTE version should take option for either hr or fast
 
 
-def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
-                       scan_type):
+def apply_linear_trans(working_dir, subject_list, scan_type):
 
     # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')
@@ -24,14 +23,9 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
     MNI_brain_file = os.path.abspath(
         '/opt/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz')
 
-    # Mask
     filestart = 'sub-{subject_id}_ses-Precon'
-    subdirectory = os.path.join(output_dir, 'manualwork',
-                                'WholeBrainSeg_FromNoseSkullStrip')
-    brain_mask_files = os.path.join(subdirectory,
-                                    'rrr' + filestart + '*_T1w*-label.nii')
     # Transforms
-    scanfolder = 'SpatialNormalization_SemiAuto_flirt_transform'
+    scanfolder = 'calc_transforms_linear_trans'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
     linear_matrix_files = os.path.join(subdirectory,
                                        'rrr' + filestart + '*.mat')
@@ -39,7 +33,7 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
     # * precon T1w from IntersessionCoregister_preconScans
     session = 'Precon'
     filestart = 'sub-{subject_id}_ses-' + session + '_'
-    scanfolder = 'IntersessionCoregister_preconScansSPM_SPM'
+    scanfolder = 'pre_to_post_coregister'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
 
     precon_UTE_files = os.path.join(
@@ -59,7 +53,6 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
         'mni_head': MNI_file,
         'mni_brain': MNI_brain_file,
         'linear_matrix': linear_matrix_files,
-        'brain_mask': brain_mask_files,
         'postcon_UTE': postcon_UTE_files,
         'precon_UTE': precon_UTE_files
     }
@@ -86,22 +79,9 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
     maths.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
-    # ---------------------ApplyMask----------------------
-    applymask = eng.MapNode(fsl.ApplyMask(),
-                            name='applymask',
-                            iterfield=['in_file'])
-    applymask.inputs.nan2zeros = True
-    applymask.inputs.output_type = 'NIFTI'
-    # -------------------------------------------------------
-
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
-    # -------------------------------------------------------
-
-    # -----------------------Merge---------------------------
-    merge2 = eng.Node(utl.Merge(2), name='merge2')
-    merge2.ravel_inputs = True
     # -------------------------------------------------------
 
     # -----------------LinearTransform--------------------
@@ -130,7 +110,7 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
-    task = 'NormalizationTransform_' + scan_type
+    task = 'linear_transfomed' + scan_type
     trans_wf = eng.Workflow(name=task)
     trans_wf.base_dir = working_dir + '/workflow'
 
@@ -139,12 +119,10 @@ def apply_linear_trans(working_dir, subject_list, session_list, num_cores,
         (selectfiles, apply_linear, [('mni_brain', 'reference'),
                                      ('linear_matrix', 'in_matrix_file')]),
         (selectfiles, merge, [('postcon_UTE', 'in1'), ('precon_UTE', 'in2')]),
-        (selectfiles, applymask, [('brain_mask', 'mask_file')]),
-        (merge, applymask, [('out', 'in_file')]),
-        (merge, merge2, [('out', 'in1')]),
-        (applymask, merge2, [('out_file', 'in2')]),
-        (merge2, apply_linear, [('out', 'in_file')]),
-        (apply_linear, datasink, [('out_file', task + '_linear.@con')])
+        (merge, maths, [('out', 'in_file')]),
+        # (merge, apply_linear, [('out', 'in_file')]),
+        (maths, apply_linear, [('out_file', 'in_file')]),
+        (apply_linear, datasink, [('out_file', task + '.@con')])
     ])
     # -------------------------------------------------------
 
