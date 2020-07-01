@@ -110,7 +110,7 @@ def pre_to_post_coregister(working_dir, subject_list):
          [('coregistered_source', 'source'),
           ('coregistered_files', 'apply_to_files')]),
         (coreg_to_postcon2, datasink, [('coregistered_files',
-                                        task + '_precon.@con')]),
+                                        task + '.@con')]),
     ])
     # -------------------------------------------------------
 
