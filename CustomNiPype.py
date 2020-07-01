@@ -7,9 +7,11 @@ from string import Template
 import numpy as np
 import pandas as pd
 import nibabel as nib
-import nilearn as nil
+import nilearn.image as nilimg
 from nipype.utils.filemanip import split_filename
 import matplotlib.pyplot as plt
+import matplotlib
+import seaborn as sns
 
 
 # ----------- UnringNii -------------------------
@@ -221,7 +223,7 @@ class ResampInputSpec(BaseInterfaceInputSpec):
 
 
 class ResampOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Fast Fourier Transform')
+    out_file = File(exists=True, desc='Resampled nii')
 
 
 class ResampNii(BaseInterface):
@@ -231,30 +233,109 @@ class ResampNii(BaseInterface):
     def _run_interface(self, runtime):
         in_file_name = self.inputs.in_file
         in_file_nii = nib.load(in_file_name)
-        in_file_nii.header
 
-        in_target_affine = np.diag((1, 1, 1))
+        # Rescale affine and feed into resample function
+        in_file_voxdim = in_file_nii.header['pixdim'][1:4]
+        resamp_file_voxdim = np.array([1,1,1])
+        target_affine = nib.affines.rescale_affine(
+                in_file_nii.affine, in_file_voxdim, resamp_file_voxdim)
 
-        resamp_nii = nil.image.resample_img(in_file_nii,
-                                            target_affine=in_target_affine)
+        resamp_nii = nilimg.resample_img(in_file_nii, target_affine)
+        resamp_img = np.array(resamp_nii.get_fdata())
+
+        # # Trim resampled image by a layer with width=2 on each surface
+        # width = 2
+        # x_dim, y_dim, z_dim = resamp_img.shape
+        # x_range = range(width, x_dim-width)
+        # y_range = range(width, y_dim-width)
+        # z_range = range(width, z_dim-width)
+        # trimmed_img = resamp_img[x_range,:,:]
+        # trimmed_img = trimmed_img[:,y_range,:]
+        # trimmed_img = trimmed_img[:,:,z_range]
+
+        # trimmed_nii = nib.Nifti1Image(trimmed_img,
+        #                       resamp_nii.affine, resamp_nii.header)
+
+        # # Update dimension info in trimmed image header
+        # x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
+        # dim_in_header = np.array([3, x_dim_trm, y_dim_trm, z_dim_trm,
+        #                                         1, 1, 1, 1,])
+        # dim_in_header = dim_in_header.astype(int)
+        # trimmed_nii.header['dim'] = dim_in_header
 
         pth, fname, ext = split_filename(in_file_name)
-        resamp_file_name = os.path.join(fname + '_resamp.nii')
-        nib.save(resamp_nii, resamp_file_name)
-        setattr(self, '_out_file', resamp_file_name)
+        out_file_name = os.path.join(fname + '_resamp.nii')
+        # nib.save(trimmed_nii, out_file_name)
+        nib.save(resamp_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        resamp_file_name = os.path.join(fname + '_resamp.nii')
-        outputs['out_file'] = os.path.abspath(resamp_file_name)
+        out_file_name = os.path.join(fname + '_resamp.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
 # -----------------------------------------------
 
+
+# -------------- TrimNii -------------------------
+class TrimInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+    trim_width = traits.Int(default_value=2,
+            desc='Width of image edge to be cut')
+
+class TrimOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='Trimmed nii')
+
+
+class TrimNii(BaseInterface):
+    input_spec = TrimInputSpec
+    output_spec = TrimOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        in_file_nii = nib.load(in_file_name)
+        in_file_img = np.array(in_file_nii.get_fdata())
+
+        width = self.inputs.trim_width
+        x_dim, y_dim, z_dim = in_file_img.shape
+        x_range = range(width, x_dim-width)
+        y_range = range(width, y_dim-width)
+        z_range = range(width, z_dim-width)
+        trimmed_img = in_file_img[x_range,:,:]
+        trimmed_img = trimmed_img[:,y_range,:]
+        trimmed_img = trimmed_img[:,:,z_range]
+
+        trimmed_nii = nib.Nifti1Image(trimmed_img,
+                              in_file_nii.affine, in_file_nii.header)
+
+        # Update dimension info in trimmed image header
+        x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
+        dim_in_header = np.array([3, x_dim_trm, y_dim_trm, z_dim_trm,
+                                                1, 1, 1, 1,])
+        dim_in_header = dim_in_header.astype(int)
+        in_file_nii.header['dim'] = dim_in_header
+
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_trimmed.nii')
+        nib.save(trimmed_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_trimmed.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+
+# -----------------------------------------------
 
 # -------------- ROI Anlayze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
@@ -566,3 +647,62 @@ class LowerSNRNii(BaseInterface):
 
 
 # -----------------------------------------------
+
+
+# -------------- Plot Distribution --------------------
+class PlotDistributionInputSpec(BaseInterfaceInputSpec):
+    in_files = InputMultiObject(exists=True,
+                                mandatory=True,
+                                desc='list of niis')
+    plot_xlim_min = traits.Float(mandatory=True,
+                                desc = 'x-axis limit min')
+    plot_xlim_max = traits.Float(mandatory=True,
+                                desc = 'x-axis limit max')
+
+
+class PlotDistributionOutputSpec(TraitedSpec):
+    out_fig = File(exists=True, disc='distribution plot')
+
+
+class PlotDistribution(BaseInterface):
+    input_spec = PlotDistributionInputSpec
+    output_spec = PlotDistributionOutputSpec
+
+    def _run_interface(self, runtime):
+        in_files = self.inputs.in_files
+        plot_xlim_min = self.inputs.plot_xlim_min
+        plot_xlim_max = self.inputs.plot_xlim_max
+        in_files = sorted(in_files)
+        fig, ax = plt.subplots(1,1, figsize=(10,8))
+
+        for nii_filename in in_files:
+            nii = nib.load(nii_filename)
+            img = np.array(nii.get_fdata())
+            vals = np.reshape(img, -1)
+            np.warnings.filterwarnings('ignore')
+            sns.distplot(vals, bins=500, kde=False, norm_hist=True, ax=ax,
+                    hist_kws={'histtype': 'step', 'linewidth': 1})
+            ax.set_title('Distribution')
+            ax.set_xlabel('Values')
+            ax.set_ylabel('Normalized Voxel Count')
+            ax.set_xlim([plot_xlim_min, plot_xlim_max])
+
+        matplotlib.rcParams.update({'font.size': 16})
+        pth, fname, ext = split_filename(in_files[0])
+        out_fig_name = os.path.join(fname + '_DistributionPlot.png')
+        plt.savefig(out_fig_name, dpi=300, bbox_inches='tight')
+
+        setattr(self, '_out_fig', out_fig_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_files = self.inputs.in_files
+        pth, fname, ext = split_filename(in_files[0])
+        out_fig_name = os.path.join(fname + '_DistributionPlot.png')
+        outputs['out_fig'] = os.path.abspath(out_fig_name)
+        return outputs
+
+
+# -----------------------------------------------
+
