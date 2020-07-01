@@ -3,7 +3,6 @@ from nipype.interfaces.base import TraitedSpec, \
     BaseInterface, BaseInterfaceInputSpec, File, InputMultiObject, traits
 import os
 from string import Template
-# import re
 import numpy as np
 import pandas as pd
 import nibabel as nib
@@ -13,6 +12,19 @@ import matplotlib.pyplot as plt
 import matplotlib
 import seaborn as sns
 
+
+# -------------------WorkflowRunner--------------
+def workflow_runner(workflow, num_cores):
+
+    workflow.write_graph(graph2use='flat')
+
+    if num_cores < 2:
+        workflow.run()
+    else:
+        workflow.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+
+    os.system("notify-send " + workflow.name + " done")
+# -------------------------------------------------------
 
 # ----------- UnringNii -------------------------
 class UnringNiiInputSpec(BaseInterfaceInputSpec):
@@ -236,32 +248,13 @@ class ResampNii(BaseInterface):
 
         # Rescale affine and feed into resample function
         in_file_voxdim = in_file_nii.header['pixdim'][1:4]
-        resamp_file_voxdim = np.array([1,1,1])
-        target_affine = nib.affines.rescale_affine(
-                in_file_nii.affine, in_file_voxdim, resamp_file_voxdim)
+        resamp_file_voxdim = np.array([1, 1, 1])
+        target_affine = nib.affines.rescale_affine(in_file_nii.affine,
+                                                   in_file_voxdim,
+                                                   resamp_file_voxdim)
 
         resamp_nii = nilimg.resample_img(in_file_nii, target_affine)
         resamp_img = np.array(resamp_nii.get_fdata())
-
-        # # Trim resampled image by a layer with width=2 on each surface
-        # width = 2
-        # x_dim, y_dim, z_dim = resamp_img.shape
-        # x_range = range(width, x_dim-width)
-        # y_range = range(width, y_dim-width)
-        # z_range = range(width, z_dim-width)
-        # trimmed_img = resamp_img[x_range,:,:]
-        # trimmed_img = trimmed_img[:,y_range,:]
-        # trimmed_img = trimmed_img[:,:,z_range]
-
-        # trimmed_nii = nib.Nifti1Image(trimmed_img,
-        #                       resamp_nii.affine, resamp_nii.header)
-
-        # # Update dimension info in trimmed image header
-        # x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
-        # dim_in_header = np.array([3, x_dim_trm, y_dim_trm, z_dim_trm,
-        #                                         1, 1, 1, 1,])
-        # dim_in_header = dim_in_header.astype(int)
-        # trimmed_nii.header['dim'] = dim_in_header
 
         pth, fname, ext = split_filename(in_file_name)
         out_file_name = os.path.join(fname + '_resamp.nii')
@@ -275,6 +268,71 @@ class ResampNii(BaseInterface):
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
         out_file_name = os.path.join(fname + '_resamp.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+
+# -------------- TrimNii -------------------------
+class TrimInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+    trim_width = traits.Int(default_value=2,
+                            desc='Width of image edge to be cut')
+
+
+class TrimOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='Trimmed nii')
+
+
+class TrimNii(BaseInterface):
+    input_spec = TrimInputSpec
+    output_spec = TrimOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        in_file_nii = nib.load(in_file_name)
+        in_file_img = np.array(in_file_nii.get_fdata())
+
+        width = self.inputs.trim_width
+        x_dim, y_dim, z_dim = in_file_img.shape
+        x_range = range(width, x_dim - width)
+        y_range = range(width, y_dim - width)
+        z_range = range(width, z_dim - width)
+        trimmed_img = in_file_img[x_range, :, :]
+        trimmed_img = trimmed_img[:, y_range, :]
+        trimmed_img = trimmed_img[:, :, z_range]
+
+        trimmed_nii = nib.Nifti1Image(trimmed_img, in_file_nii.affine,
+                                      in_file_nii.header)
+
+        # Update dimension info in trimmed image header
+        x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
+        dim_in_header = np.array([
+            3,
+            x_dim_trm,
+            y_dim_trm,
+            z_dim_trm,
+            1,
+            1,
+            1,
+            1,
+        ])
+        dim_in_header = dim_in_header.astype(int)
+        in_file_nii.header['dim'] = dim_in_header
+
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_trimmed.nii')
+        nib.save(trimmed_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_trimmed.nii')
         outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 

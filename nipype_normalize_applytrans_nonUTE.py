@@ -3,10 +3,7 @@
 import os
 # import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-# import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
-# import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
@@ -17,7 +14,8 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 # UTE version should take option for either hr or fast
 
 
-def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
+def ApplyTransAnat_workflow(working_dir, subject_list, session_list,
+                            num_cores):
     scan_type = 'anat'
     # -----------------Inputs--------------------------------
     # Define subject list, session list and relevent file types
@@ -33,9 +31,7 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
     T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*T1w*.nii')
     TOF_files = os.path.join(subdirectory, 'rrr' + filestart + '*TOF*.nii')
-    FLAIR_files = os.path.join(subdirectory,
-                               'rrr' + filestart + '*FLAIR*.nii')
-
+    FLAIR_files = os.path.join(subdirectory, 'rrr' + filestart + '*FLAIR*.nii')
 
     scanfolder = 'SpatialNormalization_SemiAuto_flirt_transform'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
@@ -62,12 +58,12 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
         'mni_brain': MNI_brain_file
     }
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -128,7 +124,7 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list, num_cores):
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
-    task = 'NormalizationTransform_' + scan_type
+    task = 'linear_transformed_' + scan_type
     trans_wf = eng.Workflow(name=task)
     trans_wf.base_dir = working_dir + '/workflow'
 

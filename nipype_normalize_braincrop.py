@@ -1,25 +1,22 @@
-# Normalization Pipeline '
+# BrainCrop Pipeline
 # -----------------Imports-------------------------------
 import os
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
+# -------------------------------------------------------
 
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
-# -------------------------------------------------------
 
-
-def BrainCrop_workflow(working_dir, subject_list, num_cores):
+def braincrop(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    # Define subject list, session list and relevent file types
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
-    subdirectory = os.path.join(temp_dir,
-                                'IntersessionCoregister_preconScansSPM_SPM',
+    subdirectory = os.path.join(temp_dir, 'pre_to_post_coregister',
                                 'sub-{subject_id}')
     filestart = 'sub-{subject_id}_ses-Precon'
     T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')
@@ -30,7 +27,7 @@ def BrainCrop_workflow(working_dir, subject_list, num_cores):
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -77,7 +74,9 @@ def BrainCrop_workflow(working_dir, subject_list, num_cores):
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [('_subject_id_', 'sub-')]
+    substitutions = [('_subject_id_', 'sub-'),
+                     ('_corrected_maths_reoriented_ROI_brain_brain',
+                      '_desc-preproc-braincrop')]
 
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
                    for sub in subject_list]
@@ -87,7 +86,7 @@ def BrainCrop_workflow(working_dir, subject_list, num_cores):
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
-    task = 'BrainCrop'
+    task = 'braincrop'
     braincrop_wf = eng.Workflow(name=task)
     braincrop_wf.base_dir = working_dir + '/workflow'
 
@@ -102,12 +101,4 @@ def BrainCrop_workflow(working_dir, subject_list, num_cores):
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    braincrop_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        braincrop_wf.run()
-    else:
-        braincrop_wf.run(plugin='MultiProc',
-                         plugin_args={'n_procs': num_cores})
+    return braincrop_wf

@@ -3,8 +3,7 @@
 import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
+# import nipype.interfaces.spm as spm
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
@@ -17,7 +16,7 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
+def Preproc10_workflow(working_dir, subject_list, session_list, num_cores):
 
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
@@ -26,8 +25,8 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
     filestart = 'sub-{subject_id}_ses-{session_id}'
 
     scantype = 'qutece'
-    qutece_hr_files = os.path.join(
-        subdirectory, scantype, filestart + '*hr*_run-*[0123456789]_UTE.nii')
+    qutece_hr_files = os.path.join(subdirectory, scantype,
+                                   filestart + '*hr*UTE.nii')
 
     templates = {'qutece_hr': qutece_hr_files}
 
@@ -65,17 +64,6 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
                                  iterfield=['file1'])
     # -------------------------------------------------------
 
-    # ------------------------RealignNode--------------------
-    xyz = [0, 1, 0]
-    realign_hr = eng.Node(spm.Realign(), name="realign_hr")
-    realign_hr.inputs.register_to_mean = True
-    realign_hr.inputs.quality = 0.95
-    realign_hr.inputs.wrap = xyz
-    realign_hr.inputs.write_wrap = xyz
-    realign_hr.inputs.interp = 7
-    realign_hr.inputs.write_interp = 7
-    # -------------------------------------------------------
-
     # FSL
     # ---------------------FixNANs----------------------
     maths = eng.MapNode(fsl.maths.MathsCommand(),
@@ -89,17 +77,6 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
     unring_nii = eng.MapNode(interface=cnp.UnringNii(),
                              name='unring_nii',
                              iterfield=['in_file'])
-    # -------------------------------------------------------
-
-    # ------------------------RealignNode--------------------
-    xyz = [0, 1, 0]
-    realign = eng.Node(spm.Realign(), name="realign")
-    realign.inputs.register_to_mean = False
-    realign.inputs.quality = 0.95
-    realign.inputs.wrap = xyz
-    realign.inputs.write_wrap = xyz
-    realign.inputs.interp = 7
-    realign.inputs.write_interp = 7
     # -------------------------------------------------------
 
     # MERGING OF HR AND FAST
@@ -132,7 +109,7 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
     # -------------------------------------------------------
 
     # -----------------PreprocWorkflow------------------------
-    task = 'preprocessing_nofast'
+    task = 'preprocessing10'
     preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
     preproc_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
@@ -144,11 +121,7 @@ def PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores):
         (bias_norm_hr, divide_bias_hr, [('bias_image', 'file2')]),
         (bias_norm_hr, datasink, [('bias_image', task + '_hr_BiasField.@con')
                                   ]),
-        (divide_bias_hr, realign_hr, [('out_file', 'in_files')]),
-        (realign_hr, merge, [('mean_image', 'in1'),
-                             ('realigned_files', 'in2')]),
-        (merge, maths, [('out', 'in_file')]),
-        (maths, unring_nii, [('out_file', 'in_file')]),
+        (divide_bias_hr, unring_nii, [('out_file', 'in_file')]),
         (unring_nii, reorient, [('out_file', 'in_file')]),
         (reorient, datasink, [('out_file', 'preprocessing.@con')])
     ])

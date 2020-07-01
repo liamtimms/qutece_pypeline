@@ -60,12 +60,12 @@ def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
         'precon_UTE': precon_UTE_files
     }
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
                           name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -98,11 +98,13 @@ def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat1 = eng.Node(interface=cnp.CSVConcatenate(), name='concat1')
+    concat_brain = eng.Node(interface=cnp.CSVConcatenate(),
+                            name='concat_brain')
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat2 = eng.Node(interface=cnp.CSVConcatenate(), name='concat2')
+    concat_blood = eng.Node(interface=cnp.CSVConcatenate(),
+                            name='concat_blood')
     # -------------------------------------------------------
 
     # ----------------------CBV----------------------------
@@ -128,7 +130,8 @@ def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_difference.*/', ''), ('_cbv_map.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_difference.*/', ''),
+                                            ('_cbv_map.*/', '')]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -144,18 +147,16 @@ def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):
         (difference, datasink, [('out_file', task + '_postminuspre.@con')]),
         (difference, roi_analyze_whbrain, [('out_file', 'scan_file')]),
         (selectfiles, roi_analyze_whbrain, [('brain_mask', 'roi_file')]),
-        (roi_analyze_whbrain, concat1, [('out_file', 'in_files')]),
+        (roi_analyze_whbrain, concat_brain, [('out_file', 'in_files')]),
         (difference, roi_analyze_blood, [('out_file', 'scan_file')]),
         (selectfiles, roi_analyze_blood, [('blood_mask', 'roi_file')]),
-        (roi_analyze_blood, concat2, [('out_file', 'in_files')]),
-        (concat1, cbv, [('out_csv', 'in1')]),
-        (concat2, cbv, [('out_csv', 'in2')]),
+        (roi_analyze_blood, concat_blood, [('out_file', 'in_files')]),
+        (concat_brain, cbv, [('out_csv', 'in1')]),
+        (concat_blood, cbv, [('out_csv', 'in2')]),
         (cbv, datasink, [('out_file', task + '.@con')]),
-
         (difference, cbv_map, [('out_file', 'difference')]),
         (selectfiles, cbv_map, [('blood_mask', 'blood_mask')]),
         (cbv_map, datasink, [('out_file', task + '_cbvmap.@con')])
-
     ])
     # -------------------------------------------------------
 

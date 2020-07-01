@@ -20,13 +20,14 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
-    # subdirectory = os.path.join(temp_dir, 'NormalizationTransform_fast_linear',
+    # subdirectory = os.path.join(temp_dir,
+    #                            'NormalizationTransform_fast_linear',
     #                            'sub-{subject_id}', 'ses-{session_id}')
     subdirectory = os.path.join(
         temp_dir, 'NormalizationTransform_' + scan_type + '_linear',
         'sub-{subject_id}')
     filestart = 'sub-{subject_id}_ses-{session_id}'
-    qutece_fast_files = os.path.join(
+    qutece_scan_files = os.path.join(
         subdirectory, '_*' + filestart + '*' + scan_type +
         '*_run-*[0123456789]_*masked_flirt.nii')
 
@@ -51,16 +52,16 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
         ROI_files = ROI_blood_files
 
     # file name substitutions
-    templates = {'qutece_fast': qutece_fast_files, 'ROI': ROI_files}
+    templates = {'qutece_scan': qutece_scan_files, 'ROI': ROI_files}
 
-    # Infosource - a function free node to iterate over the list of subject names
+    # Infosource - function free node to iterate over the list of subject names
     infosource = eng.Node(
         utl.IdentityInterface(fields=['subject_id', 'session_id']),
         name="infosource")
     infosource.iterables = [('subject_id', subject_list),
                             ('session_id', session_list)]
 
-    # Selectfiles to provide specific scans with in a subject to other functions
+    # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
                                            sort_filelist=True,
@@ -68,9 +69,9 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                            name="SelectFiles")
 
     # --------------------ROI_Analyze------------------------
-    roi_analyze_fast = eng.MapNode(interface=cnp.ROIAnalyze(),
-                                   name='roi_analyze_fast',
-                                   iterfield=['scan_file'])
+    roi_analyze = eng.MapNode(interface=cnp.ROIAnalyze(),
+                              name='roi_analyze',
+                              iterfield=['scan_file'])
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
@@ -90,12 +91,19 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
                         name="datasink")
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
-                     ('_run-01', '')]
+                     ('_rrr', ''), ('_rsub', 'sub'), ('_run-01', ''),
+                     ('_UTE_desc-preproc_masked_flirt', ''),
+                     ('_UTE_divby_average_bias_reoriented_masked_flirt', '')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub), 'sub-%s/' % sub)
                    for ses in session_list for sub in subject_list]
-    substitutions.extend(subjFolders)
+    rmbloodSegName = [('ROI-sub-%s_fast_blood-flirt-label' % sub, 'blood')
+                      for sub in subject_list]
+    rmbrainSegName = [('ROI-sub-%s_ses-Precon_T1w_corrected_masked_flirt'
+                      '_Segmentation-label' % sub, 'brain')
+                      for sub in subject_list]
+    substitutions.extend(subjFolders + rmbloodSegName + rmbrainSegName)
     datasink.inputs.substitutions = substitutions
-    # datasink.inputs.regexp_substitutions = [('_roi_analyze_fast.*/', ''),
+    # datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', ''),
     #                                         ('_csv_concatenate.*/', '')]
     # -------------------------------------------------------
 
@@ -105,16 +113,15 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     timeseries_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),
-        (selectfiles, roi_analyze_fast, [('ROI', 'roi_file'),
-                                         ('qutece_fast', 'scan_file')]),
-        (roi_analyze_fast, csv_concatenate, [('out_file', 'in_files')]),
+        (selectfiles, roi_analyze, [('ROI', 'roi_file'),
+                                    ('qutece_scan', 'scan_file')]),
+        (roi_analyze, csv_concatenate, [('out_file', 'in_files')]),
         (csv_concatenate, merge, [('out_csv', 'in1'), ('out_fig', 'in2')]),
         (merge, datasink, [('out', task + '.@con')])
     ])
 
     # -------------------WorkflowPlotting--------------------
     timeseries_wf.write_graph(graph2use='flat')
-
     # -------------------------------------------------------
 
     if num_cores < 2:

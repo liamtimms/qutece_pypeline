@@ -4,27 +4,25 @@ import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
-# -----------------Inputs--------------------------------
-# Define subject list, session list and relevent file types
-
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
+def preproc(working_dir, subject_list, session_list):
 
+    # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
-
-    subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
     filestart = 'sub-{subject_id}_ses-{session_id}'
 
+    subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
+
+    # UTE Files
     scantype = 'qutece'
     qutece_fast_files = os.path.join(
         subdirectory, scantype, filestart + '*fast*_run-*[0123456789]_UTE.nii')
@@ -52,7 +50,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                            name="selectfiles")
     # -------------------------------------------------------
 
-    ### FAST ###
+    # FAST SCANS
     # -----------------------AverageImages-------------
     average_niis_fast = eng.Node(ants.AverageImages(),
                                  name='average_niis_fast')
@@ -73,7 +71,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                                    iterfield=['file1'])
     # -------------------------------------------------------
 
-    ### HR ####
+    # HR SCANS
     # -----------------------AverageImages-------------
     average_niis_hr = eng.Node(ants.AverageImages(), name='average_niis_hr')
     average_niis_hr.inputs.dimension = 3
@@ -103,7 +101,7 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
     realign_hr.inputs.write_interp = 7
     # -------------------------------------------------------
 
-    ### Merge ###
+    # MERGING OF HR AND FAST
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
@@ -126,6 +124,10 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
     unring_nii = eng.MapNode(interface=cnp.UnringNii(),
                              name='unring_nii',
                              iterfield=['in_file'])
+
+    unring_nii_hr = eng.MapNode(interface=cnp.UnringNii(),
+                                name='unring_nii_hr',
+                                iterfield=['in_file'])
     # -------------------------------------------------------
 
     # ------------------------RealignNode--------------------
@@ -153,7 +155,8 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                         name="datasink")
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
-                     ('divby_average_desc-unring_bias_reoriented', 'desc-preproc')]
+                     ('divby_average_desc-unring_bias_reoriented',
+                      'desc-preproc')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub),
                     ('sub-%s/ses-%s/' + scantype) % (sub, ses))
                    for ses in session_list for sub in subject_list]
@@ -172,37 +175,29 @@ def Preproc_workflow(working_dir, subject_list, session_list, num_cores):
                                    ('session_id', 'session_id')]),
         (selectfiles, average_niis_hr, [('qutece_hr', 'images')]),
         (selectfiles, average_niis_fast, [('qutece_fast', 'images')]),
+
+        # hr scan processing
         (average_niis_hr, bias_norm_hr, [('output_average_image',
                                           'input_image')]),
         (selectfiles, divide_bias_hr, [('qutece_hr', 'file1')]),
         (bias_norm_hr, divide_bias_hr, [('bias_image', 'file2')]),
-        (bias_norm_hr, datasink, [('bias_image', task + '_hr_BiasField.@con')
-                                  ]),
-        (divide_bias_hr, realign_hr, [('out_file', 'in_files')]),
+        (divide_bias_hr, unring_nii_hr, [('out_file', 'in_file')]),
+        (unring_nii_hr, realign_hr, [('out_file', 'in_files')]),
         (realign_hr, merge, [('mean_image', 'in1')]),
         (realign_hr, merge2, [('realigned_files', 'in1')]),
+
+        # fast scan processing
         (average_niis_fast, bias_norm_fast, [('output_average_image',
                                               'input_image')]),
         (selectfiles, divide_bias_fast, [('qutece_fast', 'file1')]),
         (bias_norm_fast, divide_bias_fast, [('bias_image', 'file2')]),
-        (bias_norm_fast, datasink, [('bias_image',
-                                     task + '_fast_BiasField.@con')]),
-
-        # (divide_bias_hr, merge, [('out_file', 'in1')]),
         (divide_bias_fast, merge, [('out_file', 'in2')]),
         (merge, unring_nii, [('out', 'in_file')]),
         (unring_nii, realign, [('out_file', 'in_files')]),
         (realign, merge2, [('realigned_files', 'in2')]),
         (merge2, reorient, [('out', 'in_file')]),
-        (reorient,  datasink, [('out_file', task + '.@con')])
+        (reorient, datasink, [('out_file', task + '.@con')])
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    preproc_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        preproc_wf.run()
-    else:
-        preproc_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    return preproc_wf
