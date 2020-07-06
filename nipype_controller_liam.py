@@ -28,7 +28,7 @@ num_cores = 1
 
 # Subjects with both hr and fast scans
 # subject_list = ['02', '03', '04', '06', '11']
-subject_list = ['11']
+subject_list = ['02', '11']
 preproc_wf = preproc(working_dir, subject_list, session_list)
 workflow_list.append(preproc_wf)
 # cnp.workflow_runner(preproc_wf, num_cores)
@@ -67,6 +67,14 @@ workflow_list.append(braincrop_wf)
 calc_transforms_wf = calc_transforms(working_dir, subject_list)
 workflow_list_2.append(calc_transforms_wf)
 
+scan_type = 'hr'
+apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list, scan_type)
+workflow_list_2.append(apply_transforms_hr_wf)
+
+scan_type = 'fast'
+apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list, scan_type)
+workflow_list_2.append(apply_transforms_fast_wf)
+
 # # num_cores = 1
 # # scan_type = 'hr'
 # # ApplyTrans_workflow(working_dir, subject_list, session_list, num_cores,
@@ -101,7 +109,10 @@ workflow_list_2.append(calc_transforms_wf)
 # # CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
 # #
 
-for workflow in workflow_list:
+# for workflow in workflow_list:
+#     cnp.workflow_runner(workflow, num_cores)
+
+for workflow in workflow_list_2:
     cnp.workflow_runner(workflow, num_cores)
 
-# os.system("espeak 'pipeline run done'")
+os.system("espeak 'pipeline run done'")

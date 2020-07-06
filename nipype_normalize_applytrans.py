@@ -1,6 +1,7 @@
 # Trans Pipeline
 # -----------------Imports-------------------------------
 import os
+import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
@@ -19,9 +20,11 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
 
-    MNI_file = os.path.abspath('/opt/fsl/data/standard/MNI152_T1_1mm.nii.gz')
-    MNI_brain_file = os.path.abspath(
-        '/opt/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz')
+    fsl_dir = '/opt/fsl/data/standard/'
+    MNI_file = os.path.join(fsl_dir, 'MNI152_T1_1mm.nii.gz')
+    MNI_brain_file = os.path.join(fsl_dir, 'MNI152_T1_1mm_brain.nii.gz')
+    MNI_mask_file = os.path.join(fsl_dir,
+                                 'MNI152_T1_1mm_brain_mask_dil.nii.gz')
 
     filestart = 'sub-{subject_id}_ses-Precon'
     # Transforms
@@ -51,6 +54,7 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
 
     templates = {
         'mni_head': MNI_file,
+        'mni_mask': MNI_mask_file,
         'mni_brain': MNI_brain_file,
         'linear_matrix': linear_matrix_files,
         'postcon_UTE': postcon_UTE_files,
@@ -79,6 +83,14 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     maths.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
+    # -----------------CropBrainFixNaNs----------------------
+    applymask = eng.MapNode(fsl.ApplyMask(),
+                            name='applymask',
+                            iterfield='in_file')
+    applymask.inputs.nan2zeros = True
+    applymask.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
@@ -92,6 +104,12 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     # apply_linear.inputs.interp = 'spline'
 
     apply_linear.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # ----------------------DivideNii------------------------
+    plot_dist = eng.Node(interface=cnp.PlotDistribution(), name='plot_dist')
+    plot_dist.inputs.plot_xlim_max = 500
+    plot_dist.inputs.plot_xlim_min = 10
     # -------------------------------------------------------
 
     # ------------------------Output-------------------------
@@ -118,11 +136,15 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
         (selectfiles, apply_linear, [('mni_brain', 'reference'),
                                      ('linear_matrix', 'in_matrix_file')]),
+        (selectfiles, applymask, [('mni_mask', 'mask_file')]),
         (selectfiles, merge, [('postcon_UTE', 'in1'), ('precon_UTE', 'in2')]),
         (merge, maths, [('out', 'in_file')]),
         # (merge, apply_linear, [('out', 'in_file')]),
         (maths, apply_linear, [('out_file', 'in_file')]),
-        (apply_linear, datasink, [('out_file', task + '.@con')])
+        (apply_linear, datasink, [('out_file', task + '.@con')]),
+        (apply_linear, applymask, [('out_file', 'in_file')]),
+        (applymask, plot_dist, [('out_file', 'in_files')]),
+        (plot_dist, datasink, [('out_fig', task + '_plots.@con')])
     ])
     # -------------------------------------------------------
 
