@@ -740,10 +740,11 @@ class PlotDistribution(BaseInterface):
             np.warnings.filterwarnings('ignore')
             sns.distplot(vals, bins=500, kde=False, norm_hist=True, ax=ax,
                     hist_kws={'histtype': 'step', 'linewidth': 1})
-            ax.set_title('Distribution')
-            ax.set_xlabel('Values')
-            ax.set_ylabel('Normalized Voxel Count')
-            ax.set_xlim([plot_xlim_min, plot_xlim_max])
+
+        ax.set_title('Distribution')
+        ax.set_xlabel('Values')
+        ax.set_ylabel('Normalized Voxel Count')
+        ax.set_xlim([plot_xlim_min, plot_xlim_max])
 
         matplotlib.rcParams.update({'font.size': 16})
         pth, fname, ext = split_filename(in_files[0])
