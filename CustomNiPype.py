@@ -737,6 +737,7 @@ class PlotDistribution(BaseInterface):
             nii = nib.load(nii_filename)
             img = np.array(nii.get_fdata())
             vals = np.reshape(img, -1)
+            vals[vals == 0] = np.nan
             np.warnings.filterwarnings('ignore')
             sns.distplot(vals, bins=500, kde=False, norm_hist=True, ax=ax,
                     hist_kws={'histtype': 'step', 'linewidth': 1})
