@@ -4,6 +4,7 @@ import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
+import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
@@ -91,6 +92,13 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     applymask.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
+    # -----------------------BiasFieldCorrection-------------
+    bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),
+                            name='bias_norm',
+                            iterfield=['input_image'])
+    bias_norm.inputs.rescale_intensities = True
+    # -------------------------------------------------------
+
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
@@ -137,12 +145,14 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
         (selectfiles, apply_linear, [('mni_brain', 'reference'),
                                      ('linear_matrix', 'in_matrix_file')]),
         (selectfiles, applymask, [('mni_mask', 'mask_file')]),
+        (selectfiles, bias_norm, [('mni_mask', 'mask_image')]),
         (selectfiles, merge, [('postcon_UTE', 'in1'), ('precon_UTE', 'in2')]),
         (merge, maths, [('out', 'in_file')]),
         # (merge, apply_linear, [('out', 'in_file')]),
         (maths, apply_linear, [('out_file', 'in_file')]),
         (apply_linear, datasink, [('out_file', task + '.@con')]),
-        (apply_linear, applymask, [('out_file', 'in_file')]),
+        (apply_linear, bias_norm, [('out_file', 'input_image')]),
+        (bias_norm, applymask, [('output_image', 'in_file')]),
         (applymask, plot_dist, [('out_file', 'in_files')]),
         (plot_dist, datasink, [('out_fig', task + '_plots.@con')])
     ])
