@@ -24,7 +24,7 @@ session_list = ['Precon', 'Postcon']
 workflow_list = []
 workflow_list_2 = []
 
-num_cores = 1
+num_cores = 5
 
 # Subjects with both hr and fast scans
 # subject_list = ['02', '03', '04', '06', '11']
@@ -106,8 +106,8 @@ workflow_list_2.append(apply_transforms_fast_wf)
 # # CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
 # #
 
-# for workflow in workflow_list:
-#     cnp.workflow_runner(workflow, num_cores)
+for workflow in workflow_list:
+    cnp.workflow_runner(workflow, num_cores)
 
 for workflow in workflow_list_2:
     cnp.workflow_runner(workflow, num_cores)

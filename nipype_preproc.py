@@ -173,25 +173,15 @@ def preproc(working_dir, subject_list, session_list):
     preproc_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),
-        (selectfiles, average_niis_hr, [('qutece_hr', 'images')]),
-        (selectfiles, average_niis_fast, [('qutece_fast', 'images')]),
+        (selectfiles, unring_nii_hr, [('qutece_hr', 'in_file')]),
+        (selectfiles, merge, [('qutece_fast', 'in2')]),
 
         # hr scan processing
-        (average_niis_hr, bias_norm_hr, [('output_average_image',
-                                          'input_image')]),
-        (selectfiles, divide_bias_hr, [('qutece_hr', 'file1')]),
-        (bias_norm_hr, divide_bias_hr, [('bias_image', 'file2')]),
-        (divide_bias_hr, unring_nii_hr, [('out_file', 'in_file')]),
         (unring_nii_hr, realign_hr, [('out_file', 'in_files')]),
         (realign_hr, merge, [('mean_image', 'in1')]),
         (realign_hr, merge2, [('realigned_files', 'in1')]),
 
         # fast scan processing
-        (average_niis_fast, bias_norm_fast, [('output_average_image',
-                                              'input_image')]),
-        (selectfiles, divide_bias_fast, [('qutece_fast', 'file1')]),
-        (bias_norm_fast, divide_bias_fast, [('bias_image', 'file2')]),
-        (divide_bias_fast, merge, [('out_file', 'in2')]),
         (merge, unring_nii, [('out', 'in_file')]),
         (unring_nii, realign, [('out_file', 'in_files')]),
         (realign, merge2, [('realigned_files', 'in2')]),
