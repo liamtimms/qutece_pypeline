@@ -4,13 +4,13 @@ from nipype_preproc import preproc
 # from nipype_preproc_nofast import PreprocNoFast_workflow
 # from nipype_preproc_08 import Preproc08_workflow
 # from nipype_preproc_10 import Preproc10_workflow
-from nipype_coreg import intrasession_coregister
-from nipype_coreg2 import pre_to_post_coregister
-from nipype_normalize_braincrop import braincrop
-from nipype_normalize_semiauto import calc_transforms
-from nipype_scan_diff import post_pre_difference
+from nipype_intrasession_coregister import intrasession_coregister
+from nipype_pre_to_post_coregister import pre_to_post_coregister
+from nipype_braincrop import braincrop
+from nipype_calc_transforms import calc_transforms
+from nipype_post_pre_difference import post_pre_difference
+from nipype_apply_transforms import apply_linear_trans
 # from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
-from nipype_normalize_applytrans import apply_linear_trans
 # from nipype_normalize_applytrans_nonUTE import ApplyTransAnat_workflow
 # from nipype_timeseries_roi import TimeSeries_ROI_workflow
 # from nipype_cbv_whbrain import CBV_WholeBrain_workflow
