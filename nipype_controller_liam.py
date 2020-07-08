@@ -31,7 +31,6 @@ num_cores = 1
 subject_list = ['02', '11']
 preproc_wf = preproc(working_dir, subject_list, session_list)
 workflow_list.append(preproc_wf)
-# cnp.workflow_runner(preproc_wf, num_cores)
 
 # # # Subjects without Fast Scans
 # # #subject_list = ['05', '07', '09']
@@ -58,11 +57,9 @@ workflow_list.append(coreg2_wf)
 braincrop_wf = braincrop(working_dir, subject_list)
 workflow_list.append(braincrop_wf)
 
-# # # AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
+# AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
 # # subject_list = ['08', '09', '10']
 # # subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
-# # flirt_wf = flirt(working_dir, subject_list)
-# # cnp.workflow_runner(flirt_wf, num_cores)
 
 calc_transforms_wf = calc_transforms(working_dir, subject_list)
 workflow_list_2.append(calc_transforms_wf)
