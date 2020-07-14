@@ -128,7 +128,7 @@ def braincrop_biasmask(working_dir, subject_list, session_list, scantype):
                     for ses in session_list for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    #datasink.inputs.regexp_substitutions = [('_skullstrip*/', '')]
+    datasink.inputs.regexp_substitutions = [('maths_reoriented_ROI_brain_brain', scantype)]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -153,10 +153,11 @@ def braincrop_biasmask(working_dir, subject_list, session_list, scantype):
         # (skullstrip, apply_trans, [('out_file', 'reference')]),
         # (apply_trans, datasink, [('out_file', task + '.@con')]),
 
-        (robustFOV, merge, [('out_transform', 'in1')]),
+        # (robustFOV, merge, [('out_transform', 'in1')]),
         (nosestrip, skullstrip, [('out_file', 'in_file')]),
-        (skullstrip, merge, [('mask_file', 'in2')]),
-        (merge, datasink, [('out', task + '.@con')])
+        # (skullstrip, merge, [('mask_file', 'in2')]),
+        # (merge, datasink, [('out', task + '.@con')])
+        (skullstrip, datasink, [('mask_file', task + '.@con')])
     ])
     # -------------------------------------------------------
 
