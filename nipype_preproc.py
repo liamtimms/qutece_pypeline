@@ -30,9 +30,19 @@ def preproc(working_dir, subject_list, session_list):
     qutece_hr_files = os.path.join(
         subdirectory, scantype, filestart + '*hr*_run-*[0123456789]_UTE.nii')
 
+    # biasmask file
+    brainmask_dir = os.path.join(
+        output_dir, 'manual_work', 'segmentations', 'brain_biasmask')
+    biasmask_hr_file = os.path.join(
+        brainmask_dir, '*' + filestart + '*T1w_hr*' + 'Segmentation-label.nii')
+    biasmask_fast_file = os.path.join(
+        brainmask_dir, '*' + filestart + '*T1w_fast*' + 'Segmentation-label.nii')
+
     templates = {
         'qutece_fast': qutece_fast_files,
-        'qutece_hr': qutece_hr_files
+        'qutece_hr': qutece_hr_files,
+        'biasmask_hr': biasmask_hr_file,
+        'biasmask_fast': biasmask_fast_file
     }
 
     # Infosource - a function free node to iterate over the list of subjects
@@ -51,6 +61,11 @@ def preproc(working_dir, subject_list, session_list):
     # -------------------------------------------------------
 
     # FAST SCANS
+    # -----------------------RobustFOV----------------------
+    robustFOV_fast = eng.MapNode(fsl.RobustFOV(), name='robustFOV_fast', iterfield=['in_file'])
+    robustFOV_fast.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
     # -----------------------AverageImages-------------
     average_niis_fast = eng.Node(ants.AverageImages(),
                                  name='average_niis_fast')
@@ -72,6 +87,11 @@ def preproc(working_dir, subject_list, session_list):
     # -------------------------------------------------------
 
     # HR SCANS
+    # -----------------------RobustFOV----------------------
+    robustFOV_hr = eng.MapNode(fsl.RobustFOV(), name='robustFOV_hr', iterfield=['in_file'])
+    robustFOV_hr.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
     # -----------------------AverageImages-------------
     average_niis_hr = eng.Node(ants.AverageImages(), name='average_niis_hr')
     average_niis_hr.inputs.dimension = 3
@@ -109,6 +129,18 @@ def preproc(working_dir, subject_list, session_list):
     # -----------------------Merge---------------------------
     merge2 = eng.Node(utl.Merge(2), name='merge2')
     merge2.ravel_inputs = True
+    # -------------------------------------------------------
+    # -----------------------Merge---------------------------
+    merge3 = eng.Node(utl.Merge(2), name='merge3')
+    merge3.ravel_inputs = True
+    # -------------------------------------------------------
+    # -----------------------Merge---------------------------
+    merge4 = eng.Node(utl.Merge(2), name='merge4')
+    merge4.ravel_inputs = True
+    # -------------------------------------------------------
+    # -----------------------Merge---------------------------
+    merge5 = eng.Node(utl.Merge(2), name='merge5')
+    merge5.ravel_inputs = True
     # -------------------------------------------------------
 
     # FSL
@@ -148,6 +180,34 @@ def preproc(working_dir, subject_list, session_list):
     reorient.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
+    # -------------------ApplyMask---------------------------
+    applymask_hr = eng.MapNode(fsl.ApplyMask(),
+                            name='applymask_hr',
+                            iterfield='in_file')
+    applymask_hr.inputs.nan2zeros = True
+    applymask_hr.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # -------------------ApplyMask---------------------------
+    applymask_fast = eng.MapNode(fsl.ApplyMask(),
+                            name='applymask_fast',
+                            iterfield='in_file')
+    applymask_fast.inputs.nan2zeros = True
+    applymask_fast.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # ----------------------PlotDistribution------------------------
+    plot_dist_hr = eng.Node(interface=cnp.PlotDistribution(), name='plot_dist_hr')
+    plot_dist_hr.inputs.plot_xlim_max = 500
+    plot_dist_hr.inputs.plot_xlim_min = 10
+    # -------------------------------------------------------
+
+    # ----------------------PlotDistribution------------------------
+    plot_dist_fast = eng.Node(interface=cnp.PlotDistribution(), name='plot_dist_fast')
+    plot_dist_fast.inputs.plot_xlim_max = 500
+    plot_dist_fast.inputs.plot_xlim_min = 10
+    # -------------------------------------------------------
+
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
     datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -156,6 +216,8 @@ def preproc(working_dir, subject_list, session_list):
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
                      ('divby_average_desc-unring_bias_reoriented',
+                      'desc-preproc'),
+                     ('divby_average_desc-unring_desc-unring_bias_reoriented',
                       'desc-preproc')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub),
                     ('sub-%s/ses-%s/' + scantype) % (sub, ses))
@@ -179,6 +241,7 @@ def preproc(working_dir, subject_list, session_list):
         # hr scan processing
         (average_niis_hr, bias_norm_hr, [('output_average_image',
                                           'input_image')]),
+        (selectfiles, bias_norm_hr, [('biasmask_hr', 'mask_image')]),
         (selectfiles, divide_bias_hr, [('qutece_hr', 'file1')]),
         (bias_norm_hr, divide_bias_hr, [('bias_image', 'file2')]),
         (divide_bias_hr, unring_nii_hr, [('out_file', 'in_file')]),
@@ -189,6 +252,7 @@ def preproc(working_dir, subject_list, session_list):
         # fast scan processing
         (average_niis_fast, bias_norm_fast, [('output_average_image',
                                               'input_image')]),
+        (selectfiles, bias_norm_fast, [('biasmask_fast', 'mask_image')]),
         (selectfiles, divide_bias_fast, [('qutece_fast', 'file1')]),
         (bias_norm_fast, divide_bias_fast, [('bias_image', 'file2')]),
         (divide_bias_fast, merge, [('out_file', 'in2')]),
@@ -196,7 +260,22 @@ def preproc(working_dir, subject_list, session_list):
         (unring_nii, realign, [('out_file', 'in_files')]),
         (realign, merge2, [('realigned_files', 'in2')]),
         (merge2, reorient, [('out', 'in_file')]),
-        (reorient, datasink, [('out_file', task + '.@con')])
+        (reorient, datasink, [('out_file', task + '.@con')]),
+
+        # apply mask and plot distribution before and after bias correction
+        (selectfiles, applymask_hr, [('biasmask_hr', 'mask_file')]),
+        (selectfiles, merge3, [('qutece_hr', 'in1')]),
+        (divide_bias_hr, merge3, [('out_file', 'in2')]),
+        (merge3, applymask_hr, [('out', 'in_file')]),
+        (applymask_hr, plot_dist_hr, [('out_file', 'in_files')]),
+        (plot_dist_hr, merge5, [('out_fig', 'in1')]),
+        (selectfiles, applymask_fast, [('biasmask_fast', 'mask_file')]),
+        (selectfiles, merge4, [('qutece_fast', 'in1')]),
+        (divide_bias_fast, merge4, [('out_file', 'in2')]),
+        (merge4, applymask_fast, [('out', 'in_file')]),
+        (applymask_fast, plot_dist_fast, [('out_file', 'in_files')]),
+        (plot_dist_fast, merge5, [('out_fig', 'in2')]),
+        (merge5, datasink, [('out', task + '_plots.@con')])
     ])
     # -------------------------------------------------------
 
