@@ -716,6 +716,8 @@ class PlotDistributionInputSpec(BaseInterfaceInputSpec):
                                 desc = 'x-axis limit min')
     plot_xlim_max = traits.Float(mandatory=True,
                                 desc = 'x-axis limit max')
+    plot_bins = traits.Int(mandatory=True,
+                                desc = 'number of bins in histogram')
 
 
 class PlotDistributionOutputSpec(TraitedSpec):
@@ -730,6 +732,7 @@ class PlotDistribution(BaseInterface):
         in_files = self.inputs.in_files
         plot_xlim_min = self.inputs.plot_xlim_min
         plot_xlim_max = self.inputs.plot_xlim_max
+        plot_bins = self.inputs.plot_bins
         in_files = sorted(in_files)
         fig, ax = plt.subplots(1,1, figsize=(10,8))
 
@@ -739,7 +742,7 @@ class PlotDistribution(BaseInterface):
             vals = np.reshape(img, -1)
             vals[vals == 0] = np.nan
             np.warnings.filterwarnings('ignore')
-            sns.distplot(vals, bins=500, kde=False, norm_hist=True, ax=ax,
+            sns.distplot(vals, bins=plot_bins, kde=False, norm_hist=True, ax=ax,
                     hist_kws={'histtype': 'step', 'linewidth': 1})
 
         ax.set_title('Distribution')
@@ -761,6 +764,53 @@ class PlotDistribution(BaseInterface):
         pth, fname, ext = split_filename(in_files[0])
         out_fig_name = os.path.join(fname + '_DistributionPlot.png')
         outputs['out_fig'] = os.path.abspath(out_fig_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+# -------------- ImageRescale -------------------------
+class ImageRescaleInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+    mask_file = File(exists=True, mandatory=True)
+
+
+class ImageRescaleOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='rescale intensity in mask by average')
+
+
+class ImageRescale(BaseInterface):
+    input_spec = ImageRescaleInputSpec
+    output_spec = ImageRescaleOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        mask_file_name = self.inputs.mask_file
+
+        in_file_nii = nib.load(in_file_name)
+        in_file_img = np.array(in_file_nii.get_fdata())
+        mask_file_nii = nib.load(mask_file_name)
+        mask_file_img = np.array(mask_file_nii.get_fdata(), dtype=bool)
+
+        in_file_masked_img = np.ma.masked_array(
+                in_file_img, mask = np.invert(mask_file_img))
+        scaling_factor = in_file_img.mean()
+        out_file_img = in_file_img / scaling_factor
+
+        out_file_nii = nib.Nifti1Image(
+                out_file_img, in_file_nii.affine, in_file_nii.header)
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_rescaled.nii')
+        nib.save(out_file_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_rescaled.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
