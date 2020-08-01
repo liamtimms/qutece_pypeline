@@ -4,27 +4,25 @@ import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.spm as spm
-# import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
-# -----------------Inputs--------------------------------
-# Define subject list, session list and relevent file types
-
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def Preproc08_workflow(working_dir, subject_list, session_list, num_cores):
+def preproc_08(working_dir, subject_list, session_list):
 
+    # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')
     temp_dir = os.path.join(output_dir, 'datasink/')
-
-    subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
     filestart = 'sub-{subject_id}_ses-{session_id}'
 
+    subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
+
+    # UTE Files
     scantype = 'qutece'
     qutece_fast_files = os.path.join(
         subdirectory, scantype, filestart + '*fast*_run-*[0123456789]_UTE.nii')
@@ -176,11 +174,4 @@ def Preproc08_workflow(working_dir, subject_list, session_list, num_cores):
     ])
     # -------------------------------------------------------
 
-    # -------------------WorkflowPlotting--------------------
-    preproc_wf.write_graph(graph2use='flat')
-    # -------------------------------------------------------
-
-    if num_cores < 2:
-        preproc_wf.run()
-    else:
-        preproc_wf.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+    return preproc_wf
