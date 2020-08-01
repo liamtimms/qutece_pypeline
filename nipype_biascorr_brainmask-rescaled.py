@@ -98,18 +98,7 @@ def biascorr(working_dir, subject_list, session_list):
     merge2 = eng.Node(utl.Merge(2), name='merge2')
     merge2.ravel_inputs = True
     # -------------------------------------------------------
-    # -----------------------Merge---------------------------
-    merge3 = eng.Node(utl.Merge(2), name='merge3')
-    merge3.ravel_inputs = True
-    # -------------------------------------------------------
-    # -----------------------Merge---------------------------
-    merge4 = eng.Node(utl.Merge(2), name='merge4')
-    merge4.ravel_inputs = True
-    # -------------------------------------------------------
-    # -----------------------Merge---------------------------
-    merge5 = eng.Node(utl.Merge(2), name='merge5')
-    merge5.ravel_inputs = True
-    # -------------------------------------------------------
+
     # -------------------ApplyMask---------------------------
     applymask_hr = eng.MapNode(fsl.ApplyMask(),
                             name='applymask_hr',
@@ -143,7 +132,7 @@ def biascorr(working_dir, subject_list, session_list):
     datasink.inputs.substitutions = substitutions
     datasink.inputs.regexp_substitutions = [('_BiasCorrection.', ''),
                                             ('_bias_norm.*/', ''),
-                                            ('_reorient.*/', '')]
+                                            ('_divide_bias.*/', '')]
     # -------------------------------------------------------
 
     # -----------------PreprocWorkflow------------------------
@@ -168,20 +157,12 @@ def biascorr(working_dir, subject_list, session_list):
         (merge, datasink, [('out', task + '.@con')]),
 
         # # apply mask and plot distribution before and after bias correction
-        (unring_nii_hr, merge3, [('out_file', 'in1')]),
-        (divide_bias_hr, merge3, [('out_file', 'in2')]),
-        (merge3, applymask_hr, [('out', 'in_file')]),
+        (unring_nii_hr, merge2, [('out_file', 'in1')]),
+        (divide_bias_hr, merge2, [('out_file', 'in2')]),
+        (merge2, applymask_hr, [('out', 'in_file')]),
         (selectfiles, applymask_hr, [('biasmask_hr', 'mask_file')]),
         (applymask_hr, plot_dist_hr, [('out_file', 'in_files')]),
         (plot_dist_hr, datasink, [('out_fig', task + '_plots.@con')])
-        # (plot_dist_hr, merge5, [('out_fig', 'in1')]),
-        # (selectfiles, applymask_fast, [('biasmask_fast', 'mask_file')]),
-        # (selectfiles, merge4, [('qutece_fast', 'in1')]),
-        # (divide_bias_fast, merge4, [('out_file', 'in2')]),
-        # (merge4, applymask_fast, [('out', 'in_file')]),
-        # (applymask_fast, plot_dist_fast, [('out_file', 'in_files')]),
-        # (plot_dist_fast, merge5, [('out_fig', 'in2')]),
-        # (merge5, datasink, [('out', task + '_plots.@con')])
     ])
     # -------------------------------------------------------
 
