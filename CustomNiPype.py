@@ -794,7 +794,7 @@ class ImageRescale(BaseInterface):
 
         in_file_masked_img = np.ma.masked_array(
                 in_file_img, mask = np.invert(mask_file_img))
-        scaling_factor = in_file_img.mean()
+        scaling_factor = in_file_masked_img.mean()
         out_file_img = in_file_img / scaling_factor
 
         out_file_nii = nib.Nifti1Image(
