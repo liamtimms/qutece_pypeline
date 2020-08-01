@@ -2,8 +2,9 @@ import os
 import CustomNiPype as cnp
 from nipype_initial_braincrop import initial_braincrop
 from nipype_preproc import preproc
+from nipype_preproc_nofast import preproc_nofast
 # from nipype_preproc_nofast import PreprocNoFast_workflow
-# from nipype_preproc_08 import Preproc08_workflow
+from nipype_preproc_08 import preproc_08
 # from nipype_preproc_10 import Preproc10_workflow
 from nipype_intrasession_coregister import intrasession_coregister
 from nipype_pre_to_post_coregister import pre_to_post_coregister
@@ -43,26 +44,29 @@ subject_list = ['02', '03', '04', '06', '11', '12', '15']
 preproc_wf = preproc(working_dir, subject_list, session_list)
 workflow_list.append(preproc_wf)
 
-# # # # Subjects without Fast Scans
-# # # #subject_list = ['05', '07', '09']
-# # # #PreprocNoFast_workflow(working_dir, subject_list, session_list, num_cores)
-# # # num_cores = 5
-# # #
-# # # # # Subjects with only 1 precon
-# # # #session_list = ['Precon']
-# # # #subject_list = ['08', '13', '14']
-# # # #Preproc08_workflow(working_dir, subject_list, session_list, num_cores)
-# # # #subject_list = ['10']
-# # # #Preproc10_workflow(working_dir, subject_list, session_list, num_cores)
+# Subjects without Fast Scans
+subject_list = ['05', '07', '09']
+preproc_nofast_wf = preproc_nofast(working_dir, subject_list, session_list)
+# num_cores = 5
+
+subject_list = ['08', '13', '14']
+session_list = ['Postcon']
+preproc_wf = preproc(working_dir, subject_list, session_list)
+session_list = ['Precon']
+preproc_08(working_dir, subject_list, session_list, num_cores)
+
+#subject_list = ['10']
+#Preproc10_workflow(working_dir, subject_list, session_list, num_cores)
 # #
-# # # #num_cores = 1
-# # # # subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
+#num_cores = 1
+# subject_list = ['02', '03', '04', '05', '06', '07', '09', '11']
+subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
 session_list = ['Precon']
 coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
 workflow_list.append(coreg_wf)
 
 session_list = ['Postcon']
-subject_list = ['02', '03', '04', '06', '11']
+subject_list = ['02', '03', '04', '05', '06', '07', '08', '11']
 coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
 workflow_list.append(coreg_wf)
 
