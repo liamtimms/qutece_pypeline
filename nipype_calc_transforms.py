@@ -25,7 +25,7 @@ def calc_transforms(working_dir, subject_list):
 
     T1w_files = os.path.join(subdirectory, 'rrr' + filestart + '*_T1w*.nii')
 
-    subdirectory = os.path.join(output_dir, 'manual_work', 'segmentations',
+    subdirectory = os.path.join(output_dir, 'manualwork', 'segmentations',
                                 'brain_preFLIRT')
     brain_mask_files = os.path.join(subdirectory,
                                     'rrr' + filestart + '*_T1w*-label.nii')
