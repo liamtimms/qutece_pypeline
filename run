@@ -1,0 +1,3 @@
+#!/bin/bash
+
+time python nipype_controller_liam.py 2> errors.txt | tee log.txt ; notify-send CHECK
