@@ -92,7 +92,7 @@ workflow_list.append(braincrop_wf)
 # subject_list = ['08', '09', '10']
 # subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
 
-subject_list = ['02', '03', '04', '06', '11']
+subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
 calc_transforms_wf = calc_transforms(working_dir, subject_list)
 workflow_list_2.append(calc_transforms_wf)
 
@@ -152,7 +152,7 @@ for workflow in workflow_list:
 
 num_cores = 5
 
-# for workflow in workflow_list_2:
-#     cnp.workflow_runner(workflow, num_cores)
+for workflow in workflow_list_2:
+    cnp.workflow_runner(workflow, num_cores)
 
 # os.system("espeak 'pipeline run done'")

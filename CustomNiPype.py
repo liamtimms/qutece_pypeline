@@ -766,3 +766,39 @@ class PlotDistribution(BaseInterface):
 
 # -----------------------------------------------
 
+
+# -------------- Fake Realign --------------------
+class FakeRealignInputSpec(BaseInterfaceInputSpec):
+    in_file = InputMultiObject(exists=True,
+                                mandatory=True,
+                                desc='nii to cp and treat as mean')
+
+
+class FakeRealignOutputSpec(TraitedSpec):
+    out_file = File(exists=True, disc='copied file to mimix mean from spm')
+
+
+class FakeRealign(BaseInterface):
+    input_spec = FakeRealignInputSpec
+    output_spec = FakeRealignOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file = self.inputs.in_file
+
+        pth, fname, ext = split_filename(in_files)
+        out_file_name = os.path.join('rmean' + fname[1:] + ext)
+
+        setattr(self, '_out_fig', out_fig_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_files = self.inputs.in_files
+        pth, fname, ext = split_filename(in_files[0])
+        out_fig_name = os.path.join(fname + '_DistributionPlot.png')
+        outputs['out_fig'] = os.path.abspath(out_fig_name)
+        return outputs
+
+
+
+# -----------------------------------------------
