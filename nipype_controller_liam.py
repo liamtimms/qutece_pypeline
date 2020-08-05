@@ -96,19 +96,20 @@ subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
 calc_transforms_wf = calc_transforms(working_dir, subject_list)
 workflow_list_2.append(calc_transforms_wf)
 
+session_list = ['Precon', 'Postcon']
 scan_type = 'hr'
 
 apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list, scan_type)
 workflow_list_2.append(apply_transforms_hr_wf)
 
-apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(working_dir, subject_list, scan_type)
+apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
 workflow_list_2.append(apply_nonlinear_transforms_hr_wf)
 
 scan_type = 'fast'
 apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list, scan_type)
 workflow_list_2.append(apply_transforms_fast_wf)
 
-apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(working_dir, subject_list, scan_type)
+apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
 workflow_list_2.append(apply_nonlinear_transforms_fast_wf)
 
 # num_cores = 1
@@ -150,7 +151,7 @@ num_cores = 1
 for workflow in workflow_list:
     cnp.workflow_runner(workflow, num_cores)
 
-num_cores = 5
+num_cores = 1
 
 for workflow in workflow_list_2:
     cnp.workflow_runner(workflow, num_cores)

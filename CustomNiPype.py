@@ -24,7 +24,10 @@ def workflow_runner(workflow, num_cores):
         workflow.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
 
     os.system("notify-send " + workflow.name + " done")
+
+
 # -------------------------------------------------------
+
 
 # ----------- UnringNii -------------------------
 class UnringNiiInputSpec(BaseInterfaceInputSpec):
@@ -254,7 +257,7 @@ class ResampNii(BaseInterface):
                                                    resamp_file_voxdim)
 
         resamp_nii = nilimg.resample_img(in_file_nii, target_affine)
-        resamp_img = np.array(resamp_nii.get_fdata())
+        # resamp_img = np.array(resamp_nii.get_fdata())
 
         pth, fname, ext = split_filename(in_file_name)
         out_file_name = os.path.join(fname + '_resamp.nii')
@@ -344,7 +347,8 @@ class TrimNii(BaseInterface):
 class TrimInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
     trim_width = traits.Int(default_value=2,
-            desc='Width of image edge to be cut')
+                            desc='Width of image edge to be cut')
+
 
 class TrimOutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='Trimmed nii')
@@ -361,20 +365,28 @@ class TrimNii(BaseInterface):
 
         width = self.inputs.trim_width
         x_dim, y_dim, z_dim = in_file_img.shape
-        x_range = range(width, x_dim-width)
-        y_range = range(width, y_dim-width)
-        z_range = range(width, z_dim-width)
-        trimmed_img = in_file_img[x_range,:,:]
-        trimmed_img = trimmed_img[:,y_range,:]
-        trimmed_img = trimmed_img[:,:,z_range]
+        x_range = range(width, x_dim - width)
+        y_range = range(width, y_dim - width)
+        z_range = range(width, z_dim - width)
+        trimmed_img = in_file_img[x_range, :, :]
+        trimmed_img = trimmed_img[:, y_range, :]
+        trimmed_img = trimmed_img[:, :, z_range]
 
-        trimmed_nii = nib.Nifti1Image(trimmed_img,
-                              in_file_nii.affine, in_file_nii.header)
+        trimmed_nii = nib.Nifti1Image(trimmed_img, in_file_nii.affine,
+                                      in_file_nii.header)
 
         # Update dimension info in trimmed image header
         x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
-        dim_in_header = np.array([3, x_dim_trm, y_dim_trm, z_dim_trm,
-                                                1, 1, 1, 1,])
+        dim_in_header = np.array([
+            3,
+            x_dim_trm,
+            y_dim_trm,
+            z_dim_trm,
+            1,
+            1,
+            1,
+            1,
+        ])
         dim_in_header = dim_in_header.astype(int)
         in_file_nii.header['dim'] = dim_in_header
 
@@ -394,6 +406,7 @@ class TrimNii(BaseInterface):
 
 
 # -----------------------------------------------
+
 
 # -------------- ROI Anlayze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
@@ -487,6 +500,8 @@ class CSVConcatenateInputSpec(BaseInterfaceInputSpec):
 
 class CSVConcatenateOutputSpec(TraitedSpec):
     out_csv = File(exists=True, desc='concatenated csv')
+    out_mean_csv = File(exists=True, desc='mean csv')
+    out_std_csv = File(exists=True, desc='std csv')
     out_fig = File(exists=True, disc='timeseries plots')
 
 
@@ -500,11 +515,19 @@ class CSVConcatenate(BaseInterface):
         concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
         concatenated_df.columns = ['ind', 'label', 'mean', 'std']
         concatenated_df = concatenated_df.astype({'label': 'int'})
+        mean_df = concatenated_df.groupby(by='label').mean()
+        std_df = concatenated_df.groupby(by='label').std()
 
         # grab fname info from first file in the input list
         pth, fname, ext = split_filename(in_files[0])
         out_csv_name = os.path.join(fname + '_concatenated.csv')
         concatenated_df.to_csv(out_csv_name)
+
+        out_mean_csv_name = os.path.join(fname + '_mean.csv')
+        mean_df.to_csv(out_mean_csv_name)
+
+        out_std_csv_name = os.path.join(fname + '_std.csv')
+        std_df.to_csv(out_std_csv_name)
 
         # plot time series
         unique_label = np.unique(concatenated_df['label'])
@@ -526,6 +549,8 @@ class CSVConcatenate(BaseInterface):
         plt.savefig(out_fig_name, bbox_inches='tight')
 
         setattr(self, '_out_csv', out_csv_name)
+        setattr(self, '_out_mean_csv', out_mean_csv_name)
+        setattr(self, '_out_std_csv', out_std_csv_name)
         setattr(self, '_out_fig', out_fig_name)
         return runtime
 
@@ -534,8 +559,12 @@ class CSVConcatenate(BaseInterface):
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
         out_csv_name = os.path.join(fname + '_concatenated.csv')
+        out_mean_csv_name = os.path.join(fname + '_mean.csv')
+        out_std_csv_name = os.path.join(fname + '_std.csv')
         out_fig_name = os.path.join(fname + '_timeseries.png')
         outputs['out_csv'] = os.path.abspath(out_csv_name)
+        outputs['out_mean_csv'] = os.path.abspath(out_mean_csv_name)
+        outputs['out_std_csv'] = os.path.abspath(out_std_csv_name)
         outputs['out_fig'] = os.path.abspath(out_fig_name)
         return outputs
 
@@ -712,10 +741,8 @@ class PlotDistributionInputSpec(BaseInterfaceInputSpec):
     in_files = InputMultiObject(exists=True,
                                 mandatory=True,
                                 desc='list of niis')
-    plot_xlim_min = traits.Float(mandatory=True,
-                                desc = 'x-axis limit min')
-    plot_xlim_max = traits.Float(mandatory=True,
-                                desc = 'x-axis limit max')
+    plot_xlim_min = traits.Float(mandatory=True, desc='x-axis limit min')
+    plot_xlim_max = traits.Float(mandatory=True, desc='x-axis limit max')
 
 
 class PlotDistributionOutputSpec(TraitedSpec):
@@ -731,7 +758,7 @@ class PlotDistribution(BaseInterface):
         plot_xlim_min = self.inputs.plot_xlim_min
         plot_xlim_max = self.inputs.plot_xlim_max
         in_files = sorted(in_files)
-        fig, ax = plt.subplots(1,1, figsize=(10,8))
+        fig, ax = plt.subplots(1, 1, figsize=(10, 8))
 
         for nii_filename in in_files:
             nii = nib.load(nii_filename)
@@ -739,8 +766,15 @@ class PlotDistribution(BaseInterface):
             vals = np.reshape(img, -1)
             vals[vals == 0] = np.nan
             np.warnings.filterwarnings('ignore')
-            sns.distplot(vals, bins=500, kde=False, norm_hist=True, ax=ax,
-                    hist_kws={'histtype': 'step', 'linewidth': 1})
+            sns.distplot(vals,
+                         bins=500,
+                         kde=False,
+                         norm_hist=True,
+                         ax=ax,
+                         hist_kws={
+                             'histtype': 'step',
+                             'linewidth': 1
+                         })
 
         ax.set_title('Distribution')
         ax.set_xlabel('Values')
@@ -770,8 +804,8 @@ class PlotDistribution(BaseInterface):
 # -------------- Fake Realign --------------------
 class FakeRealignInputSpec(BaseInterfaceInputSpec):
     in_file = InputMultiObject(exists=True,
-                                mandatory=True,
-                                desc='nii to cp and treat as mean')
+                               mandatory=True,
+                               desc='nii to cp and treat as mean')
 
 
 class FakeRealignOutputSpec(TraitedSpec):
@@ -798,7 +832,6 @@ class FakeRealign(BaseInterface):
         out_fig_name = os.path.join(fname + '_DistributionPlot.png')
         outputs['out_fig'] = os.path.abspath(out_fig_name)
         return outputs
-
 
 
 # -----------------------------------------------

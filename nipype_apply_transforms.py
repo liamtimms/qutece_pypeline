@@ -152,7 +152,7 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     return trans_wf
 
 
-def apply_nonlinear_trans(working_dir, subject_list, scan_type):
+def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
 
     # -----------------Inputs--------------------------------
     output_dir = os.path.join(working_dir, 'derivatives/')
@@ -179,10 +179,11 @@ def apply_nonlinear_trans(working_dir, subject_list, scan_type):
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
 
-    # UTE Files
+    # UTE Files, split into pre and post for easier processing
     scanfolder = 'linear_transfomed_' + scan_type
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-    filestart = 'sub-{subject_id}'
+
+    filestart = 'sub-{subject_id}_ses-{session_id}'
     UTE_files = os.path.join(subdirectory,
                              '_r*' + filestart + '*' + scan_type + '*UTE*.nii')
 
@@ -196,10 +197,11 @@ def apply_nonlinear_trans(working_dir, subject_list, scan_type):
     }
 
     # Infosource - function free node to iterate over the list of subject names
-    infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
-                          name="infosource")
-    infosource.iterables = [('subject_id', subject_list)]
-
+    infosource = eng.Node(
+        utl.IdentityInterface(fields=['subject_id', 'session_id']),
+        name="infosource")
+    infosource.iterables = [('subject_id', subject_list),
+                            ('session_id', session_list)]
     # Selectfiles to provide specific scans within a subject to other functions
     selectfiles = eng.Node(nio.SelectFiles(templates,
                                            base_directory=working_dir,
@@ -252,6 +254,11 @@ def apply_nonlinear_trans(working_dir, subject_list, scan_type):
                                      iterfield=['scan_file'])
     # -------------------------------------------------------
 
+    # -----------------CSV_Concatenate-----------------------
+    concat_brain = eng.Node(interface=cnp.CSVConcatenate(),
+                            name='concat_brain')
+    # -------------------------------------------------------
+
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
     datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -264,7 +271,8 @@ def apply_nonlinear_trans(working_dir, subject_list, scan_type):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('apply_nonlinear.*/', ''), ('_roi_analyze_region.*/', '')]
+    datasink.inputs.regexp_substitutions = [('apply_nonlinear.*/', ''),
+                                            ('_roi_analyze_region.*/', '')]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -273,7 +281,8 @@ def apply_nonlinear_trans(working_dir, subject_list, scan_type):
     trans_wf.base_dir = working_dir + '/workflow'
 
     trans_wf.connect([
-        (infosource, selectfiles, [('subject_id', 'subject_id')]),
+        (infosource, selectfiles, [('subject_id', 'subject_id'),
+                                   ('session_id', 'session_id')]),
         (selectfiles, apply_nonlinear, [('mni_brain', 'ref_file'),
                                         ('warp_field', 'field_file')]),
         (selectfiles, maths, [('UTE', 'in_file')]),
@@ -287,6 +296,10 @@ def apply_nonlinear_trans(working_dir, subject_list, scan_type):
         (selectfiles, roi_analyze_region, [('spm_atlas', 'roi_file')]),
         (reslice, roi_analyze_region, [('out_file', 'scan_file')]),
         (roi_analyze_region, datasink, [('out_file', task + '_csv.@con')]),
+        (roi_analyze_region, concat_brain, [('out_file', 'in_files')]),
+        (concat_brain, datasink, [('out_csv', task + '_concatcsv.@con')]),
+        (concat_brain, datasink, [('out_mean_csv', task + '_meancsv.@con'),
+                                  ('out_std_csv', task + '_stdcsv.@con')]),
         (plot_dist, datasink, [('out_fig', task + '_plots.@con')])
     ])
     # -------------------------------------------------------
