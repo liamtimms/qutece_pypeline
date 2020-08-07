@@ -125,7 +125,7 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('apply_linear.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_apply_linear.*/', '')]
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -185,7 +185,7 @@ def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
 
     filestart = 'sub-{subject_id}_ses-{session_id}'
     UTE_files = os.path.join(subdirectory,
-                             '_r*' + filestart + '*' + scan_type + '*UTE*.nii')
+                             'r*' + filestart + '*' + scan_type + '*UTE*.nii')
 
     templates = {
         'mni_head': MNI_file,
@@ -265,13 +265,15 @@ def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [('_subject_id_', 'sub-')]
-
-    subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
-                   for sub in subject_list]
+    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
+                     ('desc-preproc_maths_flirt_maths_warp_ROI-labels_',
+                      'desc-processed_')]
+    subjFolders = [('ses-%ssub-%s' % (ses, sub),
+                    ('sub-%s/ses-%s/') % (sub, ses))
+                   for ses in session_list for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('apply_nonlinear.*/', ''),
+    datasink.inputs.regexp_substitutions = [('_apply_nonlinear.*/', ''),
                                             ('_roi_analyze_region.*/', '')]
     # -------------------------------------------------------
 
