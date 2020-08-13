@@ -86,6 +86,16 @@ def calc_transforms(working_dir, subject_list):
     fnirt.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
+    # -----------------------FAST----------------------------
+    fast = eng.Node(fsl.FAST(), name='fast')
+    fast.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # -----------------------Merge---------------------------
+    merge_FAST = eng.Node(utl.Merge(8), name='merge_FAST')
+    merge_FAST.ravel_inputs = True
+    # -------------------------------------------------------
+
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
     datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -112,6 +122,7 @@ def calc_transforms(working_dir, subject_list):
                                   ('brain_mask', 'mask_file')]),
         (selectfiles, flirt, [('mni_brain', 'reference')]),
         (applymask, flirt, [('out_file', 'in_file')]),
+        (applymask, fast, [('out_file', 'in_files')]),
         (flirt, datasink, [('out_file', task + '_linear.@con'),
                            ('out_matrix_file', task + '_linear_trans.@con')]),
         (selectfiles, apply_linear, [('mni_brain', 'reference')]),
@@ -122,7 +133,15 @@ def calc_transforms(working_dir, subject_list):
                               ('mni_mask', 'refmask_file')]),
         (apply_linear, fnirt, [('out_file', 'in_file')]),
         (fnirt, datasink, [('warped_file', task + '_nonlinear.@con'),
-                           ('field_file', task + '_nonlinear_trans.@con')])
+                           ('field_file', task + '_nonlinear_trans.@con')]),
+        (fast, merge_FAST, [('bias_field', 'in1'), ('mixeltype', 'in2'),
+                            ('partial_volume_files', 'in3'),
+                            ('partial_volume_map', 'in4'),
+                            ('probability_maps', 'in5'),
+                            ('restored_image', 'in6'),
+                            ('tissue_class_files', 'in7'),
+                            ('tissue_class_map', 'in8')]),
+        (merge_FAST, datasink, [('out', task + '_FAST_outs.@con')]),
     ])
     # -------------------------------------------------------
 
