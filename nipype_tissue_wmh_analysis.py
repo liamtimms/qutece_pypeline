@@ -85,26 +85,21 @@ def tissue_wmh_analysis(working_dir, subject_list):
     merge3.ravel_inputs = True
     # -------------------------------------------------------
 
-    # -------------------ROI_Analyze-------------------------
-    roi_analyze_tissue = eng.MapNode(interface=cnp.ROIAnalyze(),
-                                     name='roi_analyze_tissue',
-                                     iterfield=['scan_file'])
+    # ------------------Combine_Labels-----------------------
+    combine_labels = eng.Node(interface=cnp.CombineLabels(),
+                              name='combine_labels')
+    combine_labels.inputs.multiplication_factor = 1000
     # -------------------------------------------------------
 
     # -------------------ROI_Analyze-------------------------
-    roi_analyze_wmh = eng.MapNode(interface=cnp.ROIAnalyze(),
-                                     name='roi_analyze_wmh',
+    roi_analyze = eng.MapNode(interface=cnp.ROIAnalyze(),
+                                     name='roi_analyze',
                                      iterfield=['scan_file'])
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat_tissue = eng.Node(interface=cnp.CSVConcatenate(),
-                            name='concat_tissue')
-    # -------------------------------------------------------
-
-    # -----------------CSV_Concatenate-----------------------
-    concat_wmh = eng.Node(interface=cnp.CSVConcatenate(),
-                            name='concat_wmh')
+    concat = eng.Node(interface=cnp.CSVConcatenate(),
+                            name='concat')
     # -------------------------------------------------------
 
     # ------------------------Output-------------------------
@@ -120,8 +115,8 @@ def tissue_wmh_analysis(working_dir, subject_list):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_roi_analyze_tissue.*/', ''),
-                                            ('_roi_analyze_wmh.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
+
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
@@ -133,19 +128,11 @@ def tissue_wmh_analysis(working_dir, subject_list):
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
         (selectfiles, merge, [('precon_UTE', 'in1')]),
         (selectfiles, merge, [('postcon_UTE', 'in2')]),
-        (selectfiles, roi_analyze_tissue, [('fast_seg', 'roi_file')]),
-        (merge, roi_analyze_tissue, [('out', 'scan_file')]),
-        (selectfiles, roi_analyze_wmh, [('wmh_seg', 'roi_file')]),
-        (merge, roi_analyze_wmh, [('out', 'scan_file')]),
-
-        (roi_analyze_tissue, merge2, [('out_file', 'in1')]),
-        (roi_analyze_wmh, merge2, [('out_file', 'in2')]),
-        # (roi_analyze_tissue, concat_tissue, [('out_file', 'in_files')]),
-        # (roi_analyze_wmh, concat_wmh, [('out_file', 'in_files')]),
-        # (concat_tissue, merge3, [('out_csv', 'in1')]),
-        # (concat_wmh, merge3, [('out_csv', 'in2')]),
-        (merge2, datasink, [('out', task + '_csv.@con')])
-        # (merge3, datasink, [('out', task + '_concatcsv.@con')])
+        (selectfiles, combine_labels, [('fast_seg', 'in_file_fixed'),
+                                       ('wmh_seg', 'in_file_modifier')]),
+        (combine_labels, roi_analyze, [('out_file', 'roi_file')]),
+        (merge, roi_analyze, [('out', 'scan_file')]),
+        (roi_analyze, datasink, [('out_file', task + '_csv.@con')])
     ])
     # -------------------------------------------------------
 

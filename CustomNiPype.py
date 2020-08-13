@@ -884,12 +884,12 @@ class FakeRealign(BaseInterface):
 
 # ------------- Combine Labels ------------------
 class CombineLabelsInputSpec(BaseInterfaceInputSpec):
-    in_file_fixed = InputMultiObject(exists=True,
-                                     mandatory=True,
-                                     desc='label to be added')
-    in_file_modifier = InputMultiObject(exists=True,
-                                        mandatory=True,
-                                        desc='label to be multiplied and added')
+    in_file_fixed = File(exists=True,
+                         mandatory=True,
+                         desc='label to be added')
+    in_file_modifier = File(exists=True,
+                            mandatory=True,
+                            desc='label to be multiplied and added')
     multiplication_factor = traits.Int(mandatory=True,
                                        desc='factor of multiplication')
 
