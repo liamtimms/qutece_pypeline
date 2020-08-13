@@ -431,7 +431,7 @@ class ROIAnalyze(BaseInterface):
         scan_file_nii = nib.load(scan_file_name)
         scan_img = np.array(scan_file_nii.get_data())
         unique_roi = np.unique(ROI_file_img)
-        out_data = np.empty([np.size(unique_roi), 3])
+        out_data = np.empty([np.size(unique_roi), 4])
 
         n = 0
         for r in unique_roi:
@@ -447,9 +447,11 @@ class ROIAnalyze(BaseInterface):
             vals = np.reshape(crop_img, -1)
             ave = np.nanmean(vals)
             std = np.nanstd(vals)
+            N = np.count_nonzero(~np.isnan(vals))
             out_data[n][0] = r
             out_data[n][1] = ave
             out_data[n][2] = std
+            out_data[n][3] = N
             n = n + 1
 
         #  pth, fname, ext = split_filename(scan_file_name)
@@ -735,14 +737,17 @@ class LowerSNRNii(BaseInterface):
 
 # -----------------------------------------------
 
-
 # -------------- Plot Distribution --------------------
 class PlotDistributionInputSpec(BaseInterfaceInputSpec):
     in_files = InputMultiObject(exists=True,
                                 mandatory=True,
                                 desc='list of niis')
-    plot_xlim_min = traits.Float(mandatory=True, desc='x-axis limit min')
-    plot_xlim_max = traits.Float(mandatory=True, desc='x-axis limit max')
+    plot_xlim_min = traits.Float(mandatory=True,
+                                desc = 'x-axis limit min')
+    plot_xlim_max = traits.Float(mandatory=True,
+                                desc = 'x-axis limit max')
+    plot_bins = traits.Int(mandatory=True,
+                                desc = 'number of bins in histogram')
 
 
 class PlotDistributionOutputSpec(TraitedSpec):
@@ -757,8 +762,9 @@ class PlotDistribution(BaseInterface):
         in_files = self.inputs.in_files
         plot_xlim_min = self.inputs.plot_xlim_min
         plot_xlim_max = self.inputs.plot_xlim_max
+        plot_bins = self.inputs.plot_bins
         in_files = sorted(in_files)
-        fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+        fig, ax = plt.subplots(1,1, figsize=(10,8))
 
         for nii_filename in in_files:
             nii = nib.load(nii_filename)
@@ -766,22 +772,15 @@ class PlotDistribution(BaseInterface):
             vals = np.reshape(img, -1)
             vals[vals == 0] = np.nan
             np.warnings.filterwarnings('ignore')
-            sns.distplot(vals,
-                         bins=500,
-                         kde=False,
-                         norm_hist=True,
-                         ax=ax,
-                         hist_kws={
-                             'histtype': 'step',
-                             'linewidth': 1
-                         })
+            sns.distplot(vals, bins=plot_bins, kde=False, norm_hist=True, ax=ax,
+                    hist_kws={'histtype': 'step', 'linewidth': 1})
 
         ax.set_title('Distribution')
         ax.set_xlabel('Values')
         ax.set_ylabel('Normalized Voxel Count')
         ax.set_xlim([plot_xlim_min, plot_xlim_max])
 
-        matplotlib.rcParams.update({'font.size': 16})
+        # matplotlib.rcParams.update({'font.size': 16})
         pth, fname, ext = split_filename(in_files[0])
         out_fig_name = os.path.join(fname + '_DistributionPlot.png')
         plt.savefig(out_fig_name, dpi=300, bbox_inches='tight')
@@ -795,6 +794,53 @@ class PlotDistribution(BaseInterface):
         pth, fname, ext = split_filename(in_files[0])
         out_fig_name = os.path.join(fname + '_DistributionPlot.png')
         outputs['out_fig'] = os.path.abspath(out_fig_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+# -------------- ImageRescale -------------------------
+class ImageRescaleInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+    mask_file = File(exists=True, mandatory=True)
+
+
+class ImageRescaleOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='rescale intensity in mask by average')
+
+
+class ImageRescale(BaseInterface):
+    input_spec = ImageRescaleInputSpec
+    output_spec = ImageRescaleOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_name = self.inputs.in_file
+        mask_file_name = self.inputs.mask_file
+
+        in_file_nii = nib.load(in_file_name)
+        in_file_img = np.array(in_file_nii.get_fdata())
+        mask_file_nii = nib.load(mask_file_name)
+        mask_file_img = np.array(mask_file_nii.get_fdata(), dtype=bool)
+
+        in_file_masked_img = np.ma.masked_array(
+                in_file_img, mask = np.invert(mask_file_img))
+        scaling_factor = in_file_masked_img.mean()
+        out_file_img = in_file_img / scaling_factor
+
+        out_file_nii = nib.Nifti1Image(
+                out_file_img, in_file_nii.affine, in_file_nii.header)
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_rescaled.nii')
+        nib.save(out_file_nii, out_file_name)
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_name = self.inputs.in_file
+        pth, fname, ext = split_filename(in_file_name)
+        out_file_name = os.path.join(fname + '_rescaled.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
@@ -835,3 +881,55 @@ class FakeRealign(BaseInterface):
 
 
 # -----------------------------------------------
+
+# ------------- Combine Labels ------------------
+class CombineLabelsInputSpec(BaseInterfaceInputSpec):
+    in_file_fixed = File(exists=True,
+                         mandatory=True,
+                         desc='label to be added')
+    in_file_modifier = File(exists=True,
+                            mandatory=True,
+                            desc='label to be multiplied and added')
+    multiplication_factor = traits.Int(mandatory=True,
+                                       desc='factor of multiplication')
+
+class CombineLabelsOutputSpec(TraitedSpec):
+    out_file = File(exists=True, disc='output combined label')
+
+
+class CombineLabels(BaseInterface):
+    input_spec = CombineLabelsInputSpec
+    output_spec = CombineLabelsOutputSpec
+
+    def _run_interface(self, runtime):
+        in_file_fixed = self.inputs.in_file_fixed
+        in_file_modifier = self.inputs.in_file_modifier
+        factor = self.inputs.multiplication_factor
+
+        nii1 = nib.load(in_file_fixed)
+        nii2 = nib.load(in_file_modifier)
+        out_nii = nilimg.math_img('nii1 + nii2 * {}'.format(factor),
+                                  nii1 = nii1, nii2 = nii2)
+
+        pth, nii1_fname, ext = split_filename(in_file_fixed)
+        pth, nii2_fname, ext = split_filename(in_file_modifier)
+        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname + '.nii')
+        nib.save(out_nii, out_file_name)
+
+        setattr(self, '_out_file', out_file_name)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        in_file_fixed = self.inputs.in_file_fixed
+        in_file_modifier = self.inputs.in_file_modifier
+        pth, nii1_fname, ext = split_filename(in_file_fixed)
+        pth, nii2_fname, ext = split_filename(in_file_modifier)
+        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname + '.nii')
+        outputs['out_file'] = os.path.abspath(out_file_name)
+        return outputs
+
+
+# -----------------------------------------------
+
+
