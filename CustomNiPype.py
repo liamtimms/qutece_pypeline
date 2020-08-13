@@ -431,7 +431,7 @@ class ROIAnalyze(BaseInterface):
         scan_file_nii = nib.load(scan_file_name)
         scan_img = np.array(scan_file_nii.get_data())
         unique_roi = np.unique(ROI_file_img)
-        out_data = np.empty([np.size(unique_roi), 3])
+        out_data = np.empty([np.size(unique_roi), 4])
 
         n = 0
         for r in unique_roi:
@@ -447,9 +447,11 @@ class ROIAnalyze(BaseInterface):
             vals = np.reshape(crop_img, -1)
             ave = np.nanmean(vals)
             std = np.nanstd(vals)
+            N = np.count_nonzero(~np.isnan(vals))
             out_data[n][0] = r
             out_data[n][1] = ave
             out_data[n][2] = std
+            out_data[n][3] = N
             n = n + 1
 
         #  pth, fname, ext = split_filename(scan_file_name)
