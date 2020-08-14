@@ -91,22 +91,22 @@ def diff_stats(precon_df, postcon_df, atlas_df):
     return diff_df
 
 
-def difference_summary(in_folder, sub_num, scan_type, seg_type):
+def difference_summary(sub_num, scan_type, seg_type):
     session = 'Precon'
     data_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
                             'sub-{}'.format(sub_num), 'ses-{}'.format(session))
     path_pattern = os.path.join(data_dir,
                                 '*' + scan_type + '*' + seg_type + '*.csv')
-    load_name = glob.glob(path_pattern)
-    precon_df = pd.read_csv(load_name)
+    load_files = glob.glob(path_pattern)
+    precon_df = pd.read_csv(load_files[0])
 
     session = 'Postcon'
     data_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
                             'sub-{}'.format(sub_num), 'ses-{}'.format(session))
     path_pattern = os.path.join(data_dir,
                                 '*' + scan_type + '*' + seg_type + '*.csv')
-    load_name = glob.glob(path_pattern)
-    postcon_df = pd.read_csv(load_name)
+    load_files = glob.glob(path_pattern)
+    postcon_df = pd.read_csv(load_files[0])
 
     atlas_file = os.path.join(base_dir, 'code', 'nipype', seg_type + '.csv')
     atlas_df = pd.read_csv(atlas_file)
