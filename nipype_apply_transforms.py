@@ -111,6 +111,7 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     plot_dist = eng.Node(interface=cnp.PlotDistribution(), name='plot_dist')
     plot_dist.inputs.plot_xlim_max = 500
     plot_dist.inputs.plot_xlim_min = 10
+    plot_dist.inputs.plot_bins = 1000
     # -------------------------------------------------------
 
     # ------------------------Output-------------------------
@@ -240,6 +241,7 @@ def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
     plot_dist = eng.Node(interface=cnp.PlotDistribution(), name='plot_dist')
     plot_dist.inputs.plot_xlim_max = 500
     plot_dist.inputs.plot_xlim_min = 10
+    plot_dist.inputs.plot_bins = 1000
     # -------------------------------------------------------
 
     # --------------SPM_Reslice-------------------
