@@ -2,10 +2,19 @@ import os
 import glob
 import pandas as pd
 
-
 base_dir = os.path.abspath('../../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
+
+
+def wavg(df, avg_name, weight_name):
+    d = df[avg_name]
+    w = df[weight_name]
+    try:
+        return (d * w).sum() / w.sum()
+    except ZeroDivisionError:
+        return d.mean()
+
 
 def intensity_stats(in_files):
     """CSV stat calculator
@@ -44,7 +53,8 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                             'ses-{}'.format(session))
 
     if not os.path.exists(data_dir):
-        data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num))
+        data_dir = os.path.join(datasink_dir, in_folder,
+                                'sub-{}'.format(sub_num))
 
     session_pattern = '*' + session + '*' + scan_type + '*'
     seg_pattern = '*' + seg_type + '*'
@@ -53,14 +63,14 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
 
     stats_df = intensity_stats(csv_files)
 
-    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type, 'sub-{}'.format(sub_num),
-                            'ses-{}'.format(session))
+    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                            'sub-{}'.format(sub_num), 'ses-{}'.format(session))
 
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    save_name = ('sub-{}_ses-{}_' + scan_type +'_proc_' + 'seg-{}.csv').format(
-        sub_num, session, seg_type)
+    save_name = ('sub-{}_ses-{}_' + scan_type + '_proc_' +
+                 'seg-{}.csv').format(sub_num, session, seg_type)
 
     stats_df.to_csv(os.path.join(save_dir, save_name), index=False)
     return stats_df
@@ -75,18 +85,26 @@ def diff_stats(precon_df, postcon_df, atlas_df):
     postcon_std = list(postcon_df['std'])
     precon_mean = list(precon_df['mean'])
     precon_std = list(precon_df['std'])
+    N = list(precon_df['N'])
+
     diff_df = pd.DataFrame({
         'region': region_num,
         'name': region_name,
         'postcon_mean': postcon_mean,
         'postcon_std': postcon_std,
         'precon_mean': precon_mean,
-        'precon_std': precon_std
+        'precon_std': precon_std,
+        'N': N
     })
     diff_df['diff'] = postcon_df['mean'] - precon_df['mean']
-    # wm_df = diff_df.loc[diff_df['name'].str.contains('White_Matter')]
+    # filt_df = diff_df.loc[~diff_df['name'].str.contains('background')]
+    # filt_df = diff_df.loc[(diff_df['name'] == 'White_Matter') |
+    #                       (diff_df['name'] == 'Grey_Matter')]
+    filt_df = diff_df.loc[(diff_df['name'] == 'White_Matter')]
     # wm_diff_mean = wm_df['diff'].mean()
-    diff_mean = diff_df['diff'].mean()
+    # diff_mean = filt_df['diff'].mean()
+    diff_mean = wavg(filt_df, 'diff', 'N')
+    print(diff_mean)
     diff_df['rdiff'] = diff_df['diff'] / diff_mean
     return diff_df
 
@@ -113,44 +131,65 @@ def difference_summary(sub_num, scan_type, seg_type):
 
     diff_df = diff_stats(precon_df, postcon_df, atlas_df)
 
-    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type, 'sub-{}'.format(sub_num))
+    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                            'sub-{}'.format(sub_num))
 
     save_name = ('sub-{}_' + scan_type + '-proc_' + seg_type +
                  '_DIFF.csv').format(sub_num)
 
     diff_df.to_csv(os.path.join(save_dir, save_name), index=False)
+
     return diff_df
 
 
-def subjects_summary(datasink_dir, subject_list, atlas_df, scan_type,
-                     seg_type):
-
-    # region_num = list(atlas_df['region_num'])
-    # region_name = atlas_df['region_name'].astype(str)
-    summary_df = atlas_df
-    for sub_num in subject_list:
-
-        data_dir = os.path.join(datasink_dir, 'csv_work',
-                                'sub-{}'.format(sub_num))
-        load_name = ('sub-{}_' + scan_type + '-proc_' + seg_type +
-                     '_DIFF.csv').format(sub_num)
-        diff_df = pd.read_csv(os.path.join(data_dir, load_name))
-        diff_df = diff_df.drop(columns=[
-            'postcon_mean', 'postcon_std', 'precon_mean', 'precon_std', 'diff'
-        ])
-        rdiff = list(diff_df['rdiff'])
-        summary_df[sub_num + '_rdiff'] = rdiff
-
+def desc_trans(summary_df):
     transpose_df = summary_df
     transpose_df = transpose_df.drop(columns=['region_num', 'region_name'])
     transpose_df = transpose_df.transpose()
     desc_df = transpose_df.describe()
     desc_df = desc_df.transpose()
-    summary_df['mean_rdiff'] = list(desc_df['mean'])
-    summary_df['std_rdiff'] = list(desc_df['std'])
+    summary_df['mean'] = list(desc_df['mean'])
+    summary_df['std'] = list(desc_df['std'])
+    return summary_df
 
-    save_dir = os.path.join(datasink_dir, 'csv_work')
+
+def subjects_summary(datasink_dir, subject_list, scan_type, seg_type):
+
+    # region_num = list(atlas_df['region_num'])
+    # region_name = atlas_df['region_name'].astype(str)
+    atlas_file = os.path.join(base_dir, 'code', 'nipype', seg_type + '.csv')
+    atlas_df = pd.read_csv(atlas_file)
+    summary_df = atlas_df
+    summary_post_df = atlas_df
+    for sub_num in subject_list:
+
+        data_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                                'sub-{}'.format(sub_num))
+        load_name = ('sub-{}_' + scan_type + '-proc_' + seg_type +
+                     '_DIFF.csv').format(sub_num)
+        diff_df = pd.read_csv(os.path.join(data_dir, load_name))
+        postcon_mean = list(diff_df['postcon_mean'])
+        N = list(diff_df['N'])
+        diff_df = diff_df.drop(columns=[
+            'postcon_mean', 'postcon_std', 'precon_mean', 'precon_std', 'diff',
+            'N'
+        ])
+        rdiff = list(diff_df['rdiff'])
+        summary_df[sub_num + '_rdiff'] = rdiff
+        summary_post_df[sub_num + '_postcon_mean'] = postcon_mean
+        summary_post_df[sub_num + '_N'] = N
+
+    summary_df = desc_trans(summary_df)
+
+    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type)
     save_name = ('summary_' + scan_type + '-proc_' + seg_type + '_rDIFF.csv')
     summary_df.to_csv(os.path.join(save_dir, save_name), index=False)
 
+    summary_post_df = desc_trans(summary_post_df)
+
+    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type)
+    save_name = ('summary_' + scan_type + '-proc_' + seg_type + '_Post.csv')
+    summary_post_df.to_csv(os.path.join(save_dir, save_name), index=False)
+
     print(summary_df.head())
+    print(summary_post_df.head())
