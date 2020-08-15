@@ -16,8 +16,9 @@ for sub_num in subject_list:
     for session in session_list:
         cf.session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
+    cf.difference_summary(sub_num, scan_type, seg_type)
 
-
+cf.subjects_summary(datasink_dir, subject_list, scan_type, seg_type)
 
 
 # base_dir = os.path.abspath('../..')
