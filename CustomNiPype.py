@@ -515,7 +515,7 @@ class CSVConcatenate(BaseInterface):
         in_files = self.inputs.in_files
         df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files)
         concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
-        concatenated_df.columns = ['ind', 'label', 'mean', 'std']
+        concatenated_df.columns = ['ind', 'label', 'mean', 'std', 'N']
         concatenated_df = concatenated_df.astype({'label': 'int'})
         mean_df = concatenated_df.groupby(by='label').mean()
         std_df = concatenated_df.groupby(by='label').std()
