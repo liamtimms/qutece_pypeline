@@ -104,7 +104,7 @@ class DiffNii(BaseInterface):
         file1_img = np.array(file1_nii.get_fdata())
         file2_img = np.array(file2_nii.get_fdata())
 
-        #if file1_img.size()~=file2_img.size():
+        # if file1_img.size()~=file2_img.size():
         #    nii2 = nil.resample_to_img(nii2, nii1)
 
         diff_img = file2_img - file1_img
@@ -406,8 +406,6 @@ class TrimNii(BaseInterface):
 
 
 # -----------------------------------------------
-
-
 # -------------- ROI Anlayze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
     roi_file = File(exists=True, mandatory=True)
@@ -737,17 +735,15 @@ class LowerSNRNii(BaseInterface):
 
 # -----------------------------------------------
 
+
 # -------------- Plot Distribution --------------------
 class PlotDistributionInputSpec(BaseInterfaceInputSpec):
     in_files = InputMultiObject(exists=True,
                                 mandatory=True,
                                 desc='list of niis')
-    plot_xlim_min = traits.Float(mandatory=True,
-                                desc = 'x-axis limit min')
-    plot_xlim_max = traits.Float(mandatory=True,
-                                desc = 'x-axis limit max')
-    plot_bins = traits.Int(mandatory=True,
-                                desc = 'number of bins in histogram')
+    plot_xlim_min = traits.Float(mandatory=True, desc='x-axis limit min')
+    plot_xlim_max = traits.Float(mandatory=True, desc='x-axis limit max')
+    plot_bins = traits.Int(mandatory=True, desc='number of bins in histogram')
 
 
 class PlotDistributionOutputSpec(TraitedSpec):
@@ -764,7 +760,7 @@ class PlotDistribution(BaseInterface):
         plot_xlim_max = self.inputs.plot_xlim_max
         plot_bins = self.inputs.plot_bins
         in_files = sorted(in_files)
-        fig, ax = plt.subplots(1,1, figsize=(10,8))
+        fig, ax = plt.subplots(1, 1, figsize=(10, 8))
 
         for nii_filename in in_files:
             nii = nib.load(nii_filename)
@@ -772,8 +768,15 @@ class PlotDistribution(BaseInterface):
             vals = np.reshape(img, -1)
             vals[vals == 0] = np.nan
             np.warnings.filterwarnings('ignore')
-            sns.distplot(vals, bins=plot_bins, kde=False, norm_hist=True, ax=ax,
-                    hist_kws={'histtype': 'step', 'linewidth': 1})
+            sns.distplot(vals,
+                         bins=plot_bins,
+                         kde=False,
+                         norm_hist=True,
+                         ax=ax,
+                         hist_kws={
+                             'histtype': 'step',
+                             'linewidth': 1
+                         })
 
         ax.set_title('Distribution')
         ax.set_xlabel('Values')
@@ -799,6 +802,7 @@ class PlotDistribution(BaseInterface):
 
 # -----------------------------------------------
 
+
 # -------------- ImageRescale -------------------------
 class ImageRescaleInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
@@ -822,13 +826,13 @@ class ImageRescale(BaseInterface):
         mask_file_nii = nib.load(mask_file_name)
         mask_file_img = np.array(mask_file_nii.get_fdata(), dtype=bool)
 
-        in_file_masked_img = np.ma.masked_array(
-                in_file_img, mask = np.invert(mask_file_img))
+        in_file_masked_img = np.ma.masked_array(in_file_img,
+                                                mask=np.invert(mask_file_img))
         scaling_factor = in_file_masked_img.mean()
         out_file_img = in_file_img / scaling_factor
 
-        out_file_nii = nib.Nifti1Image(
-                out_file_img, in_file_nii.affine, in_file_nii.header)
+        out_file_nii = nib.Nifti1Image(out_file_img, in_file_nii.affine,
+                                       in_file_nii.header)
         pth, fname, ext = split_filename(in_file_name)
         out_file_name = os.path.join(fname + '_rescaled.nii')
         nib.save(out_file_nii, out_file_name)
@@ -882,16 +886,16 @@ class FakeRealign(BaseInterface):
 
 # -----------------------------------------------
 
+
 # ------------- Combine Labels ------------------
 class CombineLabelsInputSpec(BaseInterfaceInputSpec):
-    in_file_fixed = File(exists=True,
-                         mandatory=True,
-                         desc='label to be added')
+    in_file_fixed = File(exists=True, mandatory=True, desc='label to be added')
     in_file_modifier = File(exists=True,
                             mandatory=True,
                             desc='label to be multiplied and added')
     multiplication_factor = traits.Int(mandatory=True,
                                        desc='factor of multiplication')
+
 
 class CombineLabelsOutputSpec(TraitedSpec):
     out_file = File(exists=True, disc='output combined label')
@@ -909,11 +913,13 @@ class CombineLabels(BaseInterface):
         nii1 = nib.load(in_file_fixed)
         nii2 = nib.load(in_file_modifier)
         out_nii = nilimg.math_img('nii1 + nii2 * {}'.format(factor),
-                                  nii1 = nii1, nii2 = nii2)
+                                  nii1=nii1,
+                                  nii2=nii2)
 
         pth, nii1_fname, ext = split_filename(in_file_fixed)
         pth, nii2_fname, ext = split_filename(in_file_modifier)
-        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname + '.nii')
+        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname +
+                                     '.nii')
         nib.save(out_nii, out_file_name)
 
         setattr(self, '_out_file', out_file_name)
@@ -925,11 +931,10 @@ class CombineLabels(BaseInterface):
         in_file_modifier = self.inputs.in_file_modifier
         pth, nii1_fname, ext = split_filename(in_file_fixed)
         pth, nii2_fname, ext = split_filename(in_file_modifier)
-        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname + '.nii')
+        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname +
+                                     '.nii')
         outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
 # -----------------------------------------------
-
-
