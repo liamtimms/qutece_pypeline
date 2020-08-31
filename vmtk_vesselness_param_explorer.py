@@ -20,7 +20,9 @@ def GetPixelSpacing(nii_filename):
 
 
 # ----------------------- Input ------------------------------------------
-subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
+subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
+
+
 
 for subject_num in subject_list:
 
@@ -52,23 +54,27 @@ for subject_num in subject_list:
     suppressBlobs = 25
     alpha = SetAlpha(suppressPlates)
     beta = SetBeta(suppressBlobs)
-    gamma = 300
+    gamma = 75
 
     # --------------------- Param Space --------------------------------------
-    suppressBlobs_list = [5, 25, 100]
-    gamma_list = [50, 100, 200]
+    suppressBlobs_list = [50]
+    suppressPlates_list = [50]
+    gamma_list = [50, 100]
     # params_space = [(vmax, g) for vmax in voxelmax_list for g in gamma_list]
     params_space = [(suppressBlobs, g) for suppressBlobs in suppressBlobs_list
                     for g in gamma_list]
+    params_space = [(suppressPlates, suppressBlobs) for suppressPlates in suppressPlates_list
+                    for suppressBlobs in suppressBlobs_list]
 
     for params in params_space:
-        suppressBlobs, gamma = params
+        suppressPlates, suppressBlobs = params
         sigmamax = pixelspacing * voxelmax
 
+        alpha = SetAlpha(suppressPlates)
         beta = SetBeta(suppressBlobs)
         outVesselness = os.path.join(
             outfolder, infile + '_AutoVesselness' + '_sblobs=' +
-            str(suppressBlobs) + '_gamma=' + str(gamma) + '.nii')
+            str(suppressBlobs) + '_splates=' + str(suppressPlates) + '.nii')
         print(outVesselness)
 
         cmdVesselness = (
