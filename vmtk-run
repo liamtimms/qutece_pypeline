@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate vmtk_environment
+python vmtk_vesselness_param_explorer.py
+conda deactivate
