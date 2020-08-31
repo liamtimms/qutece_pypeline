@@ -117,7 +117,9 @@ def preproc_nofast(working_dir, subject_list, session_list):
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
+    substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-'),
+                     ('divby_average_bias_desc-unring_maths_reoriented',
+                      'desc-preproc')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub),
                     ('sub-%s/ses-%s/' + scantype) % (sub, ses))
                    for ses in session_list for sub in subject_list]
