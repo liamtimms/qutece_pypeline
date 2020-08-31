@@ -5,11 +5,13 @@ import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.spm as spm
+import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
 # -------------------------------------------------------
 
 fsl.FSLCommand.set_default_output_type('NIFTI')
+
 
 def tissue_wmh_analysis(working_dir, subject_list):
 
@@ -33,26 +35,33 @@ def tissue_wmh_analysis(working_dir, subject_list):
                                 'ses-' + session)
     filestart = 'sub-{subject_id}_ses-' + session + '_'
     postcon_UTE_files = os.path.join(
-        subdirectory, 'qutece',
-        'r' + filestart + '*' + 'hr' + '*UTE*.nii')
+        subdirectory, 'qutece', 'r' + filestart + '*' + 'hr' + '*UTE*.nii')
 
     # FAST tissue segmentation
     filestart = 'sub-{subject_id}_ses-Precon'
     scanfolder = 'calc_transforms_FAST_outs'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
-    fast_seg_files = os.path.join(
-        subdirectory, 'rrr' + filestart + '*T1w*' + '_seg.nii')
+    fast_seg_files = os.path.join(subdirectory,
+                                  'rrr' + filestart + '*T1w*' + '_seg.nii')
 
     # wmh segmentation
     filestart = 'sub-{subject_id}_ses-Precon'
-    subdirectory = os.path.join(
-        output_dir, 'manualwork', 'segmentations', 'WMH')
-    wmh_seg_files = os.path.join(
-        subdirectory, 'rrr' + filestart + '*WMH*' + '.nii')
+    subdirectory = os.path.join(output_dir, 'manualwork', 'segmentations',
+                                'WMH')
+    wmh_seg_files = os.path.join(subdirectory,
+                                 'rrr' + filestart + '*WMH*' + '.nii')
+
+    # Vesselness
+    filestart = 'sub-{subject_id}_ses-Postcon'
+    subdirectory = os.path.join(output_dir, 'manualwork',
+                                'vesselness_filtered', 'to_use')
+    vesselness_files = os.path.join(subdirectory,
+                                    'r' + filestart + '*' + '.nii')
 
     templates = {
         'wmh_seg': wmh_seg_files,
         'fast_seg': fast_seg_files,
+        'vesselness': vesselness_files,
         'postcon_UTE': postcon_UTE_files,
         'precon_UTE': precon_UTE_files
     }
@@ -91,15 +100,28 @@ def tissue_wmh_analysis(working_dir, subject_list):
     combine_labels.inputs.multiplication_factor = 1000
     # -------------------------------------------------------
 
+    # FSL
+    # ---------------------FixNANs----------------------
+    maths = eng.Node(fsl.maths.MathsCommand(), name='maths')
+    maths.inputs.nan2zeros = True
+    maths.inputs.output_type = 'NIFTI'
+    # -------------------------------------------------------
+
+    # -----------------------AverageImages-------------
+    threshold = eng.Node(ants.ThresholdImage(), name='threshold')
+    threshold.inputs.dimension = 3
+    threshold.inputs.mode = 'Otsu'
+    threshold.inputs.num_thresholds = 1
+    # -------------------------------------------------------
+
     # -------------------ROI_Analyze-------------------------
     roi_analyze = eng.MapNode(interface=cnp.ROIAnalyze(),
-                                     name='roi_analyze',
-                                     iterfield=['scan_file'])
+                              name='roi_analyze',
+                              iterfield=['scan_file'])
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat = eng.Node(interface=cnp.CSVConcatenate(),
-                            name='concat')
+    concat = eng.Node(interface=cnp.CSVConcatenate(), name='concat')
     # -------------------------------------------------------
 
     # ------------------------Output-------------------------
@@ -109,8 +131,7 @@ def tissue_wmh_analysis(working_dir, subject_list):
                         name="datasink")
     # Use the following DataSink output substitutions
     substitutions = [('_subject_id_', 'sub-'),
-                     ('desc-preproc_maths_flirt_maths_warp_ROI-labels_',
-                      'desc-processed_')]
+                     ('T1w_corrected_masked_seg', 'tissue-segmentation')]
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
                    for sub in subject_list]
     substitutions.extend(subjFolders)
@@ -128,6 +149,8 @@ def tissue_wmh_analysis(working_dir, subject_list):
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
         (selectfiles, merge, [('precon_UTE', 'in1')]),
         (selectfiles, merge, [('postcon_UTE', 'in2')]),
+        (selectfiles, maths, [('vesselness', 'in_file')]),
+        (maths, threshold, [('out_file', 'input_image')]),
         (selectfiles, combine_labels, [('fast_seg', 'in_file_fixed'),
                                        ('wmh_seg', 'in_file_modifier')]),
         (combine_labels, roi_analyze, [('out_file', 'roi_file')]),
