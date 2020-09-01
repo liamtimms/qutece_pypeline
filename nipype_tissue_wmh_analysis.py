@@ -95,9 +95,9 @@ def tissue_wmh_analysis(working_dir, subject_list):
     # -------------------------------------------------------
 
     # ------------------Combine_Labels-----------------------
-    combine_labels = eng.Node(interface=cnp.CombineLabels(),
-                              name='combine_labels')
-    combine_labels.inputs.multiplication_factor = 1000
+    combine_labels_wmh = eng.Node(interface=cnp.CombineLabels(),
+                              name='combine_labels_wmh')
+    combine_labels_wmh.inputs.multiplication_factor = 1000
     # -------------------------------------------------------
 
     # FSL
@@ -107,11 +107,19 @@ def tissue_wmh_analysis(working_dir, subject_list):
     maths.inputs.output_type = 'NIFTI'
     # -------------------------------------------------------
 
-    # -----------------------AverageImages-------------
+    # -----------------------ThresholdImage-------------
     threshold = eng.Node(ants.ThresholdImage(), name='threshold')
     threshold.inputs.dimension = 3
-    threshold.inputs.mode = 'Otsu'
-    threshold.inputs.num_thresholds = 1
+    threshold.inputs.th_low = 0.3
+    threshold.inputs.th_high = 1
+    threshold.inputs.inside_value = 2
+    threshold.inputs.outside_value = 1
+    # -------------------------------------------------------
+
+    # ------------------Combine_Labels-----------------------
+    combine_labels_vesselness = eng.Node(interface=cnp.CombineLabels(),
+                              name='combine_labels_vesselness')
+    combine_labels_vesselness.inputs.multiplication_factor = 10000
     # -------------------------------------------------------
 
     # -------------------ROI_Analyze-------------------------
@@ -151,9 +159,13 @@ def tissue_wmh_analysis(working_dir, subject_list):
         (selectfiles, merge, [('postcon_UTE', 'in2')]),
         (selectfiles, maths, [('vesselness', 'in_file')]),
         (maths, threshold, [('out_file', 'input_image')]),
-        (selectfiles, combine_labels, [('fast_seg', 'in_file_fixed'),
+        (selectfiles, combine_labels_wmh, [('fast_seg', 'in_file_fixed'),
                                        ('wmh_seg', 'in_file_modifier')]),
-        (combine_labels, roi_analyze, [('out_file', 'roi_file')]),
+        (combine_labels_wmh, combine_labels_vesselness, [
+                                       ('out_file', 'in_file_fixed')]),
+        (threshold, combine_labels_vesselness, [
+                                       ('output_image', 'in_file_modifier')]),
+        (combine_labels_vesselness, roi_analyze, [('out_file', 'roi_file')]),
         (merge, roi_analyze, [('out', 'scan_file')]),
         (roi_analyze, datasink, [('out_file', task + '_csv.@con')])
     ])
