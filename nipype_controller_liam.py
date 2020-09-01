@@ -13,6 +13,7 @@ from nipype_calc_transforms import calc_transforms
 from nipype_post_pre_difference import post_pre_difference
 from nipype_apply_transforms import apply_linear_trans
 from nipype_apply_transforms import apply_nonlinear_trans
+from nipype_tissue_wmh_analysis import tissue_wmh_analysis
 # from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
 # from nipype_normalize_applytrans_nonUTE import ApplyTransAnat_workflow
 # from nipype_timeseries_roi import TimeSeries_ROI_workflow
@@ -38,37 +39,45 @@ initial_braincrop_wf = initial_braincrop(working_dir, subject_list,
 # workflow_list.append(initial_braincrop_wf)
 
 
-# Subjects with all main scan types, pre and post
-subject_list = ['02', '03', '04', '06', '11', '12', '15']
-preproc_wf = preproc(working_dir, subject_list, session_list)
-workflow_list.append(preproc_wf)
-
-# Subjects without Fast Scans
-subject_list = ['05', '07', '09']
-preproc_nofast_wf = preproc_nofast(working_dir, subject_list, session_list)
-workflow_list.append(preproc_nofast_wf)
-
-# Subjects with Fast Scans but only one precon scan
-subject_list = ['08', '13', '14']
-session_list = ['Postcon']
-preproc_wf = preproc(working_dir, subject_list, session_list)
-workflow_list.append(preproc_wf)
-session_list = ['Precon']
-preproc_08_wf = preproc_08(working_dir, subject_list, session_list)
-workflow_list.append(preproc_08_wf)
-
+# # Subjects with all main scan types, pre and post
+# subject_list = ['02', '03', '04', '06', '11', '12', '15']
+# preproc_wf = preproc(working_dir, subject_list, session_list)
+# workflow_list.append(preproc_wf)
+#
+# # Subjects without Fast Scans
+# subject_list = ['05', '07', '09']
+# preproc_nofast_wf = preproc_nofast(working_dir, subject_list, session_list)
+# workflow_list.append(preproc_nofast_wf)
+#
+# # Subjects with Fast Scans but only one precon scan
+# subject_list = ['08', '13', '14']
+# session_list = ['Postcon']
+# preproc_wf = preproc(working_dir, subject_list, session_list)
+# workflow_list.append(preproc_wf)
+# session_list = ['Precon']
+# preproc_08_wf = preproc_08(working_dir, subject_list, session_list)
+# workflow_list.append(preproc_08_wf)
+#
 # Subject with only one precon scan, also missing Fast
 #subject_list = ['10']
 #Preproc10_workflow(working_dir, subject_list, session_list, num_cores)
 
+# ----------------------------------------------------------------------------
+# Manual manipulation here:
+# * copy sub-09_ses-Postcon_run-03_T1w.nii as sub-09_ses-Postcon_T1w.nii
+# ----------------------------------------------------------------------------
+
 # All Preproc'd Subjects
-subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
+# subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
+
+subject_list = ['05', '07', '09']
 session_list = ['Precon']
 coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
 workflow_list.append(coreg_wf)
 
 # Subjects with nonT1w postcon scans
-subject_list = ['02', '03', '04', '05', '06', '07', '08', '11']
+# subject_list = ['02', '03', '04', '05', '06', '07', '08', '11']
+subject_list = ['05', '07', '09']
 session_list = ['Postcon']
 coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
 workflow_list.append(coreg_wf)
@@ -79,7 +88,8 @@ workflow_list.append(coreg_wf)
 # workflow_list.append(coreg_wf)
 
 # All Coreg'd Subjects
-subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
+# subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
+subject_list = ['05', '07', '09']
 
 # subject_list = ['02', '03', '04', '06', '11', '12', '15']
 coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
@@ -92,25 +102,28 @@ workflow_list.append(braincrop_wf)
 # subject_list = ['08', '09', '10']
 # subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
 
-subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
+# subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
 calc_transforms_wf = calc_transforms(working_dir, subject_list)
 workflow_list_2.append(calc_transforms_wf)
 
 session_list = ['Precon', 'Postcon']
 scan_type = 'hr'
 
-apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list, scan_type)
-workflow_list_2.append(apply_transforms_hr_wf)
+# apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list, scan_type)
+# workflow_list_2.append(apply_transforms_hr_wf)
+#
+# apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
+# workflow_list_2.append(apply_nonlinear_transforms_hr_wf)
 
-apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
-workflow_list_2.append(apply_nonlinear_transforms_hr_wf)
+# tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
+# workflow_list_2.append(tissue_wf)
 
-scan_type = 'fast'
-apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list, scan_type)
-workflow_list_2.append(apply_transforms_fast_wf)
-
-apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
-workflow_list_2.append(apply_nonlinear_transforms_fast_wf)
+# scan_type = 'fast'
+# apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list, scan_type)
+# workflow_list_2.append(apply_transforms_fast_wf)
+#
+# apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
+# workflow_list_2.append(apply_nonlinear_transforms_fast_wf)
 
 # num_cores = 1
 # scan_type = 'hr'
@@ -146,12 +159,12 @@ workflow_list_2.append(apply_nonlinear_transforms_fast_wf)
 # CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
 #
 
-num_cores = 1
+num_cores = 4
 
 for workflow in workflow_list:
     cnp.workflow_runner(workflow, num_cores)
 
-num_cores = 1
+# num_cores = 1
 
 for workflow in workflow_list_2:
     cnp.workflow_runner(workflow, num_cores)
