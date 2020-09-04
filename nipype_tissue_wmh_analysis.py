@@ -138,8 +138,13 @@ def tissue_wmh_analysis(working_dir, subject_list):
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [('_subject_id_', 'sub-'),
-                     ('T1w_corrected_masked_seg', 'tissue-segmentation')]
+    substitutions = [
+        ('_subject_id_', 'sub-'),
+        ('Precon_T1w_corrected_masked_seg-ADD-rrrsub-', 'tissue'),
+        ('-Precon_WMHs-segmentation-ADD-rsub-', 'WMH'),
+        ('-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
+         'vesselness')
+    ]
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
                    for sub in subject_list]
     substitutions.extend(subjFolders)
