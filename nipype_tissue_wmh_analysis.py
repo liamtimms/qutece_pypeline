@@ -96,7 +96,7 @@ def tissue_wmh_analysis(working_dir, subject_list):
 
     # ------------------Combine_Labels-----------------------
     combine_labels_wmh = eng.Node(interface=cnp.CombineLabels(),
-                              name='combine_labels_wmh')
+                                  name='combine_labels_wmh')
     combine_labels_wmh.inputs.multiplication_factor = 1000
     # -------------------------------------------------------
 
@@ -118,7 +118,7 @@ def tissue_wmh_analysis(working_dir, subject_list):
 
     # ------------------Combine_Labels-----------------------
     combine_labels_vesselness = eng.Node(interface=cnp.CombineLabels(),
-                              name='combine_labels_vesselness')
+                                         name='combine_labels_vesselness')
     combine_labels_vesselness.inputs.multiplication_factor = 10000
     # -------------------------------------------------------
 
@@ -144,8 +144,11 @@ def tissue_wmh_analysis(working_dir, subject_list):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', ''),
-                     ('rrsub-10_ses-Precon_tissue-segmentation-ADD-rrrsub-10_ses-Precon_WMHs-segmentation-ADD-rsub-10_ses-Postcon_hr_run-01_UTE_desc-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled')]
+    datasink.inputs.regexp_substitutions = [
+        ('_roi_analyze.*/', ''),
+        ('ROI-rrrsub-..-Precon_tissue-segmentation-ADD-rrrsub-..-Precon_WMHs-segmentation-ADD-rsub-..-Postcon_hr_run-..-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
+         'segment-tissue-WMH-Vesselness_stats')
+    ]
 
     # -------------------------------------------------------
 
@@ -161,11 +164,11 @@ def tissue_wmh_analysis(working_dir, subject_list):
         (selectfiles, maths, [('vesselness', 'in_file')]),
         (maths, threshold, [('out_file', 'input_image')]),
         (selectfiles, combine_labels_wmh, [('fast_seg', 'in_file_fixed'),
-                                       ('wmh_seg', 'in_file_modifier')]),
-        (combine_labels_wmh, combine_labels_vesselness, [
-                                       ('out_file', 'in_file_fixed')]),
-        (threshold, combine_labels_vesselness, [
-                                       ('output_image', 'in_file_modifier')]),
+                                           ('wmh_seg', 'in_file_modifier')]),
+        (combine_labels_wmh, combine_labels_vesselness, [('out_file',
+                                                          'in_file_fixed')]),
+        (threshold, combine_labels_vesselness, [('output_image',
+                                                 'in_file_modifier')]),
         (combine_labels_vesselness, roi_analyze, [('out_file', 'roi_file')]),
         (merge, roi_analyze, [('out', 'scan_file')]),
         (roi_analyze, datasink, [('out_file', task + '_csv.@con')])
