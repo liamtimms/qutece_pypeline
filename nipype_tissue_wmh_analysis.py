@@ -144,7 +144,8 @@ def tissue_wmh_analysis(working_dir, subject_list):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', ''),
+                     ('rrsub-10_ses-Precon_tissue-segmentation-ADD-rrrsub-10_ses-Precon_WMHs-segmentation-ADD-rsub-10_ses-Postcon_hr_run-01_UTE_desc-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled')]
 
     # -------------------------------------------------------
 
