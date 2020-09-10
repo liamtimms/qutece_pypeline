@@ -1,7 +1,10 @@
 import os
 import glob
 import pandas as pd
+import seaborn as sns
 
+
+# sns.set(style="darkgrid")
 base_dir = os.path.abspath('../../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
@@ -60,6 +63,8 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     seg_pattern = '*' + seg_type + '*'
     path_pattern = os.path.join(data_dir, session_pattern + seg_pattern)
     csv_files = glob.glob(path_pattern)
+    # print('Selected files are: ')
+    # print(csv_files)
 
     stats_df = intensity_stats(csv_files)
 
@@ -77,10 +82,12 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
 
 
 def diff_stats(precon_df, postcon_df, atlas_df):
+    postcon_df = postcon_df.merge(atlas_df,
+                                  left_on='region',
+                                  right_on='region_num')
     # calculate difference in the means
     region_num = list(postcon_df['region'])
-    # region_name = list(atlas_df['name'])
-    region_name = atlas_df['region_name'].astype(str)
+    region_name = postcon_df['region_name'].astype(str)
     postcon_mean = list(postcon_df['mean'])
     postcon_std = list(postcon_df['std'])
     precon_mean = list(precon_df['mean'])
@@ -100,11 +107,12 @@ def diff_stats(precon_df, postcon_df, atlas_df):
     # filt_df = diff_df.loc[~diff_df['name'].str.contains('background')]
     # filt_df = diff_df.loc[(diff_df['name'] == 'White_Matter') |
     #                       (diff_df['name'] == 'Grey_Matter')]
-    filt_df = diff_df.loc[(diff_df['name'] == 'White_Matter')]
-    # wm_diff_mean = wm_df['diff'].mean()
+    filt_df = diff_df.loc[(diff_df['name'] == 'sVs&WM')]
+    wm_mean = filt_df['postcon_mean'].mean()
     # diff_mean = filt_df['diff'].mean()
     diff_mean = wavg(filt_df, 'diff', 'N')
-    print(diff_mean)
+    # print(diff_mean)
+    diff_df['rmean'] = diff_df['postcon_mean'] / wm_mean
     diff_df['rdiff'] = diff_df['diff'] / diff_mean
     return diff_df
 
@@ -116,6 +124,7 @@ def difference_summary(sub_num, scan_type, seg_type):
     path_pattern = os.path.join(data_dir,
                                 '*' + scan_type + '*' + seg_type + '*.csv')
     load_files = glob.glob(path_pattern)
+    # print(load_files)
     precon_df = pd.read_csv(load_files[0])
 
     session = 'Postcon'
@@ -128,6 +137,9 @@ def difference_summary(sub_num, scan_type, seg_type):
 
     atlas_file = os.path.join(base_dir, 'code', 'nipype', seg_type + '.csv')
     atlas_df = pd.read_csv(atlas_file)
+
+    # print(atlas_df.head(20))
+    # print(postcon_df.head(20))
 
     diff_df = diff_stats(precon_df, postcon_df, atlas_df)
 
@@ -151,6 +163,51 @@ def desc_trans(summary_df):
     summary_df['mean'] = list(desc_df['mean'])
     summary_df['std'] = list(desc_df['std'])
     return summary_df
+
+
+def subjects_summary_alt(datasink_dir, subject_list, scan_type, seg_type):
+    diff_df_list = []
+    for sub_num in subject_list:
+
+        data_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                                'sub-{}'.format(sub_num))
+        load_name = ('sub-{}_' + scan_type + '-proc_' + seg_type +
+                     '_DIFF.csv').format(sub_num)
+        diff_df = pd.read_csv(os.path.join(data_dir, load_name))
+        diff_df['subject'] = sub_num
+        diff_df_list.append(diff_df)
+        print(diff_df.head(10))
+
+    concatenated_df = pd.concat(diff_df_list, ignore_index=True)
+
+    concatenated_df.sort_values(by=['subject', 'region'],
+                                inplace=True,
+                                ignore_index=True)
+
+    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type)
+    save_name = ('summary.png')
+
+    # plot_df['region_num'] = summary_df['region_num']
+    # print(plot_df.head(10))
+    filt_df = concatenated_df.loc[~concatenated_df['name'].str.
+                                  contains('background')]
+    filt_df = filt_df.loc[~concatenated_df['name'].str.contains('LV')]
+    filt_df = filt_df.loc[~concatenated_df['name'].str.contains('CSF')]
+    filt_df = filt_df.loc[concatenated_df['name'].str.contains('HI')]
+    filt_df.reset_index(drop=True, inplace=True)
+
+    print('filt_df:')
+    print(filt_df.head(10))
+    sns_plot = sns.relplot(x='N',
+                           y='rmean',
+                           hue=filt_df.subject.tolist(),
+                           style=filt_df.name.tolist(),
+                           legend='full',
+                           data=filt_df)
+    sns.color_palette("hls", 8)
+    sns_plot.savefig(os.path.join(save_dir, save_name))
+
+    return concatenated_df
 
 
 def subjects_summary(datasink_dir, subject_list, scan_type, seg_type):
@@ -191,5 +248,5 @@ def subjects_summary(datasink_dir, subject_list, scan_type, seg_type):
     save_name = ('summary_' + scan_type + '-proc_' + seg_type + '_Post.csv')
     summary_post_df.to_csv(os.path.join(save_dir, save_name), index=False)
 
-    print(summary_df.head())
-    print(summary_post_df.head())
+    print(summary_df.head(10))
+    # print(summary_post_df.head(10))
