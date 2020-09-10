@@ -1,0 +1,8 @@
+region_num,region_name
+0,background
+1,CSF
+2,Grey_Matter
+3,White_Matter
+1001,CSF&White_Matter_Hyperintensity
+1002,Grey_Matter&White_Matter_Hyperintensity
+1003,White_Matter&White_Matter_Hyperintensity
