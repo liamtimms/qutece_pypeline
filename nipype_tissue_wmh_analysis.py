@@ -140,9 +140,9 @@ def tissue_wmh_analysis(working_dir, subject_list):
     # Use the following DataSink output substitutions
     substitutions = [
         ('_subject_id_', 'sub-'),
-        ('Precon_T1w_corrected_masked_seg-ADD-rrrsub-', 'tissue'),
-        ('-Precon_WMHs-segmentation-ADD-rsub-', 'WMH'),
-        ('-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
+        ('ses-Precon_T1w_corrected_masked_seg-ADD', 'tissue'),
+        ('ses-Precon_WMHs-segmentation-ADD', 'WMH'),
+        ('ses-Postcon_hr_run-01_UTE_desc-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
          'vesselness')
     ]
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
@@ -150,10 +150,7 @@ def tissue_wmh_analysis(working_dir, subject_list):
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
     datasink.inputs.regexp_substitutions = [
-        ('_roi_analyze.*/', ''),
-        ('ROI-rrrsub-..-Precon_tissue-segmentation-ADD-rrrsub-..-Precon_WMHs-segmentation-ADD-rsub-..-Postcon_hr_run-..-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
-         'segment-tissue-WMH-Vesselness_stats')
-    ]
+        ('_roi_analyze.*/', '')]
 
     # -------------------------------------------------------
 
@@ -176,7 +173,8 @@ def tissue_wmh_analysis(working_dir, subject_list):
                                                  'in_file_modifier')]),
         (combine_labels_vesselness, roi_analyze, [('out_file', 'roi_file')]),
         (merge, roi_analyze, [('out', 'scan_file')]),
-        (roi_analyze, datasink, [('out_file', task + '_csv.@con')])
+        (roi_analyze, datasink, [('out_file', task + '_csv.@con')]),
+        (threshold, datasink, [('output_image', 'vesselness_threshold.@con')])
     ])
     # -------------------------------------------------------
 
