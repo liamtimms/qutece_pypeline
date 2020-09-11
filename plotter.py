@@ -20,6 +20,7 @@ def roi_extract(scan_img, roi_img):
     unique_roi = np.unique(roi_img)
     # out_data = np.empty([np.size(unique_roi), 4])
     n = 0
+    extracted_df = pd.DataFrame()
     for r in unique_roi:
         # r is label in roi
         # n counts for number of labels
@@ -34,7 +35,8 @@ def roi_extract(scan_img, roi_img):
         vals_df.dropna(inplace=True)
         vals_df.reset_index(drop=True, inplace=True)
         vals_df_list.append(vals_df)
-        # h = sns.distplot(vals_df)
+
+        extracted_df[r] = vals_df[0]
 
         # ave = np.nanmean(vals)
         # std = np.nanstd(vals)
@@ -45,7 +47,7 @@ def roi_extract(scan_img, roi_img):
         # out_data[n][3] = N
         n = n + 1
 
-    extracted_df = pd.concat(vals_df_list, ignore_index=True, axis=1)
+    # extracted_df = pd.concat(vals_df_list, ignore_index=True, axis=1)
 
     return extracted_df
 
@@ -90,7 +92,23 @@ def hist_plots(df, seg_type, save_dir):
     return
 
 
-def hist_plot_both(postcon_df, precon_df):
+def category_plot(postcon_df, precon_df, save_dir, seg_type):
+    plot_df = pd.concat([postcon_df, precon_df])
+    plot_df = plot_df.reset_index()
+    print(plot_df.head())
+    sns_plot = sns.catplot(x="index",
+                           y="mean",
+                           hue="session",
+                           kind="bar",
+                           height=8,
+                           aspect=7,
+                           data=plot_df)
+
+    # sns_plot.set_size_inches(11.7, 8.27)
+
+    save_name = (seg_type + '-summary.png')
+    sns_plot.savefig(os.path.join(save_dir, save_name))
+
     return
 
 
@@ -105,9 +123,11 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     if seg_type == 'Neuromorphometrics':
         ROI_file_name = '/opt/spm12/tpm/labels_Neuromorphometrics.nii'
 
+    if seg_type == 'WMH':
+        ROI_file_name = '/opt/spm12/tpm/labels_Neuromorphometrics.nii'
+
     ROI_file_nii = nib.load(ROI_file_name)
     roi_img = np.array(ROI_file_nii.get_fdata())
-
     session_pattern = '*' + session + '*' + scan_type + '*'
     path_pattern = os.path.join(data_dir, session_pattern)
     nii_files = glob.glob(path_pattern)
@@ -155,7 +175,48 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
 
         summary_df_list.append(summary_df)
 
+    plt.close('all')
     return summary_df_list
+
+
+def load_summary_dfs(csv_dir, sub_num, session, seg_type):
+    data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
+                            'ses-{}'.format(session))
+    path_pattern = os.path.join(
+        data_dir, '*' + scan_type + '*_SUMMARY_seg-' + seg_type + '*.csv')
+    load_files = glob.glob(path_pattern)
+    df_list = []
+    for f in load_files:
+        df = pd.read_csv(f)
+        pth, fname, ext = split_filename(f)
+        df.rename(columns={'Unnamed: 0': 'name'}, inplace=True)
+        # print(df.head())
+        df = df.set_index('name').T
+        df['session'] = session
+        df['file'] = fname
+        # print(df.head())
+        df_list.append(df)
+
+    return df_list
+
+
+def subject_summary(sub_num, scan_type, seg_type):
+    csv_dir = 'csv_work_2'
+    session = 'Precon'
+    precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type)
+    precon_df = pd.concat(precon_df_list)
+
+    session = 'Postcon'
+    postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type)
+    postcon_df = pd.concat(postcon_df_list)
+
+    save_dir = os.path.join(datasink_dir, 'plots',
+                            'sub-{}'.format(sub_num))
+    category_plot(postcon_df, precon_df, save_dir, seg_type)
+
+    # print(Postcon_dfs[1].head())
+
+    return
 
 
 #
@@ -179,7 +240,12 @@ subject_list = [
     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
     '15'
 ]
-# subject_list = ['11']
+# subject_list = [
+#     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+#     '15'
+# ]
+# subject_list = ['02', '11', '15']
+subject_list = ['11']
 session_list = ['Postcon', 'Precon']
 scan_type = 'hr'
 seg_type = 'Neuromorphometrics'
@@ -188,6 +254,9 @@ in_folder = 'nonlinear_transfomed_hr'
 for sub_num in subject_list:
     for session in session_list:
         session_summary(in_folder, sub_num, session, scan_type, seg_type)
+
+    subject_summary(sub_num, scan_type, seg_type)
+
 #     roi_nii
 #     exclude_nii
 #     scan_list
