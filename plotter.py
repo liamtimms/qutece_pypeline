@@ -32,6 +32,7 @@ def roi_extract(scan_img, roi_img):
         vals = np.reshape(crop_img, -1)
         vals_df = pd.DataFrame(vals)
         vals_df.dropna(inplace=True)
+        vals_df.reset_index(drop=True, inplace=True)
         vals_df_list.append(vals_df)
         # h = sns.distplot(vals_df)
 
@@ -49,7 +50,7 @@ def roi_extract(scan_img, roi_img):
     return extracted_df
 
 
-def hist_plots(df, save_dir):
+def hist_plots(df, seg_type, save_dir):
     sns.set(color_codes=True)
     sns.set(style="white", palette="muted")
     # plot_xlim_min = 0
@@ -62,7 +63,7 @@ def hist_plots(df, save_dir):
 
         if n > 0:
             plt.figure(i)
-            save_name = str(col) + '.png'
+            save_name = seg_type + '-' + str(col) + '.png'
             out_fig_name = os.path.join(save_dir, save_name)
             sns.distplot(df[col],
                          kde=False,
@@ -113,6 +114,8 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     print('Selected files are: ')
     print(nii_files)
 
+    summary_df_list = []
+
     for f in nii_files:
         scan_file_name = f
         scan_file_nii = nib.load(scan_file_name)
@@ -130,7 +133,7 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        hist_plots(extracted_df, save_dir)
+        hist_plots(extracted_df, seg_type, save_dir)
 
         summary_df = extracted_df.describe()
         print(summary_df)
@@ -144,15 +147,15 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         pth, fname, ext = split_filename(f)
 
         # save_name = ('sub-{}_ses-{}_' + scan_type + '_data_' +
-        save_name = (fname + '_DATA_' +
-                     'seg-{}.csv').format(seg_type)
+        save_name = (fname + '_DATA_' + 'seg-{}.csv').format(seg_type)
         extracted_df.to_csv(os.path.join(save_dir, save_name), index=False)
 
-        save_name = (fname + '_SUMMARY_' +
-                     'seg-{}.csv').format(sub_num, session, seg_type)
-        summary_df.to_csv(os.path.join(save_dir, save_name), index=False)
+        save_name = (fname + '_SUMMARY_' + 'seg-{}.csv').format(seg_type)
+        summary_df.to_csv(os.path.join(save_dir, save_name))
 
-        return summary_df
+        summary_df_list.append(summary_df)
+
+    return summary_df_list
 
 
 #
