@@ -114,7 +114,12 @@ def category_plot(postcon_df, precon_df, save_dir, seg_type):
 
 def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
-                            'ses-{}'.format(session))
+                            'ses-{}'.format(session), 'qutece')
+
+    if not os.path.exists(data_dir):
+        data_dir = os.path.join(datasink_dir, in_folder,
+                                'sub-{}'.format(sub_num),
+                                'ses-{}'.format(session))
 
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
@@ -123,8 +128,14 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     if seg_type == 'Neuromorphometrics':
         ROI_file_name = '/opt/spm12/tpm/labels_Neuromorphometrics.nii'
 
-    if seg_type == 'WMH':
-        ROI_file_name = '/opt/spm12/tpm/labels_Neuromorphometrics.nii'
+    elif seg_type == 'noise':
+        roi_dir = os.path.join(manualwork_dir, 'segmentations', seg_type)
+        ROI_file_name = os.path.join(
+            roi_dir,
+            'rsub-' + sub_num + '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
+            '_noise-Segmentation-label.nii')
+    else:
+        print('need valid segmentation type')
 
     ROI_file_nii = nib.load(ROI_file_name)
     roi_img = np.array(ROI_file_nii.get_fdata())
@@ -210,8 +221,7 @@ def subject_summary(sub_num, scan_type, seg_type):
     postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type)
     postcon_df = pd.concat(postcon_df_list)
 
-    save_dir = os.path.join(datasink_dir, 'plots',
-                            'sub-{}'.format(sub_num))
+    save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
     category_plot(postcon_df, precon_df, save_dir, seg_type)
 
     # print(Postcon_dfs[1].head())
@@ -240,20 +250,32 @@ subject_list = [
     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
     '15'
 ]
-# subject_list = [
-#     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-#     '15'
-# ]
+subject_list = ['04', '05', '06', '07', '08', '10', '12', '13', '14', '15']
 # subject_list = ['02', '11', '15']
-subject_list = ['11']
+# subject_list = ['11']
 session_list = ['Postcon', 'Precon']
 scan_type = 'hr'
-seg_type = 'Neuromorphometrics'
+# seg_type = 'Vesselness'
 in_folder = 'nonlinear_transfomed_hr'
 
+# seg_type = 'Neuromorphometrics'
+# for sub_num in subject_list:
+#     for session in session_list:
+#         session_summary(in_folder, sub_num, session, scan_type, seg_type)
+#     subject_summary(sub_num, scan_type, seg_type)
+
+subject_list = ['11', '12', '13', '14', '15']
+subject_list = ['11']
+
+seg_type = 'noise'
 for sub_num in subject_list:
-    for session in session_list:
-        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+    session = 'Precon'
+    in_folder = 'pre_to_post_coregister'
+    session_summary(in_folder, sub_num, session, scan_type, seg_type)
+
+    session = 'Postcon'
+    in_folder = 'preprocessing'
+    session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
     subject_summary(sub_num, scan_type, seg_type)
 
