@@ -28,16 +28,19 @@ session_list = ['Precon', 'Postcon']
 workflow_list = []
 workflow_list_2 = []
 
-# # Subjects with both hr and fast scans
-# # subject_list = ['02', '03', '04', '06', '11']
-# subject_list = [
-#     '02', '03', '04', '05', '06', '07', '08',
-#     '10', '11', '12', '13', '14', '15'
-# ]
-# initial_braincrop_wf = initial_braincrop(working_dir, subject_list,
-#                                          session_list)
-# # workflow_list.append(initial_braincrop_wf)
-#
+# Subjects with both hr and fast scans
+# subject_list = ['02', '03', '04', '06', '11']
+subject_list = [
+    '02', '03', '04', '05', '06', '07', '08',
+    '10', '11', '12', '13', '14', '15'
+]
+#subject_list = ['02']
+scan_type = 'hr'
+initial_braincrop_hr_wf = initial_braincrop(working_dir, subject_list,
+                                         session_list, scan_type)
+workflow_list.append(initial_braincrop_hr_wf)
+
+
 #
 # # Subjects with all main scan types, pre and post
 # subject_list = ['02', '03', '04', '06', '11', '12', '15']
@@ -127,9 +130,9 @@ workflow_list_2 = []
 # #   and final vesselness segmentation should be organized in to_use folder
 # ----------------------------------------------------------------------------
 #
-subject_list = ['02', '03', '04', '06', '08', '10', '11', '12','13', '14', '15']
-tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
-workflow_list_2.append(tissue_wf)
+# subject_list = ['02', '03', '04', '06', '08', '10', '11', '12','13', '14', '15']
+# tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
+# workflow_list_2.append(tissue_wf)
 
 # scan_type = 'fast'
 # apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list, scan_type)
@@ -155,14 +158,14 @@ workflow_list_2.append(tissue_wf)
 # CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
 #
 
-num_cores = 1
+num_cores = 12
 
 for workflow in workflow_list:
     cnp.workflow_runner(workflow, num_cores)
 
-num_cores = 1
-
-for workflow in workflow_list_2:
-    cnp.workflow_runner(workflow, num_cores)
-
+# num_cores = 1
+#
+# for workflow in workflow_list_2:
+#     cnp.workflow_runner(workflow, num_cores)
+#
 os.system("espeak 'pipeline run done'")
