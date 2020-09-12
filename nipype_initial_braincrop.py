@@ -102,6 +102,11 @@ def initial_braincrop(working_dir, subject_list, session_list, scan_type):
     skullstrip.inputs.mask = True
     # -------------------------------------------------------
 
+    # -----------------------Merge---------------------------
+    merge = eng.Node(utl.Merge(2), name='merge')
+    merge.ravel_inputs = True
+    # -------------------------------------------------------
+
     # ------------------------Output-------------------------
     # Datasink - creates output folder for important outputs
     datasink = eng.Node(nio.DataSink(base_directory=output_dir,
@@ -138,7 +143,9 @@ def initial_braincrop(working_dir, subject_list, session_list, scan_type):
         (reorient, robustFOV, [('out_file', 'in_file')]),
         (robustFOV, nosestrip, [('out_roi', 'in_file')]),
         (nosestrip, skullstrip, [('out_file', 'in_file')]),
-        (skullstrip, datasink, [('mask_file', task + '.@con')])
+        (skullstrip, merge, [('mask_file', 'in1')]),
+        (coreg_to_ute, merge, [('coregistered_source', 'in2')]),
+        (merge, datasink, [('out', task + '.@con')])
     ])
     # -------------------------------------------------------
 
