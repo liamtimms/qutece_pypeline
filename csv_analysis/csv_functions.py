@@ -3,8 +3,6 @@ import glob
 import pandas as pd
 import seaborn as sns
 
-
-# sns.set(style="darkgrid")
 base_dir = os.path.abspath('../../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
@@ -107,7 +105,7 @@ def diff_stats(precon_df, postcon_df, atlas_df):
     # filt_df = diff_df.loc[~diff_df['name'].str.contains('background')]
     # filt_df = diff_df.loc[(diff_df['name'] == 'White_Matter') |
     #                       (diff_df['name'] == 'Grey_Matter')]
-    filt_df = diff_df.loc[(diff_df['name'] == 'sVs&WM')]
+    filt_df = diff_df.loc[(diff_df['name'] == 'Small_Vessels&White_Matter')]
     wm_mean = filt_df['postcon_mean'].mean()
     # diff_mean = filt_df['diff'].mean()
     diff_mean = wavg(filt_df, 'diff', 'N')
@@ -176,35 +174,27 @@ def subjects_summary_alt(datasink_dir, subject_list, scan_type, seg_type):
         diff_df = pd.read_csv(os.path.join(data_dir, load_name))
         diff_df['subject'] = sub_num
         diff_df_list.append(diff_df)
-        print(diff_df.head(10))
+        print(diff_df.head())
 
     concatenated_df = pd.concat(diff_df_list, ignore_index=True)
+    # print(concatenated_df.head())
 
     concatenated_df.sort_values(by=['subject', 'region'],
                                 inplace=True,
                                 ignore_index=True)
 
+    # concatenated_df.dropna(inplace=True)
+
     save_dir = os.path.join(datasink_dir, 'csv_work', seg_type)
     save_name = ('summary.png')
 
     # plot_df['region_num'] = summary_df['region_num']
-    # print(plot_df.head(10))
-    filt_df = concatenated_df.loc[~concatenated_df['name'].str.
-                                  contains('background')]
-    filt_df = filt_df.loc[~concatenated_df['name'].str.contains('LV')]
-    filt_df = filt_df.loc[~concatenated_df['name'].str.contains('CSF')]
-    filt_df = filt_df.loc[concatenated_df['name'].str.contains('HI')]
-    filt_df.reset_index(drop=True, inplace=True)
-
-    print('filt_df:')
-    print(filt_df.head(10))
-    sns_plot = sns.relplot(x='N',
+    # print(plot_df.head())
+    sns_plot = sns.catplot(x='region',
                            y='rmean',
-                           hue=filt_df.subject.tolist(),
-                           style=filt_df.name.tolist(),
-                           legend='full',
-                           data=filt_df)
-    sns.color_palette("hls", 8)
+                           hue=concatenated_df.subject.tolist(),
+                           legend=True,
+                           data=concatenated_df)
     sns_plot.savefig(os.path.join(save_dir, save_name))
 
     return concatenated_df
@@ -248,5 +238,80 @@ def subjects_summary(datasink_dir, subject_list, scan_type, seg_type):
     save_name = ('summary_' + scan_type + '-proc_' + seg_type + '_Post.csv')
     summary_post_df.to_csv(os.path.join(save_dir, save_name), index=False)
 
-    print(summary_df.head(10))
-    # print(summary_post_df.head(10))
+    print(summary_df.head())
+    print(summary_post_df.head())
+
+
+
+def sub_stats(precon_df, postcon_df, atlas_df):
+    postcon_df = postcon_df.merge(atlas_df,
+                                  left_on='region',
+                                  right_on='region_num')
+
+    region_num = list(postcon_df['region'])
+    region_name = postcon_df['region_name'].astype(str)
+    postcon_mean = list(postcon_df['mean'])
+    postcon_std = list(postcon_df['std'])
+    precon_mean = list(precon_df['mean'])
+    precon_std = list(precon_df['std'])
+    N = list(precon_df['N'])
+
+    sub_df = pd.DataFrame({
+        'region': region_num,
+        'name': region_name,
+        'postcon_mean': postcon_mean,
+        'postcon_std': postcon_std,
+        'precon_mean': precon_mean,
+        'precon_std': precon_std,
+        'N': N
+    })
+    nWM_df = sub_df.loc[sub_df['name'].str.contains('nWM')]
+    WMH_df = sub_df.loc[sub_df['name'].str.contains('WMH')]
+
+    nWM_mean = nWM_df.mean()
+    WMH_mean = WMH_df.mean()
+
+    nWM_mean['name'] = 'nWM_mean'
+    WMH_mean['name'] = 'WMH_mean'
+
+    sub_df = sub_df.append(nWM_mean, ignore_index=True)
+    sub_df = sub_df.append(WMH_mean, ignore_index=True)
+
+    return sub_df
+
+
+def sub_summary(sub_num, scan_type, seg_type):
+    session = 'Precon'
+    data_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                            'sub-{}'.format(sub_num), 'ses-{}'.format(session))
+    path_pattern = os.path.join(data_dir,
+                                '*' + scan_type + '*' + seg_type + '*.csv')
+    load_files = glob.glob(path_pattern)
+    # print(load_files)
+    precon_df = pd.read_csv(load_files[0], skiprows=[1], nrows=20)
+
+    session = 'Postcon'
+    data_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                            'sub-{}'.format(sub_num), 'ses-{}'.format(session))
+    path_pattern = os.path.join(data_dir,
+                                '*' + scan_type + '*' + seg_type + '*.csv')
+    load_files = glob.glob(path_pattern)
+    postcon_df = pd.read_csv(load_files[0], skiprows=[1], nrows=20)
+
+    atlas_file = os.path.join(base_dir, 'code', 'nipype', seg_type + '.csv')
+    atlas_df = pd.read_csv(atlas_file)
+
+    # print(atlas_df.head(20))
+    # print(postcon_df.head(20))
+
+    sub_df = sub_stats(precon_df, postcon_df, atlas_df)
+
+    save_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
+                            'sub-{}'.format(sub_num))
+
+    save_name = ('sub-{}_' + scan_type + '-proc_' + seg_type +
+                 '_DIFF.csv').format(sub_num)
+
+    sub_df.to_csv(os.path.join(save_dir, save_name), index=False)
+
+    return sub_df
