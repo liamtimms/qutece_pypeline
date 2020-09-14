@@ -60,7 +60,7 @@ def hist_plots(df, seg_type, save_dir):
 
     for i, col in enumerate(df.columns):
         vals = df[col].to_numpy()
-        w = 20
+        w = 1
         n = math.ceil((np.nanmax(vals) - np.nanmin(vals)) / w)
 
         if n > 0:
@@ -74,7 +74,7 @@ def hist_plots(df, seg_type, save_dir):
                              'histtype': 'step',
                              'linewidth': 1
                          })
-            plt.xlim(-10, 1990)
+            plt.xlim(-5, 50)
 
             plt.savefig(out_fig_name, dpi=300, bbox_inches='tight')
             # plt.close(i)
@@ -92,17 +92,35 @@ def hist_plots(df, seg_type, save_dir):
     return
 
 
-def category_plot(postcon_df, precon_df, save_dir, seg_type):
+def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type):
     plot_df = pd.concat([postcon_df, precon_df])
     plot_df = plot_df.reset_index()
-    print(plot_df.head())
+    # print(plot_df.head())
     sns_plot = sns.catplot(x="index",
                            y="mean",
                            hue="session",
                            kind="bar",
                            height=8,
-                           aspect=7,
+                           aspect=1,
                            data=plot_df)
+
+    # sns_plot.set_size_inches(11.7, 8.27)
+
+    save_name = ('sub-' + sub_num + '_' + seg_type + '-summary.png')
+    sns_plot.savefig(os.path.join(save_dir, save_name))
+
+    return
+
+def swarm_plot(filt_df, save_dir, seg_type):
+    filt_df = filt_df.reset_index()
+    print(filt_df.head())
+    sns_plot = sns.catplot(x="sub_num",
+                           y="mean",
+                           hue="session",
+                           kind="bar",
+                           height=8,
+                           aspect=1,
+                           data=filt_df)
 
     # sns_plot.set_size_inches(11.7, 8.27)
 
@@ -110,7 +128,6 @@ def category_plot(postcon_df, precon_df, save_dir, seg_type):
     sns_plot.savefig(os.path.join(save_dir, save_name))
 
     return
-
 
 def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
@@ -125,15 +142,23 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         data_dir = os.path.join(datasink_dir, in_folder,
                                 'sub-{}'.format(sub_num))
 
+    roi_dir = os.path.join(manualwork_dir, 'segmentations', seg_type)
+
     if seg_type == 'Neuromorphometrics':
         ROI_file_name = '/opt/spm12/tpm/labels_Neuromorphometrics.nii'
-
     elif seg_type == 'noise':
-        roi_dir = os.path.join(manualwork_dir, 'segmentations', seg_type)
         ROI_file_name = os.path.join(
             roi_dir,
             'rsub-' + sub_num + '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
             '_noise-Segmentation-label.nii')
+    elif seg_type == 'brain_preFLIRT':
+        ROI_file_name = os.path.join(
+            roi_dir,
+            'rrrsub-' + sub_num + '_ses-Precon_T1w_*brain*' +
+            '_Segmentation-label.nii')
+        ROI_file_names = glob.glob(ROI_file_name)
+        ROI_file_name = ROI_file_names[0]
+        print(ROI_file_names[0])
     else:
         print('need valid segmentation type')
 
@@ -153,6 +178,7 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         scan_img = np.array(scan_file_nii.get_fdata())
 
         if scan_img.size != roi_img.size:
+            print('RESAMPLING')
             resampled_nii = nil.image.resample_to_img(scan_file_nii,
                                                       ROI_file_nii)
             scan_img = np.array(resampled_nii.get_fdata())
@@ -201,11 +227,9 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type):
         df = pd.read_csv(f)
         pth, fname, ext = split_filename(f)
         df.rename(columns={'Unnamed: 0': 'name'}, inplace=True)
-        # print(df.head())
         df = df.set_index('name').T
         df['session'] = session
         df['file'] = fname
-        # print(df.head())
         df_list.append(df)
 
     return df_list
@@ -222,13 +246,32 @@ def subject_summary(sub_num, scan_type, seg_type):
     postcon_df = pd.concat(postcon_df_list)
 
     save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
-    category_plot(postcon_df, precon_df, save_dir, seg_type)
+    category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type)
 
-    # print(Postcon_dfs[1].head())
+    # print(postcon_df.head())
 
-    return
+    return postcon_df, precon_df
 
 
+def full_summary(datasink_dir, subject_list, scan_type, seg_type):
+    csv_dir = 'csv_work_2'
+    df_list = []
+    for sub_num in subject_list:
+        postcon_df, precon_df = subject_summary(sub_num, scan_type, seg_type)
+        postcon_df['sub_num'] = sub_num
+        precon_df['sub_num'] = sub_num
+        print(postcon_df.head())
+        df_list.append(postcon_df)
+        df_list.append(precon_df)
+
+    full_df = pd.concat(df_list)
+    full_df = full_df.reset_index()
+    print('full_df : ' )
+    print(full_df.head())
+    filt_df = full_df.loc[(full_df['index'] == '1.0')]
+    print(filt_df.head())
+    save_dir = os.path.join(datasink_dir, 'plots')
+    swarm_plot(filt_df, save_dir, seg_type)
 #
 #     stats_df = intensity_stats(csv_files)
 #
@@ -250,7 +293,7 @@ subject_list = [
     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
     '15'
 ]
-subject_list = ['04', '05', '06', '07', '08', '10', '12', '13', '14', '15']
+# subject_list = ['04', '05', '06', '07', '08', '10', '12', '13', '14', '15']
 # subject_list = ['02', '11', '15']
 # subject_list = ['11']
 session_list = ['Postcon', 'Precon']
@@ -264,20 +307,23 @@ in_folder = 'nonlinear_transfomed_hr'
 #         session_summary(in_folder, sub_num, session, scan_type, seg_type)
 #     subject_summary(sub_num, scan_type, seg_type)
 
-subject_list = ['11', '12', '13', '14', '15']
-subject_list = ['11']
+# subject_list = ['11', '12', '13', '14', '15']
+# subject_list = ['08', '10']
+# subject_list = ['11']
 
 seg_type = 'noise'
-for sub_num in subject_list:
-    session = 'Precon'
-    in_folder = 'pre_to_post_coregister'
-    session_summary(in_folder, sub_num, session, scan_type, seg_type)
-
-    session = 'Postcon'
-    in_folder = 'preprocessing'
-    session_summary(in_folder, sub_num, session, scan_type, seg_type)
-
-    subject_summary(sub_num, scan_type, seg_type)
+# seg_type = 'brain_preFLIRT'
+# for sub_num in subject_list:
+#     session = 'Precon'
+#     in_folder = 'pre_to_post_coregister'
+#     session_summary(in_folder, sub_num, session, scan_type, seg_type)
+#
+#     session = 'Postcon'
+#     in_folder = 'preprocessing'
+#     session_summary(in_folder, sub_num, session, scan_type, seg_type)
+#
+#     subject_summary(sub_num, scan_type, seg_type)
+full_summary(datasink_dir, subject_list, scan_type, seg_type)
 
 #     roi_nii
 #     exclude_nii
