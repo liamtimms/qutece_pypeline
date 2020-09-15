@@ -29,29 +29,31 @@ workflow_list = []
 workflow_list_2 = []
 
 # Subjects with both hr and fast scans
-# subject_list = ['02', '03', '04', '06', '11']
 subject_list = [
     '02', '03', '04', '05', '06', '07', '08',
     '10', '11', '12', '13', '14', '15'
 ]
-#subject_list = ['02']
 scan_type = 'hr'
 initial_braincrop_hr_wf = initial_braincrop(working_dir, subject_list,
                                          session_list, scan_type)
-workflow_list.append(initial_braincrop_hr_wf)
+# workflow_list.append(initial_braincrop_hr_wf)
 
+# ----------------------------------------------------------------------------
+# Manual manipulation here:
+# * create manual brainmaks based on initial brain_crop
+# * output fast and hr brainmask in Slicer
+# ----------------------------------------------------------------------------
 
-#
-# # Subjects with all main scan types, pre and post
+# Subjects with all main scan types, pre and post
 # subject_list = ['02', '03', '04', '06', '11', '12', '15']
 # preproc_wf = preproc(working_dir, subject_list, session_list)
 # workflow_list.append(preproc_wf)
 #
 # # Subjects without Fast Scans
-# subject_list = ['05', '07', '09']
+# subject_list = ['05', '07']
 # preproc_nofast_wf = preproc_nofast(working_dir, subject_list, session_list)
 # workflow_list.append(preproc_nofast_wf)
-#
+# #
 # # Subjects with Fast Scans but only one precon scan
 # subject_list = ['08', '13', '14']
 # session_list = ['Precon']
@@ -61,7 +63,7 @@ workflow_list.append(initial_braincrop_hr_wf)
 # preproc_08_post_wf = preproc(working_dir, subject_list, session_list)
 # workflow_list.append(preproc_08_post_wf)
 #
-# Subject with only one precon scan, also missing Fast
+# # Subject with only one precon scan, also missing Fast
 # subject_list = ['10']
 # session_list = ['Precon']
 # preproc_10_pre_wf = preproc_10(working_dir, subject_list, session_list)
@@ -69,62 +71,72 @@ workflow_list.append(initial_braincrop_hr_wf)
 # session_list = ['Postcon']
 # preproc_10_post_wf = preproc(working_dir, subject_list, session_list)
 # workflow_list.append(preproc_10_post_wf)
-
+#
 # ----------------------------------------------------------------------------
 # Manual manipulation here:
 # * copy sub-09_ses-Postcon_run-03_T1w.nii as sub-09_ses-Postcon_T1w.nii
-# * rename sub-10_ses-Precon_hr_UTE_desc-preproc.nii
-#           to rsub-10_ses-Precon_hr_UTE_desc-preproc.nii
+# * copy rsub-08_ses-Precon_hr_UTE_desc-preproc.nii
+#           as rmeansub-08_ses-Precon_hr_UTE_desc-preproc.nii
+# * copy sub-10_ses-Precon_hr_UTE_desc-preproc.nii
+#           as rsub-10_ses-Precon_hr_UTE_desc-preproc.nii
 # * copy rsub-10_ses-Precon_hr_UTE_desc-preproc.nii
 #           as rmeansub-10_ses-Precon_hr_UTE_desc-preproc.nii
+# * copy rsub-13_ses-Precon_hr_UTE_desc-preproc.nii
+#           as rmeansub-14_ses-Precon_hr_UTE_desc-preproc.nii
+# * copy rsub-14_ses-Precon_hr_UTE_desc-preproc.nii
+#           as rmeansub-14_ses-Precon_hr_UTE_desc-preproc.nii
 # ----------------------------------------------------------------------------
 #
-# # All Preproc'd Subjects
+# All Preproc'd Subjects
 # subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15']
 # session_list = ['Precon']
-# coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
-# workflow_list.append(coreg_wf)
-#
-# # Subjects with nonT1w postcon scans
+# coreg_pre_wf = intrasession_coregister(working_dir, subject_list, session_list)
+# workflow_list.append(coreg_pre_wf)
+# #
+# # # Subjects with nonT1w postcon scans
 # subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11']
+# session_list = ['Postcon']
+# coreg_post_wf = intrasession_coregister(working_dir, subject_list, session_list)
+# workflow_list.append(coreg_post_wf)
+#
+# ----------------------------------------------------------------------------
+# Manual manipulation here:
+# * comment out nonT1w part in nipype_intrasession_coregister.py
+# ----------------------------------------------------------------------------
+
+# # Subjects without nonT1w postcon scans
+# subject_list = ['12', '13', '14', '15']
 # session_list = ['Postcon']
 # coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
 # workflow_list.append(coreg_wf)
-#
-# # Subjects without nonT1w postcon scans
-# # subject_list = ['12', '13', '14', '15']
-# # coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
-# # workflow_list.append(coreg_wf)
-#
-# # All Coreg'd Subjects
-# subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15']
-#
+
+# All Coreg'd Subjects
+subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15']
+
 # # subject_list = ['02', '03', '04', '06', '11', '12', '15']
-# coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
-# workflow_list.append(coreg2_wf)
-#
-# braincrop_wf = braincrop(working_dir, subject_list)
-# workflow_list.append(braincrop_wf)
-#
+coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
+workflow_list.append(coreg2_wf)
+
+braincrop_wf = braincrop(working_dir, subject_list)
+workflow_list.append(braincrop_wf)
+
 # ----------------------------------------------------------------------------
-# # AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
+# AT THIS POINT MANUAL MASKS MUST BE COMPLETED USING THE BRAIN CROPPED IMAGES
 # ----------------------------------------------------------------------------
-# # subject_list = ['08', '09', '10']
-# # subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11']
-#
-# subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
-# calc_transforms_wf = calc_transforms(working_dir, subject_list)
-# workflow_list_2.append(calc_transforms_wf)
-#
-# session_list = ['Precon', 'Postcon']
-# scan_type = 'hr'
-#
-# apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list, scan_type)
-# workflow_list_2.append(apply_transforms_hr_wf)
-#
-# apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
-# workflow_list_2.append(apply_nonlinear_transforms_hr_wf)
-#
+
+subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15']
+calc_transforms_wf = calc_transforms(working_dir, subject_list)
+workflow_list_2.append(calc_transforms_wf)
+
+session_list = ['Precon', 'Postcon']
+scan_type = 'hr'
+
+apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list, scan_type)
+workflow_list_2.append(apply_transforms_hr_wf)
+
+apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type)
+workflow_list_2.append(apply_nonlinear_transforms_hr_wf)
+
 # ----------------------------------------------------------------------------
 # # Vesselness parameters should be dicided with vmtk_vesselness_param_explorer.py
 # #   and final vesselness segmentation should be organized in to_use folder
@@ -163,9 +175,9 @@ num_cores = 12
 for workflow in workflow_list:
     cnp.workflow_runner(workflow, num_cores)
 
-# num_cores = 1
-#
-# for workflow in workflow_list_2:
-#     cnp.workflow_runner(workflow, num_cores)
-#
+num_cores = 12
+
+for workflow in workflow_list_2:
+    cnp.workflow_runner(workflow, num_cores)
+
 os.system("espeak 'pipeline run done'")
