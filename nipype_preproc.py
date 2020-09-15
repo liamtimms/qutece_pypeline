@@ -32,7 +32,7 @@ def preproc(working_dir, subject_list, session_list):
 
     # biasmask File
     biasmask_dir = os.path.join(
-        output_dir, 'manualwork', 'segmentations', 'brainmask_4bias', 'sub-{subject_id}')
+        output_dir, 'manualwork', 'segmentations', 'brain_mask4bias', 'sub-{subject_id}')
     biasmask_hr_file = os.path.join(
         biasmask_dir, '*' + filestart + '*T1w_hr_mask*' + 'Segmentation-label.nii')
     biasmask_fast_file = os.path.join(
