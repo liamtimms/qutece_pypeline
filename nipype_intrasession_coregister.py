@@ -28,13 +28,13 @@ def intrasession_coregister(working_dir, subject_list, session_list):
     scantype = 'anat'
     subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
     T1w_files = os.path.join(subdirectory, scantype, filestart + '_T1w.nii')
-    nonT1w_files = os.path.join(subdirectory, scantype,
-                                filestart + '*_[TFS][OLW]*.nii')
+    # nonT1w_files = os.path.join(subdirectory, scantype,
+    #                             filestart + '*_[TFS][OLW]*.nii')
 
     templates = {
         'qutece_mean': qutece_mean_file,
-        'T1w': T1w_files,
-        'nonT1w': nonT1w_files
+        'T1w': T1w_files
+    #     'nonT1w': nonT1w_files
     }
 
     # Infosource - function free node to iterate over the list of subject names
@@ -119,10 +119,11 @@ def intrasession_coregister(working_dir, subject_list, session_list):
         (selectfiles, coreg_to_ute, [('qutece_mean', 'target')]),
         (selectfiles, coreg_to_ute, [('T1w', 'source')]),
         (coreg_to_ute, coreg_to_anat, [('coregistered_source', 'target')]),
-        (selectfiles, coreg_to_anat, [('nonT1w', 'source')]),
-        (coreg_to_ute, merge, [('coregistered_source', 'in1')]),
-        (coreg_to_anat, merge, [('coregistered_source', 'in2')]),
-        (merge, bias_norm, [('out', 'input_image')]),
+        # (selectfiles, coreg_to_anat, [('nonT1w', 'source')]),
+        # (coreg_to_ute, merge, [('coregistered_source', 'in1')]),
+        # (coreg_to_anat, merge, [('coregistered_source', 'in2')]),
+        # (merge, bias_norm, [('out', 'input_image')]),
+        (coreg_to_ute, bias_norm, [('coregistered_source', 'input_image')]),
         (bias_norm, datasink, [('output_image', task + '.@con')])
     ])
     # -------------------------------------------------------
