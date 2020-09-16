@@ -417,7 +417,7 @@ def snr_subject_summary(sub_num, scan_type):
 
 
 def full_summary(datasink_dir, subject_list, scan_type, seg_type):
-    # csv_dir = 'csv_work_2'
+    csv_dir = 'csv_work_' + scan_type
     df_list = []
     for sub_num in subject_list:
         postcon_df, precon_df = subject_summary(sub_num, scan_type, seg_type)
@@ -435,10 +435,11 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     save_dir = os.path.join(datasink_dir, 'plots')
     swarm_plot(filt_df, save_dir, seg_type)
 
+    save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
+    full_df.to_csv(os.path.join(csv_dir, save_name), index=False)
+
 
 def calc_snr(signal_df, noise_df):
-    # signal_filt_df = signal_df.loc[(signal_df['index'] == 1)]
-    # noise_filt_df = noise_df.loc[(noise_df['index'] == 1.0)]
 
     signal_filt_df = signal_df.filter(
         items=['mean', 'std', 'session', 'file']).filter(like='1',
