@@ -33,8 +33,6 @@ def roi_extract(scan_img, roi_img, t='equal'):
 
     vals_df_list = []
     unique_roi = np.unique(roi_img)
-    # out_data = np.empty([np.size(unique_roi), 4])
-    n = 0
     extracted_df = pd.DataFrame()
     for r in unique_roi:
         crop_img = roi_cut(scan_img, roi_img, t, r)
@@ -46,29 +44,16 @@ def roi_extract(scan_img, roi_img, t='equal'):
 
         extracted_df[r] = vals_df[0]
 
-        # ave = np.nanmean(vals)
-        # std = np.nanstd(vals)
-        # N = np.count_nonzero(~np.isnan(vals))
-        # out_data[n][0] = r
-        # out_data[n][1] = ave
-        # out_data[n][2] = std
-        # out_data[n][3] = N
-        n = n + 1
-
-    # extracted_df = pd.concat(vals_df_list, ignore_index=True, axis=1)
-
     return extracted_df
 
 
 def hist_plots(df, seg_type, save_dir):
     sns.set(color_codes=True)
     sns.set(style="white", palette="muted")
-    # plot_xlim_min = 0
-    # plot_xlim_max = 1000
 
     for i, col in enumerate(df.columns):
         vals = df[col].to_numpy()
-        w = 50
+        w = 10
         n = math.ceil((np.nanmax(vals) - np.nanmin(vals)) / w)
 
         if n > 0:
@@ -115,21 +100,19 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                            aspect=a,
                            data=plot_df)
 
-    # sns_plot.set_size_inches(11.7, 8.27)
-
-    save_name = ('sub-' + sub_num + '_' + seg_type + '-summary.png')
-    print('Saving as :')
+    save_name = ('sub-' + sub_num + '_' + seg_type + '.png')
+    print('Saving plot as :')
     print(os.path.join(save_dir, save_name))
     sns_plot.savefig(os.path.join(save_dir, save_name))
 
     return
 
 
-def swarm_plot(filt_df, save_dir, seg_type):
+def subjects_plot(filt_df, save_dir, seg_type, y_axis):
     filt_df = filt_df.reset_index()
     print(filt_df.head())
     sns_plot = sns.catplot(x="sub_num",
-                           y="mean",
+                           y=y_axis,
                            hue="session",
                            kind="bar",
                            height=8,
@@ -138,7 +121,7 @@ def swarm_plot(filt_df, save_dir, seg_type):
 
     # sns_plot.set_size_inches(11.7, 8.27)
 
-    save_name = (seg_type + '-summary.png')
+    save_name = (y_axis + '_' + seg_type + '.png')
     sns_plot.savefig(os.path.join(save_dir, save_name))
 
     return
@@ -433,7 +416,8 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     filt_df = full_df.loc[(full_df['index'] == '1')]
     print(filt_df.head())
     save_dir = os.path.join(datasink_dir, 'plots')
-    swarm_plot(filt_df, save_dir, seg_type)
+    y_axis = 'mean'
+    subjects_plot(filt_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
     full_df.to_csv(os.path.join(csv_dir, save_name), index=False)
@@ -494,22 +478,6 @@ def snr_session(sub_num, session, scan_type):
 
 
 # RUNNING
-#
-#     stats_df = intensity_stats(csv_files)
-#
-#     save_dir = os.path.join(datasink_dir, 'csv_work', seg_type,
-#                 'sub-{}'.format(sub_num), 'ses-{}'.format(session))
-#
-#     if not os.path.exists(save_dir):
-#         os.makedirs(save_dir)
-#
-#     save_name = ('sub-{}_ses-{}_' + scan_type + '_proc_' +
-#                  'seg-{}.csv').format(sub_num, session, seg_type)
-#
-#     stats_df.to_csv(os.path.join(save_dir, save_name), index=False)
-#     return stats_df
-#
-#
 
 
 def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
@@ -547,50 +515,49 @@ def atlas_runner():
         '15'
     ]
     scan_type = 'hr'
-    in_folder = 'nonlinear_transfomed_hr'
-
     seg_type = 'Neuromorphometrics'
+
+    in_folder = 'nonlinear_transfomed_hr'
     base_runner(subject_list, seg_type, scan_type, in_folder, in_folder)
 
 
 def noise_runner(scan_type):
     subject_list = ['11', '12', '13', '14', '15']
     subject_list = ['08', '10']
-    seg_type = 'noise'
-    seg_type = 'brain_preFLIRT'
     subject_list = ['11', '14']
-    for sub_num in subject_list:
-        session = 'Precon'
-        in_folder = 'pre_to_post_coregister'
-        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+    seg_type = 'noise'
+    folder_post = 'preprocessing'
+    folder_pre = 'pre_to_post_coregister'
+    base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
-        session = 'Postcon'
-        in_folder = 'preprocessing'
-        session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-        subject_summary(sub_num, scan_type, seg_type)
-    full_summary(datasink_dir, subject_list, scan_type, seg_type)
+def brain_runner(scan_type):
+    subject_list = ['11', '12', '13', '14', '15']
+    subject_list = ['08', '10']
+    subject_list = ['11', '14']
+    seg_type = 'brain_preFLIRT'
+    folder_post = 'preprocessing'
+    folder_pre = 'pre_to_post_coregister'
+    base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
 
 def vesselness_runner(scan_type):
-    subject_list = ['06', '07', '08', '10', '11', '12', '13', '14', '15']
-    seg_type = 'vesselness'
-    subject_list = ['02', '03', '04', '05']
-    for sub_num in subject_list:
-        session = 'Postcon'
-        in_folder = 'preprocessing'
-        session_summary_vesselness(in_folder, sub_num, session, scan_type,
-                                   seg_type)
-        session = 'Precon'
-        in_folder = 'pre_to_post_coregister'
-        session_summary_vesselness(in_folder, sub_num, session, scan_type,
-                                   seg_type)
-        # subject_summary(sub_num, scan_type, seg_type)
-
     subject_list = [
         '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
         '15'
     ]
+    seg_type = 'vesselness'
+    for sub_num in subject_list:
+        session = 'Postcon'
+        in_folder = 'preprocessing'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
+        session = 'Precon'
+        in_folder = 'pre_to_post_coregister'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
+        subject_summary(sub_num, scan_type, seg_type)
+
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
 
 
@@ -610,7 +577,6 @@ def tof_runner():
 
 def main():
     # tof_runner()
-    # TOF_subjects = ['02','03','04', '05', '06', '07', '08', '10', '11', '14']
     subject_list = ['11']
     scan_type = 'hr'
     snr_runner(subject_list, scan_type)
@@ -618,7 +584,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#     roi_nii
-#     exclude_nii
-#     scan_list
