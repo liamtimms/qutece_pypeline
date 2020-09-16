@@ -2,6 +2,7 @@
 from vmtk import pypes
 import os
 import nibabel as nib
+import glob
 
 
 def SetAlpha(suppressPlates):
@@ -12,6 +13,10 @@ def SetBeta(suppressBlobs):
     return 0.001 + 1.0 * pow((100.0 - suppressBlobs) / 100.0, 2)
 
 
+def SetGamma(mean):
+    return mean * .5
+
+
 def GetPixelSpacing(nii_filename):
     # minimum spacing is used in vmtkSlicerExtension
     nii = nib.load(nii_filename)
@@ -20,8 +25,29 @@ def GetPixelSpacing(nii_filename):
 
 
 # ----------------------- Input ------------------------------------------
-subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15']
+subject_list = [
+    '02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15'
+]
+# subject_list = ['05', '07']
+subject_list = ['10']
 
+sub_means = {
+    '02': 177,
+    '03': 372,
+    '04': 378,
+    '05': 231,
+    '06': 272,
+    '07': 174,
+    '08': 314,
+    '10': 335,
+    '11': 326,
+    '12': 467,
+    '13': 431,
+    '14': 441,
+    '15': 419,
+}
+
+TOF_subjects = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14']
 
 
 for subject_num in subject_list:
@@ -32,56 +58,82 @@ for subject_num in subject_list:
     scanfolder = os.path.join(basefolder, 'datasink', 'preprocessing',
                               'sub-' + subject_num, 'ses-Postcon', 'qutece')
 
-    outfolder = os.path.join(basefolder, 'manualwork', 'vesselness_filtered',
+    outfolder = os.path.join(basefolder, 'manualwork', 'vesselness_filtered_2',
                              'sub-' + subject_num)
 
     print(outfolder)
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
 
-    infile = 'rsub-' + subject_num + '_ses-Postcon_hr_run-01_UTE_desc-preproc'
-    inVesselness = os.path.join(basefolder, scanfolder, infile + '.nii')
-    print(inVesselness)
+    # infile= 'rsub-' + subject_num + '_ses-Postcon_hr_run-01_UTE_desc-preproc'
+    # inVesselness = os.path.join(basefolder, scanfolder, infile + '.nii')
+    # print(inVesselness)
 
-    pixelspacing = GetPixelSpacing(inVesselness)
-    voxelmin = 1
-    voxelmax = 4
-    sigmamin = pixelspacing * voxelmin
-    sigmamax = pixelspacing * voxelmax
-    sigmasteps = 5  # default = 5 in vmtkSlicerExtension
+    infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'
+    inVesselness_pattern = os.path.join(basefolder, scanfolder,
+                                        infile + '.nii')
+    inVesselness_list = glob.glob(inVesselness_pattern)
+    print(inVesselness_list)
 
     suppressPlates = 25
     suppressBlobs = 25
     alpha = SetAlpha(suppressPlates)
     beta = SetBeta(suppressBlobs)
+
     gamma = 75
+    mean = sub_means[subject_num]
+    gamma = SetGamma(mean)
+    print(gamma)
 
     # --------------------- Param Space --------------------------------------
-    suppressBlobs_list = [50]
-    suppressPlates_list = [50]
-    gamma_list = [50, 100]
+    suppressBlobs_list = [25]
+    suppressPlates_list = [10, 25]
+    # gamma_list = [50, 100]
     # params_space = [(vmax, g) for vmax in voxelmax_list for g in gamma_list]
-    params_space = [(suppressBlobs, g) for suppressBlobs in suppressBlobs_list
-                    for g in gamma_list]
-    params_space = [(suppressPlates, suppressBlobs) for suppressPlates in suppressPlates_list
+    # params_space =[(suppressBlobs, g) for suppressBlobs in suppressBlobs_list
+    #                 for g in gamma_list]
+    params_space = [(suppressPlates, suppressBlobs)
+                    for suppressPlates in suppressPlates_list
                     for suppressBlobs in suppressBlobs_list]
 
-    for params in params_space:
-        suppressPlates, suppressBlobs = params
+    for inVesselness in inVesselness_list:
+        print(inVesselness)
+        pixelspacing = GetPixelSpacing(inVesselness)
+        voxelmin = 1
+        voxelmax = 5
+        sigmamin = pixelspacing * voxelmin
         sigmamax = pixelspacing * voxelmax
+        sigmasteps = 5  # default = 5 in vmtkSlicerExtension
+        outfile = os.path.basename(inVesselness)
+        outfile = os.path.splitext(outfile)[0]
 
-        alpha = SetAlpha(suppressPlates)
-        beta = SetBeta(suppressBlobs)
-        outVesselness = os.path.join(
-            outfolder, infile + '_AutoVesselness' + '_sblobs=' +
-            str(suppressBlobs) + '_splates=' + str(suppressPlates) + '.nii')
-        print(outVesselness)
+        for params in params_space:
+            suppressPlates, suppressBlobs = params
+            sigmamax = pixelspacing * voxelmax
 
-        cmdVesselness = (
-            'vmtkimagecast -type float -ifile {} --pipe vmtkimagevesselenhancement -ofile {} '
-            +
-            '-method frangi -sigmamin {} -sigmamax {} -sigmasteps {} -alpha {} -beta {} -gamma {}'
-        ).format(inVesselness, outVesselness, sigmamin, sigmamax, sigmasteps,
-                 alpha, beta, gamma)
+            alpha = SetAlpha(suppressPlates)
+            beta = SetBeta(suppressBlobs)
+            outVesselness = os.path.join(
+                outfolder, outfile + '_AutoVess' + '_g=' + str(gamma) + '_sb=' +
+                str(suppressBlobs) + '_sp=' + str(suppressPlates) + '.nii')
+            print(outVesselness)
 
-        pypes.PypeRun(cmdVesselness)
+            cmdVesselness = (
+                'vmtkimagecast -type float -ifile {} ' +
+                '--pipe vmtkimagevesselenhancement -ofile {} ' +
+                '-method frangi -sigmamin {} -sigmamax {} -sigmasteps {} ' +
+                '-alpha {} -beta {} -gamma {}').format(inVesselness,
+                                                       outVesselness, sigmamin,
+                                                       sigmamax, sigmasteps,
+                                                       alpha, beta, gamma)
+
+            pypes.PypeRun(cmdVesselness)
+
+        # outVesselness = os.path.join(outfolder, outfile + '_AutoVess_sato.nii')
+        # cmdVesselness = (
+        #     'vmtkimagecast -type float -ifile {} ' +
+        #     '--pipe vmtkimagevesselenhancement -ofile {} ' +
+        #     '-method sato -sigmamin {} -sigmamax {} -sigmasteps {}').format(
+        #         inVesselness, outVesselness, sigmamin, sigmamax, sigmasteps)
+
+        # pypes.PypeRun(cmdVesselness)
