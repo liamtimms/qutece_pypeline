@@ -100,21 +100,26 @@ def hist_plots(df, seg_type, save_dir):
     return
 
 
-def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type):
+def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
+                  y_axis):
     plot_df = pd.concat([postcon_df, precon_df])
     plot_df = plot_df.reset_index()
-    # print(plot_df.head())
-    sns_plot = sns.catplot(x="index",
-                           y="mean",
+    a = plot_df[x_axis].nunique() / 3
+    print('plotting :')
+    print(plot_df.head())
+    sns_plot = sns.catplot(x=x_axis,
+                           y=y_axis,
                            hue="session",
                            kind="bar",
                            height=8,
-                           aspect=1,
+                           aspect=a,
                            data=plot_df)
 
     # sns_plot.set_size_inches(11.7, 8.27)
 
     save_name = ('sub-' + sub_num + '_' + seg_type + '-summary.png')
+    print('Saving as :')
+    print(os.path.join(save_dir, save_name))
     sns_plot.savefig(os.path.join(save_dir, save_name))
 
     return
@@ -240,6 +245,7 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
 
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
+    csv_dir = 'csv_work_' + scan_type
 
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
@@ -326,13 +332,12 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         summary_df = extracted_df.describe()
         print(summary_df)
 
-        save_dir = os.path.join(datasink_dir, 'csv_work_2',
+        save_dir = os.path.join(datasink_dir, csv_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        # save_name = ('sub-{}_ses-{}_' + scan_type + '_data_' +
         save_name = (fname + '_DATA_' + 'seg-{}.csv').format(seg_type)
         extracted_df.to_csv(os.path.join(save_dir, save_name), index=False)
 
@@ -365,7 +370,7 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
 
 
 def subject_summary(sub_num, scan_type, seg_type):
-    csv_dir = 'csv_work_' + seg_type
+    csv_dir = 'csv_work_' + scan_type
     session = 'Precon'
     precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
                                       scan_type)
@@ -377,9 +382,36 @@ def subject_summary(sub_num, scan_type, seg_type):
     postcon_df = pd.concat(postcon_df_list)
 
     save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
-    category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type)
+    x_axis = "index"
+    y_axis = "mean"
+    category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
+                  y_axis)
 
     # print(postcon_df.head())
+
+    return postcon_df, precon_df
+
+
+def snr_subject_summary(sub_num, scan_type):
+    csv_dir = 'csv_work_' + scan_type
+    seg_type = 'SNR'
+    session = 'Precon'
+    data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
+                            'ses-{}'.format(session))
+    f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
+    precon_df = pd.read_csv(os.path.join(data_dir, f))
+
+    session = 'Postcon'
+    data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
+                            'ses-{}'.format(session))
+    f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
+    postcon_df = pd.read_csv(os.path.join(data_dir, f))
+
+    save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
+    x_axis = "index_x"
+    y_axis = "SNR"
+    category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
+                  y_axis)
 
     return postcon_df, precon_df
 
@@ -391,7 +423,6 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
         postcon_df, precon_df = subject_summary(sub_num, scan_type, seg_type)
         postcon_df['sub_num'] = sub_num
         precon_df['sub_num'] = sub_num
-        print(postcon_df.head())
         df_list.append(postcon_df)
         df_list.append(precon_df)
 
@@ -405,9 +436,60 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     swarm_plot(filt_df, save_dir, seg_type)
 
 
-def snr(vessel_df, noise_df):
-    # signal = full_df.loc[(vessel_df['index'] == '1')]
-    return
+def calc_snr(signal_df, noise_df):
+    # signal_filt_df = signal_df.loc[(signal_df['index'] == 1)]
+    # noise_filt_df = noise_df.loc[(noise_df['index'] == 1.0)]
+
+    signal_filt_df = signal_df.filter(
+        items=['mean', 'std', 'session', 'file']).filter(like='1',
+                                                         axis=0).reset_index()
+
+    signal_filt_df.rename(columns={
+        'mean': 'signal_mean',
+        'std': 'signal_std'
+    },
+                          inplace=True)
+
+    scan_names = signal_filt_df['file'].str.rsplit("_", n=2, expand=True)
+    signal_filt_df['scan'] = scan_names[0]
+
+    noise_filt_df = noise_df.filter(items=['std', 'file']).filter(
+        like='1.0', axis=0).reset_index()
+
+    noise_filt_df.rename(columns={'std': 'noise_std'}, inplace=True)
+
+    scan_names = noise_filt_df['file'].str.rsplit("_", n=2, expand=True)
+    noise_filt_df['scan'] = scan_names[0]
+
+    snr_df = pd.merge(signal_filt_df, noise_filt_df, on='scan')
+    snr_df = snr_df.drop(columns=['file_x', 'file_y'])
+    snr_df['SNR'] = snr_df['signal_mean'] / snr_df['noise_std']
+    snr_df['ISH'] = snr_df['signal_std'] / snr_df['signal_mean']
+
+    return snr_df
+
+
+def snr_session(sub_num, session, scan_type):
+    csv_dir = 'csv_work_' + scan_type
+
+    seg_type = 'vesselness'
+    vessel_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
+                                      scan_type)
+    vessel_df = pd.concat(vessel_df_list)
+
+    seg_type = 'noise'
+    noise_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
+                                     scan_type)
+    noise_df = pd.concat(noise_df_list)
+
+    snr_df = calc_snr(vessel_df, noise_df)
+
+    save_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
+                            'ses-{}'.format(session))
+
+    save_name = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
+    snr_df.to_csv(os.path.join(save_dir, save_name))
+    return snr_df
 
 
 # RUNNING
@@ -441,6 +523,21 @@ def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
 
         subject_summary(sub_num, scan_type, seg_type)
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
+
+
+def snr_runner(subject_list, scan_type):
+    scan_type = 'hr'
+    for sub_num in subject_list:
+        session = 'Precon'
+        snr_session(sub_num, session, scan_type)
+
+        session = 'Postcon'
+        snr_session(sub_num, session, scan_type)
+
+        snr_subject_summary(sub_num, scan_type)
+
+
+#     snr_full_summary(datasink_dir, subject_list, scan_type)
 
 
 def atlas_runner():
@@ -511,7 +608,11 @@ def tof_runner():
 
 
 def main():
-    tof_runner()
+    # tof_runner()
+    # TOF_subjects = ['02','03','04', '05', '06', '07', '08', '10', '11', '14']
+    subject_list = ['11']
+    scan_type = 'hr'
+    snr_runner(subject_list, scan_type)
 
 
 if __name__ == "__main__":
