@@ -143,6 +143,9 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
 
+    csv_dir = 'csv_work_' + scan_type
+    plots_dir = 'plots_' + scan_type
+
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
                                 'sub-{}'.format(sub_num),
@@ -195,9 +198,12 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                                                       ROI_file_nii)
             scan_img = np.array(resampled_nii.get_fdata())
 
+        if scan_type == 'TOF':
+            scan_img[np.abs(scan_img) <= 0.2] = np.nan
+
         extracted_df = roi_extract(scan_img, roi_img)
 
-        save_dir = os.path.join(datasink_dir, 'plots',
+        save_dir = os.path.join(datasink_dir, plots_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
@@ -207,7 +213,7 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         summary_df = extracted_df.describe()
         print(summary_df)
 
-        save_dir = os.path.join(datasink_dir, 'csv_work_2',
+        save_dir = os.path.join(datasink_dir, csv_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
@@ -359,7 +365,7 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type):
 
 
 def subject_summary(sub_num, scan_type, seg_type):
-    csv_dir = 'csv_work_2'
+    csv_dir = 'csv_work_' + seg_type
     session = 'Precon'
     precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type)
     precon_df = pd.concat(precon_df_list)
@@ -402,6 +408,7 @@ def snr(vessel_df, noise_df):
     return
 
 
+## RUNNING
 #
 #     stats_df = intensity_stats(csv_files)
 #
@@ -438,11 +445,10 @@ in_folder = 'nonlinear_transfomed_hr'
 
 # subject_list = ['11', '12', '13', '14', '15']
 # subject_list = ['08', '10']
-# subject_list = ['11']
 
-seg_type = 'noise'
-seg_type = 'brain_preFLIRT'
-
+# seg_type = 'noise'
+# seg_type = 'brain_preFLIRT'
+# subject_list = ['11', '14']
 # for sub_num in subject_list:
 #     session = 'Precon'
 #     in_folder = 'pre_to_post_coregister'
@@ -455,25 +461,35 @@ seg_type = 'brain_preFLIRT'
 #     subject_summary(sub_num, scan_type, seg_type)
 # full_summary(datasink_dir, subject_list, scan_type, seg_type)
 
-subject_list = ['06', '07', '08', '10', '11', '12', '13', '14', '15']
-seg_type = 'vesselness'
-# subject_list = ['02', '03', '04', '05']
-# for sub_num in subject_list:
-#     session = 'Postcon'
-#     in_folder = 'preprocessing'
-#     session_summary_vesselness(in_folder, sub_num, session, scan_type,
-#                                seg_type)
-#     session = 'Precon'
-#     in_folder = 'pre_to_post_coregister'
-#     session_summary_vesselness(in_folder, sub_num, session, scan_type,
-#                                seg_type)
-#     # subject_summary(sub_num, scan_type, seg_type)
+# subject_list = ['06', '07', '08', '10', '11', '12', '13', '14', '15']
+# seg_type = 'vesselness'
+# # subject_list = ['02', '03', '04', '05']
+# # for sub_num in subject_list:
+# #     session = 'Postcon'
+# #     in_folder = 'preprocessing'
+# #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
+# #                                seg_type)
+# #     session = 'Precon'
+# #     in_folder = 'pre_to_post_coregister'
+# #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
+# #                                seg_type)
+# #     # subject_summary(sub_num, scan_type, seg_type)
+#
+# subject_list = [
+#     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+#     '15'
+# ]
+# full_summary(datasink_dir, subject_list, scan_type, seg_type)
 
-subject_list = [
-    '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-    '15'
-]
-full_summary(datasink_dir, subject_list, scan_type, seg_type)
+## TIME OF FLIGHT
+scan_type = 'TOF'
+TOF_subjects = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14']
+subject_list = ['11', '14']
+seg_type = 'brain_preFLIRT'
+for sub_num in subject_list:
+    session = 'Precon'
+    in_folder = 'pre_to_post_coregister'
+    session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
 #     roi_nii
 #     exclude_nii
