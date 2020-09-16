@@ -425,7 +425,40 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     subjects_plot(filt_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
-    full_df.to_csv(os.path.join(csv_dir, save_name), index=False)
+    save_dir = os.path.join(datasink_dir, csv_dir)
+    full_df.to_csv(os.path.join(save_dir, save_name), index=False)
+
+
+def snr_full_summary(datasink_dir, subject_list, scan_type):
+    csv_dir = 'csv_work_' + scan_type
+    seg_type = 'SNR'
+    df_list = []
+    for sub_num in subject_list:
+        postcon_df, precon_df = snr_subject_summary(sub_num, scan_type)
+        postcon_df['sub_num'] = sub_num
+        precon_df['sub_num'] = sub_num
+        df_list.append(postcon_df)
+        df_list.append(precon_df)
+
+    full_df = pd.concat(df_list)
+    full_df = full_df.reset_index()
+    print('full_df : ')
+    # print(full_df.head())
+    # filt_df = full_df.loc[(full_df['index'] == '1')]
+    # print(filt_df.head())
+
+    save_dir = os.path.join(datasink_dir, 'plots')
+    y_axis = 'SNR'
+    subjects_plot(full_df, save_dir, seg_type, y_axis)
+
+    save_dir = os.path.join(datasink_dir, 'plots')
+    y_axis = 'ISH'
+    subjects_plot(full_df, save_dir, seg_type, y_axis)
+
+    save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
+    save_dir = os.path.join(datasink_dir, csv_dir)
+    full_df.to_csv(os.path.join(save_dir, save_name), index=False)
+    return
 
 
 def calc_snr(signal_df, noise_df):
@@ -497,6 +530,7 @@ def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
 
         subject_summary(sub_num, scan_type, seg_type)
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
+    plt.close('all')
 
 
 def snr_runner(subject_list, scan_type):
@@ -510,47 +544,32 @@ def snr_runner(subject_list, scan_type):
 
         snr_subject_summary(sub_num, scan_type)
 
+    snr_full_summary(datasink_dir, subject_list, scan_type)
+    plt.close('all')
+    return
 
-#     snr_full_summary(datasink_dir, subject_list, scan_type)
 
-
-def atlas_runner():
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-        '15'
-    ]
-    scan_type = 'hr'
+def atlas_runner(subject_list, scan_type):
     seg_type = 'Neuromorphometrics'
-
     in_folder = 'nonlinear_transfomed_hr'
     base_runner(subject_list, seg_type, scan_type, in_folder, in_folder)
 
 
-def noise_runner(scan_type):
-    subject_list = ['11', '12', '13', '14', '15']
-    subject_list = ['08', '10']
-    subject_list = ['11', '14']
+def noise_runner(subject_list, scan_type):
     seg_type = 'noise'
     folder_post = 'preprocessing'
     folder_pre = 'pre_to_post_coregister'
     base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
 
-def brain_runner(scan_type):
-    subject_list = ['11', '12', '13', '14', '15']
-    subject_list = ['08', '10']
-    subject_list = ['11', '14']
+def brain_runner(subject_list, scan_type):
     seg_type = 'brain_preFLIRT'
     folder_post = 'preprocessing'
     folder_pre = 'pre_to_post_coregister'
     base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
 
-def vesselness_runner(scan_type):
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-        '15'
-    ]
+def vesselness_runner(subject_list, scan_type):
     seg_type = 'vesselness'
     for sub_num in subject_list:
         session = 'Postcon'
@@ -564,6 +583,7 @@ def vesselness_runner(scan_type):
         subject_summary(sub_num, scan_type, seg_type)
 
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
+    plt.close('all')
 
 
 def tof_runner():
@@ -582,11 +602,19 @@ def tof_runner():
 
 def main():
     # tof_runner()
+
+    subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '14']
     subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '10', '11', '14'
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+        '15'
     ]
     scan_type = 'hr'
+
+    brain_runner(subject_list, scan_type)
+    noise_runner(subject_list, scan_type)
+    vesselness_runner(subject_list, scan_type)
     snr_runner(subject_list, scan_type)
+    atlas_runner(subject_list, scan_type)
 
 
 if __name__ == "__main__":
