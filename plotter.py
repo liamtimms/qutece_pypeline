@@ -90,8 +90,9 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
     plot_df = pd.concat([postcon_df, precon_df])
     plot_df = plot_df.reset_index()
     a = plot_df[x_axis].nunique() / 3
+    print()
     print('plotting :')
-    print(plot_df.head())
+    print(plot_df.head(10))
     sns_plot = sns.catplot(x=x_axis,
                            y=y_axis,
                            hue="session",
@@ -100,7 +101,7 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                            aspect=a,
                            data=plot_df)
 
-    save_name = ('sub-' + sub_num + '_' + seg_type + '.png')
+    save_name = ('sub-' + sub_num + '_' + y_axis + '_seg-' + seg_type + '.png')
     print('Saving plot as :')
     print(os.path.join(save_dir, save_name))
     sns_plot.savefig(os.path.join(save_dir, save_name))
@@ -121,7 +122,7 @@ def subjects_plot(filt_df, save_dir, seg_type, y_axis):
 
     # sns_plot.set_size_inches(11.7, 8.27)
 
-    save_name = (y_axis + '_' + seg_type + '.png')
+    save_name = (y_axis + '_seg-' + seg_type + '.png')
     sns_plot.savefig(os.path.join(save_dir, save_name))
 
     return
@@ -396,6 +397,10 @@ def snr_subject_summary(sub_num, scan_type):
     category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                   y_axis)
 
+    y_axis = "ISH"
+    category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
+                  y_axis)
+
     return postcon_df, precon_df
 
 
@@ -577,7 +582,9 @@ def tof_runner():
 
 def main():
     # tof_runner()
-    subject_list = ['11']
+    subject_list = [
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '14'
+    ]
     scan_type = 'hr'
     snr_runner(subject_list, scan_type)
 
