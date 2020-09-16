@@ -345,7 +345,7 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
     return summary_df_list
 
 
-def load_summary_dfs(csv_dir, sub_num, session, seg_type):
+def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
     data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session))
     path_pattern = os.path.join(
@@ -367,11 +367,13 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type):
 def subject_summary(sub_num, scan_type, seg_type):
     csv_dir = 'csv_work_' + seg_type
     session = 'Precon'
-    precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type)
+    precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
+                                      scan_type)
     precon_df = pd.concat(precon_df_list)
 
     session = 'Postcon'
-    postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type)
+    postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
+                                       scan_type)
     postcon_df = pd.concat(postcon_df_list)
 
     save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
@@ -408,7 +410,7 @@ def snr(vessel_df, noise_df):
     return
 
 
-## RUNNING
+# RUNNING
 #
 #     stats_df = intensity_stats(csv_files)
 #
@@ -426,70 +428,94 @@ def snr(vessel_df, noise_df):
 #
 #
 
-subject_list = [
-    '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-    '15'
-]
-# subject_list = ['04', '05', '06', '07', '08', '10', '12', '13', '14', '15']
-# subject_list = ['02', '11', '15']
-# subject_list = ['11']
-session_list = ['Postcon', 'Precon']
-scan_type = 'hr'
-in_folder = 'nonlinear_transfomed_hr'
 
-# seg_type = 'Neuromorphometrics'
-# for sub_num in subject_list:
-#     for session in session_list:
-#         session_summary(in_folder, sub_num, session, scan_type, seg_type)
-#     subject_summary(sub_num, scan_type, seg_type)
+def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
+    for sub_num in subject_list:
+        session = 'Precon'
+        in_folder = folder_pre
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-# subject_list = ['11', '12', '13', '14', '15']
-# subject_list = ['08', '10']
+        session = 'Postcon'
+        in_folder = folder_post
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-# seg_type = 'noise'
-# seg_type = 'brain_preFLIRT'
-# subject_list = ['11', '14']
-# for sub_num in subject_list:
-#     session = 'Precon'
-#     in_folder = 'pre_to_post_coregister'
-#     session_summary(in_folder, sub_num, session, scan_type, seg_type)
-#
-#     session = 'Postcon'
-#     in_folder = 'preprocessing'
-#     session_summary(in_folder, sub_num, session, scan_type, seg_type)
-#
-#     subject_summary(sub_num, scan_type, seg_type)
-# full_summary(datasink_dir, subject_list, scan_type, seg_type)
+        subject_summary(sub_num, scan_type, seg_type)
+    full_summary(datasink_dir, subject_list, scan_type, seg_type)
 
-# subject_list = ['06', '07', '08', '10', '11', '12', '13', '14', '15']
-# seg_type = 'vesselness'
-# # subject_list = ['02', '03', '04', '05']
-# # for sub_num in subject_list:
-# #     session = 'Postcon'
-# #     in_folder = 'preprocessing'
-# #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
-# #                                seg_type)
-# #     session = 'Precon'
-# #     in_folder = 'pre_to_post_coregister'
-# #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
-# #                                seg_type)
-# #     # subject_summary(sub_num, scan_type, seg_type)
-#
-# subject_list = [
-#     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-#     '15'
-# ]
-# full_summary(datasink_dir, subject_list, scan_type, seg_type)
 
-## TIME OF FLIGHT
-scan_type = 'TOF'
-TOF_subjects = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14']
-subject_list = ['11', '14']
-seg_type = 'brain_preFLIRT'
-for sub_num in subject_list:
-    session = 'Precon'
-    in_folder = 'pre_to_post_coregister'
-    session_summary(in_folder, sub_num, session, scan_type, seg_type)
+def atlas_runner():
+    subject_list = [
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+        '15'
+    ]
+    scan_type = 'hr'
+    in_folder = 'nonlinear_transfomed_hr'
+
+    seg_type = 'Neuromorphometrics'
+    base_runner(subject_list, seg_type, scan_type, in_folder, in_folder)
+
+
+def noise_runner(scan_type):
+    subject_list = ['11', '12', '13', '14', '15']
+    subject_list = ['08', '10']
+    seg_type = 'noise'
+    seg_type = 'brain_preFLIRT'
+    subject_list = ['11', '14']
+    for sub_num in subject_list:
+        session = 'Precon'
+        in_folder = 'pre_to_post_coregister'
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+
+        session = 'Postcon'
+        in_folder = 'preprocessing'
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+
+        subject_summary(sub_num, scan_type, seg_type)
+    full_summary(datasink_dir, subject_list, scan_type, seg_type)
+
+
+def vesselness_runner(scan_type):
+    subject_list = ['06', '07', '08', '10', '11', '12', '13', '14', '15']
+    seg_type = 'vesselness'
+    subject_list = ['02', '03', '04', '05']
+    for sub_num in subject_list:
+        session = 'Postcon'
+        in_folder = 'preprocessing'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
+        session = 'Precon'
+        in_folder = 'pre_to_post_coregister'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
+        # subject_summary(sub_num, scan_type, seg_type)
+
+    subject_list = [
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+        '15'
+    ]
+    full_summary(datasink_dir, subject_list, scan_type, seg_type)
+
+
+def tof_runner():
+    # TIME OF FLIGHT
+    scan_type = 'TOF'
+    TOF_subjects = [
+        '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
+    ]
+    subject_list = TOF_subjects
+    seg_type = 'brain_preFLIRT'
+    for sub_num in subject_list:
+        session = 'Precon'
+        in_folder = 'pre_to_post_coregister'
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+
+
+def main():
+    tof_runner()
+
+
+if __name__ == "__main__":
+    main()
 
 #     roi_nii
 #     exclude_nii
