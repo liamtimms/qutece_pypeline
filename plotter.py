@@ -9,6 +9,9 @@ import nibabel as nib
 import nilearn as nil
 from nipype.utils.filemanip import split_filename
 
+# sns.set_theme(style="whitegrid", palette="muted")
+sns.set_theme()
+
 base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
@@ -58,7 +61,7 @@ def hist_plots(df, seg_type, save_dir):
 
         if n > 0:
             plt.figure(i)
-            save_name = seg_type + '-' + str(col) + '.png'
+            save_name = seg_type + '-' + str(int(col)) + '.png'
             out_fig_name = os.path.join(save_dir, save_name)
             sns.distplot(df[col],
                          kde=False,
@@ -82,6 +85,26 @@ def hist_plots(df, seg_type, save_dir):
             #              })
 
     # out_fig_name = os.path.join(save_dir, save_name)
+    return
+
+
+def hist_plot_alt(df, seg_type, save_dir):
+    vals_list = []
+    for i, col in enumerate(df.columns):
+        vals = df[[col]]
+        vals.columns = ['intensity']
+        vals['region'] = int(col)
+        print(vals.head())
+        vals_list.append(vals)
+    plot_df = pd.concat(vals_list, ignore_index=True)
+    sns_plot = sns.displot(plot_df,
+                           x='intensity',
+                           hue='region',
+                           stat="density",
+                           common_norm=False)
+    save_name = ('seg-' + seg_type + '.png')
+    out_fig_name = os.path.join(save_dir, save_name)
+    sns_plot.savefig(out_fig_name)
     return
 
 
@@ -112,12 +135,13 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
 def subjects_plot(filt_df, save_dir, seg_type, y_axis):
     filt_df = filt_df.reset_index()
     print(filt_df.head())
+    a = filt_df['sub_num'].nunique() / 4
     sns_plot = sns.catplot(x="sub_num",
                            y=y_axis,
                            hue="session",
                            kind="bar",
                            height=8,
-                           aspect=1,
+                           aspect=a,
                            data=filt_df)
 
     # sns_plot.set_size_inches(11.7, 8.27)
@@ -153,6 +177,12 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
             roi_dir,
             'rsub-' + sub_num + '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
             '_noise-Segmentation-label.nii')
+        if scan_type == 'TOF':
+            ROI_file_name = os.path.join(
+                roi_dir, 'TOF',
+                'rrrsub-' + sub_num + '_ses-Precon_TOF_angio_corrected' +
+                '_noise-Segmentation-label.nii')
+
     elif seg_type == 'brain_preFLIRT':
         ROI_file_name = os.path.join(
             roi_dir, 'rrrsub-' + sub_num + '_ses-Precon_T1w_*brain*' +
@@ -197,7 +227,8 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        hist_plots(extracted_df, seg_type, save_dir)
+        # hist_plots(extracted_df, seg_type, save_dir)
+        # hist_plot_alt(extracted_df, seg_type, save_dir)
 
         summary_df = extracted_df.describe()
         print(summary_df)
@@ -230,6 +261,7 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
     csv_dir = 'csv_work_' + scan_type
+    plots_dir = 'plots_' + scan_type
 
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
@@ -306,7 +338,7 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
 
         extracted_df = roi_extract(scan_img, vessel_roi_img)
 
-        save_dir = os.path.join(datasink_dir, 'plots',
+        save_dir = os.path.join(datasink_dir, plots_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
@@ -355,17 +387,20 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
 
 def subject_summary(sub_num, scan_type, seg_type):
     csv_dir = 'csv_work_' + scan_type
+    plots_dir = 'plots_' + scan_type
     session = 'Precon'
     precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
                                       scan_type)
     precon_df = pd.concat(precon_df_list)
+    print(precon_df_list)
 
     session = 'Postcon'
     postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
                                        scan_type)
     postcon_df = pd.concat(postcon_df_list)
+    print(postcon_df_list)
 
-    save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
+    save_dir = os.path.join(datasink_dir, plots_dir, 'sub-{}'.format(sub_num))
     x_axis = "index"
     y_axis = "mean"
     category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
@@ -378,6 +413,7 @@ def subject_summary(sub_num, scan_type, seg_type):
 
 def snr_subject_summary(sub_num, scan_type):
     csv_dir = 'csv_work_' + scan_type
+    plots_dir = 'plots_' + scan_type
     seg_type = 'SNR'
     session = 'Precon'
     data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
@@ -391,7 +427,7 @@ def snr_subject_summary(sub_num, scan_type):
     f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
     postcon_df = pd.read_csv(os.path.join(data_dir, f))
 
-    save_dir = os.path.join(datasink_dir, 'plots', 'sub-{}'.format(sub_num))
+    save_dir = os.path.join(datasink_dir, plots_dir, 'sub-{}'.format(sub_num))
     x_axis = "index_x"
     y_axis = "SNR"
     category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
@@ -406,6 +442,7 @@ def snr_subject_summary(sub_num, scan_type):
 
 def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     csv_dir = 'csv_work_' + scan_type
+    plots_dir = 'plots_' + scan_type
     df_list = []
     for sub_num in subject_list:
         postcon_df, precon_df = subject_summary(sub_num, scan_type, seg_type)
@@ -416,21 +453,25 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
 
     full_df = pd.concat(df_list)
     full_df = full_df.reset_index()
+    full_df['index'] = pd.to_numeric(full_df['index'], downcast='integer')
+    full_df['scan_type'] = scan_type
     print('full_df : ')
     print(full_df.head())
-    filt_df = full_df.loc[(full_df['index'] == '1')]
+    filt_df = full_df.loc[(full_df['index'] == 1)]
     print(filt_df.head())
-    save_dir = os.path.join(datasink_dir, 'plots')
+    save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'mean'
     subjects_plot(filt_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
     save_dir = os.path.join(datasink_dir, csv_dir)
-    full_df.to_csv(os.path.join(save_dir, save_name), index=False)
+    full_df.to_csv(os.path.join(save_dir, save_name))
+    return
 
 
 def snr_full_summary(datasink_dir, subject_list, scan_type):
     csv_dir = 'csv_work_' + scan_type
+    plots_dir = 'plots_' + scan_type
     seg_type = 'SNR'
     df_list = []
     for sub_num in subject_list:
@@ -442,16 +483,15 @@ def snr_full_summary(datasink_dir, subject_list, scan_type):
 
     full_df = pd.concat(df_list)
     full_df = full_df.reset_index()
+    full_df['index'] = pd.to_numeric(full_df['index'], downcast='integer')
+    full_df['scan_type'] = scan_type
     print('full_df : ')
-    # print(full_df.head())
-    # filt_df = full_df.loc[(full_df['index'] == '1')]
-    # print(filt_df.head())
 
-    save_dir = os.path.join(datasink_dir, 'plots')
+    save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'SNR'
     subjects_plot(full_df, save_dir, seg_type, y_axis)
 
-    save_dir = os.path.join(datasink_dir, 'plots')
+    save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'ISH'
     subjects_plot(full_df, save_dir, seg_type, y_axis)
 
@@ -593,15 +633,17 @@ def tof_runner():
         '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
     ]
     subject_list = TOF_subjects
-    seg_type = 'brain_preFLIRT'
     for sub_num in subject_list:
         session = 'Precon'
         in_folder = 'pre_to_post_coregister'
+        seg_type = 'noise'
         session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        # seg_type = 'brain_preFLIRT'
+        # session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
 
 def main():
-    # tof_runner()
+    tof_runner()
 
     subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '14']
     subject_list = [
@@ -610,11 +652,12 @@ def main():
     ]
     scan_type = 'hr'
 
-    brain_runner(subject_list, scan_type)
-    noise_runner(subject_list, scan_type)
-    vesselness_runner(subject_list, scan_type)
-    snr_runner(subject_list, scan_type)
-    atlas_runner(subject_list, scan_type)
+    # brain_runner(subject_list, scan_type)
+    # noise_runner(subject_list, scan_type)
+    # vesselness_runner(subject_list, scan_type)
+    # atlas_runner(subject_list, scan_type)
+    # snr_runner(subject_list, scan_type)
+    return
 
 
 if __name__ == "__main__":
