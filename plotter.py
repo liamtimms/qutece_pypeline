@@ -152,6 +152,29 @@ def subjects_plot(filt_df, save_dir, seg_type, y_axis):
     return
 
 
+def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
+    filt_df = filt_df.reset_index()
+    print(filt_df.head())
+    a = filt_df['sub_num'].nunique() / 15
+    sns_plot = sns.catplot(x="sub_num",
+                           y=y_axis,
+                           # hue="scan_type",
+                           # col="session",
+                           hue="session",
+                           col="scan_type",
+                           kind="bar",
+                           height=8,
+                           aspect=a,
+                           data=filt_df)
+
+    # sns_plot.set_size_inches(11.7, 8.27)
+
+    save_name = (y_axis + '_compare_seg-' + seg_type + '.png')
+    sns_plot.savefig(os.path.join(save_dir, save_name))
+
+    return
+
+
 def session_summary(in_folder, sub_num, session, scan_type, seg_type):
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
@@ -310,10 +333,10 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
             scan_img = np.array(resampled_nii.get_fdata())
 
         # load vesselness for scan
-        if session == 'Postcon':
+        if session == 'Postcon' or scan_type == 'TOF':
             vessel_fname = fname + '_AutoVess_g=*_sb=25_sp=10.nii'
 
-        elif session == 'Precon':
+        elif session == 'Precon' and scan_type == 'hr':
             vessel_fname = ('rsub-' + sub_num +
                             '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
                             '_AutoVess_g=*_sb=25_sp=10.nii')
@@ -421,11 +444,15 @@ def snr_subject_summary(sub_num, scan_type):
     f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
     precon_df = pd.read_csv(os.path.join(data_dir, f))
 
-    session = 'Postcon'
-    data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
-                            'ses-{}'.format(session))
-    f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
-    postcon_df = pd.read_csv(os.path.join(data_dir, f))
+    if scan_type != 'TOF':
+        session = 'Postcon'
+        data_dir = os.path.join(datasink_dir, csv_dir,
+                                'sub-{}'.format(sub_num),
+                                'ses-{}'.format(session))
+        f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
+        postcon_df = pd.read_csv(os.path.join(data_dir, f))
+    else:
+        postcon_df = pd.DataFrame()
 
     save_dir = os.path.join(datasink_dir, plots_dir, 'sub-{}'.format(sub_num))
     x_axis = "index_x"
@@ -552,7 +579,32 @@ def snr_session(sub_num, session, scan_type):
 
     save_name = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
     snr_df.to_csv(os.path.join(save_dir, save_name))
+    print(snr_df.head())
     return snr_df
+
+
+def snr_compare():
+    plots_dir = 'plots_hr'
+    seg_type = 'SNR'
+    scan_type = 'hr'
+    csv_dir = 'csv_work_' + scan_type
+    load_file = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
+    data_dir = os.path.join(datasink_dir, csv_dir)
+    ute_df = pd.read_csv(os.path.join(data_dir, load_file))
+
+    scan_type = 'TOF'
+    csv_dir = 'csv_work_' + scan_type
+    load_file = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
+    data_dir = os.path.join(datasink_dir, csv_dir)
+    tof_df = pd.read_csv(os.path.join(data_dir, load_file))
+
+    full_df = pd.concat([ute_df, tof_df])
+    save_dir = os.path.join(datasink_dir, plots_dir)
+    y_axis = 'SNR'
+    subjects_plot_compare(full_df, save_dir, seg_type, y_axis)
+
+    y_axis = 'ISH'
+    subjects_plot_compare(full_df, save_dir, seg_type, y_axis)
 
 
 # RUNNING
@@ -636,21 +688,28 @@ def tof_runner():
     for sub_num in subject_list:
         session = 'Precon'
         in_folder = 'pre_to_post_coregister'
-        seg_type = 'noise'
-        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        # seg_type = 'noise'
+        # session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        # seg_type = 'vesselness'
+        # session_summary_vesselness(in_folder, sub_num, session, scan_type,
+        #                            seg_type)
+        snr_session(sub_num, session, scan_type)
         # seg_type = 'brain_preFLIRT'
         # session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        snr_subject_summary(sub_num, scan_type)
+    snr_full_summary(datasink_dir, subject_list, scan_type)
 
 
 def main():
-    tof_runner()
+    # tof_runner()
 
-    subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '14']
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-        '15'
-    ]
-    scan_type = 'hr'
+    # subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '14']
+    # subject_list = [
+    #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+    #     '15'
+    # ]
+    # scan_type = 'hr'
+    snr_compare()
 
     # brain_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
