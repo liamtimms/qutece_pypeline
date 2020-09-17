@@ -31,7 +31,7 @@ subject_list = [
 # subject_list = ['05', '07']
 subject_list = ['10']
 
-sub_means = {
+ute_sub_means = {
     '02': 177,
     '03': 372,
     '04': 378,
@@ -47,19 +47,51 @@ sub_means = {
     '15': 419,
 }
 
-TOF_subjects = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14']
+tof_sub_means = {
+    '02': 59,
+    '03': 93,
+    '04': 92,
+    '05': 66,
+    '06': 107,
+    '07': 14,
+    '08': 89,
+    '09': 99,
+    '10': 106,
+    '11': 62,
+    '14': 116
+}
 
+TOF_subjects = [
+    '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
+]
+
+scan_type = 'hr'
+scan_type = 'TOF'
+subject_list = TOF_subjects
 
 for subject_num in subject_list:
 
     upper_dir = os.path.realpath('../..')
     basefolder = os.path.abspath(os.path.join(upper_dir, 'derivatives'))
 
-    scanfolder = os.path.join(basefolder, 'datasink', 'preprocessing',
-                              'sub-' + subject_num, 'ses-Postcon', 'qutece')
+    if scan_type == 'hr':
+        scanfolder = os.path.join(basefolder, 'datasink', 'preprocessing',
+                                  'sub-' + subject_num, 'ses-Postcon',
+                                  'qutece')
 
-    outfolder = os.path.join(basefolder, 'manualwork', 'vesselness_filtered_2',
-                             'sub-' + subject_num)
+        outfolder = os.path.join(basefolder, 'manualwork',
+                                 'vesselness_filtered_2', 'sub-' + subject_num)
+        infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'
+        sub_means = ute_sub_means
+    elif scan_type == 'TOF':
+        scanfolder = os.path.join(basefolder, 'datasink',
+                                  'pre_to_post_coregister',
+                                  'sub-' + subject_num)
+
+        outfolder = os.path.join(basefolder, 'manualwork',
+                                 'vesselness_filtered_2', 'sub-' + subject_num)
+        infile = '*sub-' + subject_num + '_ses-Precon_TOF*angio_corrected'
+        sub_means = tof_sub_means
 
     print(outfolder)
     if not os.path.exists(outfolder):
@@ -69,7 +101,6 @@ for subject_num in subject_list:
     # inVesselness = os.path.join(basefolder, scanfolder, infile + '.nii')
     # print(inVesselness)
 
-    infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'
     inVesselness_pattern = os.path.join(basefolder, scanfolder,
                                         infile + '.nii')
     inVesselness_list = glob.glob(inVesselness_pattern)
@@ -114,7 +145,8 @@ for subject_num in subject_list:
             alpha = SetAlpha(suppressPlates)
             beta = SetBeta(suppressBlobs)
             outVesselness = os.path.join(
-                outfolder, outfile + '_AutoVess' + '_g=' + str(gamma) + '_sb=' +
+                outfolder,
+                outfile + '_AutoVess' + '_g=' + str(gamma) + '_sb=' +
                 str(suppressBlobs) + '_sp=' + str(suppressPlates) + '.nii')
             print(outVesselness)
 
@@ -129,7 +161,7 @@ for subject_num in subject_list:
 
             pypes.PypeRun(cmdVesselness)
 
-        # outVesselness = os.path.join(outfolder, outfile + '_AutoVess_sato.nii')
+        # outVesselness =os.path.join(outfolder, outfile+ '_AutoVess_sato.nii')
         # cmdVesselness = (
         #     'vmtkimagecast -type float -ifile {} ' +
         #     '--pipe vmtkimagevesselenhancement -ofile {} ' +
@@ -137,3 +169,30 @@ for subject_num in subject_list:
         #         inVesselness, outVesselness, sigmamin, sigmamax, sigmasteps)
 
         # pypes.PypeRun(cmdVesselness)
+
+# TOF brain data
+# 02:75%,74
+# 02:75%,72
+# 03:75%,121
+# 04:75%,117
+# 05:75%,82
+# 06:75%,140
+# 07:75%,17
+# 08:75%,110
+# 09:75%,128
+# 10:75%,134
+# 11:75%,79
+# 14:75%,148
+
+# 02:mean,59
+# 02:mean,58
+# 03:mean,93
+# 04:mean,92
+# 05:mean,66
+# 06:mean,107
+# 07:mean,14
+# 08:mean,89
+# 09:mean,99
+# 10:mean,106
+# 11:mean,62
+# 14:mean,116
