@@ -44,7 +44,7 @@ ute_sub_means = {
     '12': 467,
     '13': 431,
     '14': 441,
-    '15': 419,
+    '15': 419
 }
 
 tof_sub_means = {
@@ -78,19 +78,19 @@ for subject_num in subject_list:
         scanfolder = os.path.join(basefolder, 'datasink', 'preprocessing',
                                   'sub-' + subject_num, 'ses-Postcon',
                                   'qutece')
+        infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'
 
         outfolder = os.path.join(basefolder, 'manualwork',
                                  'vesselness_filtered_2', 'sub-' + subject_num)
-        infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'
         sub_means = ute_sub_means
     elif scan_type == 'TOF':
         scanfolder = os.path.join(basefolder, 'datasink',
                                   'pre_to_post_coregister',
                                   'sub-' + subject_num)
+        infile = '*sub-' + subject_num + '_ses-Precon_TOF*angio_corrected'
 
         outfolder = os.path.join(basefolder, 'manualwork',
                                  'vesselness_filtered_2', 'sub-' + subject_num)
-        infile = '*sub-' + subject_num + '_ses-Precon_TOF*angio_corrected'
         sub_means = tof_sub_means
 
     print(outfolder)
