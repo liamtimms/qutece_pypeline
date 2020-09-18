@@ -51,10 +51,9 @@ def roi_extract(scan_img, roi_img, t='equal'):
 
 
 def hist_plots(df, seg_type, save_dir):
-    sns.set(color_codes=True)
-    sns.set(style="white", palette="muted")
-
     for i, col in enumerate(df.columns):
+        sns.set(color_codes=True)
+        sns.set(style="white", palette="muted")
         vals = df[col].to_numpy()
         w = 10
         n = math.ceil((np.nanmax(vals) - np.nanmin(vals)) / w)
@@ -110,9 +109,10 @@ def hist_plot_alt(df, seg_type, save_dir):
 
 def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                   y_axis):
+    sns.set_theme()
     plot_df = pd.concat([postcon_df, precon_df])
     plot_df = plot_df.reset_index()
-    a = plot_df[x_axis].nunique() / 3
+    a = plot_df[x_axis].nunique() / 4
     print()
     print('plotting :')
     print(plot_df.head(10))
@@ -133,9 +133,10 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
 
 
 def subjects_plot(filt_df, save_dir, seg_type, y_axis):
+    sns.set_theme()
     filt_df = filt_df.reset_index()
     print(filt_df.head())
-    a = filt_df['sub_num'].nunique() / 4
+    a = filt_df['sub_num'].nunique() / 8
     sns_plot = sns.catplot(x="sub_num",
                            y=y_axis,
                            hue="session",
@@ -153,19 +154,21 @@ def subjects_plot(filt_df, save_dir, seg_type, y_axis):
 
 
 def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
+    sns.set_theme()
     filt_df = filt_df.reset_index()
-    print(filt_df.head())
-    a = filt_df['sub_num'].nunique() / 15
-    sns_plot = sns.catplot(x="sub_num",
-                           y=y_axis,
-                           # hue="scan_type",
-                           # col="session",
-                           hue="session",
-                           col="scan_type",
-                           kind="bar",
-                           height=8,
-                           aspect=a,
-                           data=filt_df)
+    # print(filt_df.head())
+    a = filt_df['sub_num'].nunique() / 10
+    sns_plot = sns.catplot(
+        x="sub_num",
+        y=y_axis,
+        hue="scan_type",
+        # col="session",
+        # hue="session",
+        # col="scan_type",
+        kind="swarm",
+        height=8,
+        aspect=a,
+        data=filt_df)
 
     # sns_plot.set_size_inches(11.7, 8.27)
 
@@ -357,7 +360,31 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         vessel_img = roi_cut(vessel_img, roi_img, t, r)
 
         # construct vesselness roi
-        vessel_roi_img = (vessel_img > cut_off).astype(int)
+        med_cut_off = 0.8
+        small_cut_off = 0.2
+
+        large_vess = (vessel_img >= cut_off).astype(int) * 1
+
+        med_vess = ((vessel_img < cut_off) &
+                    (vessel_img >= med_cut_off)).astype(int) * 2
+
+        small_vess = ((vessel_img < med_cut_off) &
+                      (vessel_img >= small_cut_off)).astype(int) * 3
+
+        no_vess = (vessel_img < 0.1).astype(int) * 4
+
+        # ['no_vess':4, 'small_vess':3, 'med_vess':2, 'large_vess':1]
+        vessel_roi_img = no_vess + med_vess + small_vess + large_vess
+
+        vessel_roi_nii = nib.Nifti1Image(vessel_roi_img, vessel_nii.affine,
+                                         vessel_nii.header)
+        save_dir = os.path.join(datasink_dir, 'vessel_roi',
+                                'sub-{}'.format(sub_num))
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        save_name = (fname + '_' + 'seg-{}.nii').format(seg_type)
+        nib.save(vessel_roi_nii, os.path.join(save_dir, save_name))
 
         extracted_df = roi_extract(scan_img, vessel_roi_img)
 
@@ -407,6 +434,23 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
 
     return df_list
 
+def load_full_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
+    data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
+                            'ses-{}'.format(session))
+    path_pattern = os.path.join(
+        data_dir, '*' + scan_type + '*_SUMMARY_seg-' + seg_type + '*.csv')
+    load_files = glob.glob(path_pattern)
+    df_list = []
+    for f in load_files:
+        df = pd.read_csv(f)
+        pth, fname, ext = split_filename(f)
+        df.rename(columns={'Unnamed: 0': 'name'}, inplace=True)
+        df = df.set_index('name').T
+        df['session'] = session
+        df['file'] = fname
+        df_list.append(df)
+
+    return df_list
 
 def subject_summary(sub_num, scan_type, seg_type):
     csv_dir = 'csv_work_' + scan_type
@@ -600,11 +644,20 @@ def snr_compare():
 
     full_df = pd.concat([ute_df, tof_df])
     save_dir = os.path.join(datasink_dir, plots_dir)
+    print('full_df: ')
+    print(full_df.head())
+    print(full_df.tail())
+    filt_df = full_df.loc[~((full_df['session'] == 'Precon')
+                            & (full_df['scan_type'] == 'hr'))]
+    print('filt_df: ')
+    print(filt_df.head())
+    print(filt_df.tail())
+
     y_axis = 'SNR'
-    subjects_plot_compare(full_df, save_dir, seg_type, y_axis)
+    subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
 
     y_axis = 'ISH'
-    subjects_plot_compare(full_df, save_dir, seg_type, y_axis)
+    subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
 
 
 # RUNNING
@@ -681,41 +734,43 @@ def vesselness_runner(subject_list, scan_type):
 def tof_runner():
     # TIME OF FLIGHT
     scan_type = 'TOF'
+    # TOF_subjects = [
+    #     '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
+    # ]
     TOF_subjects = [
-        '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
+        '02', '04', '05', '06', '07', '08', '09', '10', '11', '14'
     ]
     subject_list = TOF_subjects
     for sub_num in subject_list:
         session = 'Precon'
         in_folder = 'pre_to_post_coregister'
-        # seg_type = 'noise'
-        # session_summary(in_folder, sub_num, session, scan_type, seg_type)
-        # seg_type = 'vesselness'
-        # session_summary_vesselness(in_folder, sub_num, session, scan_type,
-        #                            seg_type)
+        seg_type = 'noise'
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        seg_type = 'vesselness'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
         snr_session(sub_num, session, scan_type)
-        # seg_type = 'brain_preFLIRT'
-        # session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        seg_type = 'brain_preFLIRT'
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
         snr_subject_summary(sub_num, scan_type)
     snr_full_summary(datasink_dir, subject_list, scan_type)
 
 
 def main():
-    # tof_runner()
 
-    # subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '14']
-    # subject_list = [
-    #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-    #     '15'
-    # ]
-    # scan_type = 'hr'
-    snr_compare()
-
+    # subject_list =['02','03', '04', '05', '06', '07', '08', '10', '11', '14']
+    subject_list = [
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+        '15'
+    ]
+    scan_type = 'hr'
+    # vesselness_runner(subject_list, scan_type)
     # brain_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
-    # vesselness_runner(subject_list, scan_type)
-    # atlas_runner(subject_list, scan_type)
-    # snr_runner(subject_list, scan_type)
+    tof_runner()
+    snr_runner(subject_list, scan_type)
+    snr_compare()
+    atlas_runner(subject_list, scan_type)
     return
 
 
