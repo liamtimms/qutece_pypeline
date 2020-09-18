@@ -918,7 +918,7 @@ class CombineLabels(BaseInterface):
 
         pth, nii1_fname, ext = split_filename(in_file_fixed)
         pth, nii2_fname, ext = split_filename(in_file_modifier)
-        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname +
+        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname[20:] +
                                      '.nii')
         nib.save(out_nii, out_file_name)
 
@@ -931,7 +931,7 @@ class CombineLabels(BaseInterface):
         in_file_modifier = self.inputs.in_file_modifier
         pth, nii1_fname, ext = split_filename(in_file_fixed)
         pth, nii2_fname, ext = split_filename(in_file_modifier)
-        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname +
+        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname[20:] +
                                      '.nii')
         outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
