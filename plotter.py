@@ -3,6 +3,7 @@ import math
 import glob
 import numpy as np
 import pandas as pd
+import dask.dataframe as dd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import nibabel as nib
@@ -25,6 +26,7 @@ def roi_cut(scan_img, roi_img, t, r):
     else:
         print('need valid roi cut type')
 
+    # scan_img = scan_img.astype('int')
     roi = roi.astype('float')
     # zero can be a true value so mask with nan
     roi[roi == 0] = np.nan
@@ -36,16 +38,57 @@ def roi_extract(scan_img, roi_img, t='equal'):
 
     vals_df_list = []
     unique_roi = np.unique(roi_img)
+    print(unique_roi)
     extracted_df = pd.DataFrame()
+
+    # t = 'greater'
+    # r = -1000
+    # crop_img = roi_cut(scan_img, roi_img, t, r)
+    # print('REGION : ' + str(r))
+    # crop_img = roi_cut(scan_img, roi_img, t, r)
+    # vals = np.reshape(crop_img, -1)
+    # print('Starts as:')
+    # print(vals.shape)
+    # vals_df = pd.DataFrame(vals)
+    # print('DataFrame as:')
+    # print(vals_df.shape)
+    # vals_df.dropna(inplace=True)
+    # print('Dropna as:')
+    # print(vals_df.shape)
+    # extracted_df[r] = vals_df[0]
+
+    t = 'equal'
     for r in unique_roi:
+        print('REGION : ' + str(r))
         crop_img = roi_cut(scan_img, roi_img, t, r)
         vals = np.reshape(crop_img, -1)
+        print('Starts as:')
+        print(vals.shape)
         vals_df = pd.DataFrame(vals)
+        # print('DataFrame as:')
+        # print(vals_df.shape)
         vals_df.dropna(inplace=True)
+        print('Dropna as:')
+        print(vals_df.shape)
+        # vals_df[1] = pd.to_numeric(vals_df['index'], downcast='integer')
         vals_df.reset_index(drop=True, inplace=True)
-        vals_df_list.append(vals_df)
+        # print('Reset_index as:')
+        # print(vals_df.shape)
+        vals_df = vals_df.round(0)
+        vals_df = vals_df.astype('Int32')
+        print('Head is :')
+        print(vals_df.head())
+        print('Tail is :')
+        print(vals_df.tail())
+        print()
+        # vals_df_list.append(vals_df)
 
         extracted_df[r] = vals_df[0]
+
+    print('Head is :')
+    print(extracted_df.head())
+    print('Tail is :')
+    print(extracted_df.tail())
 
     return extracted_df
 
@@ -434,6 +477,7 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
 
     return df_list
 
+
 def load_full_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
     data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session))
@@ -451,6 +495,7 @@ def load_full_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
         df_list.append(df)
 
     return df_list
+
 
 def subject_summary(sub_num, scan_type, seg_type):
     csv_dir = 'csv_work_' + scan_type
@@ -532,7 +577,9 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     print(filt_df.head())
     save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'mean'
-    subjects_plot(filt_df, save_dir, seg_type, y_axis)
+
+    if seg_type != 'Neuromorphometrics':
+        subjects_plot(filt_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
     save_dir = os.path.join(datasink_dir, csv_dir)
@@ -664,16 +711,16 @@ def snr_compare():
 
 
 def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
-    for sub_num in subject_list:
-        session = 'Precon'
-        in_folder = folder_pre
-        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+    # for sub_num in subject_list:
+    # session = 'Precon'
+    # in_folder = folder_pre
+    # session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-        session = 'Postcon'
-        in_folder = folder_post
-        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+    # session = 'Postcon'
+    # in_folder = folder_post
+    # session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-        subject_summary(sub_num, scan_type, seg_type)
+    # subject_summary(sub_num, scan_type, seg_type)
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
     plt.close('all')
 
@@ -721,14 +768,16 @@ def vesselness_runner(subject_list, scan_type):
         in_folder = 'preprocessing'
         session_summary_vesselness(in_folder, sub_num, session, scan_type,
                                    seg_type)
-        session = 'Precon'
-        in_folder = 'pre_to_post_coregister'
-        session_summary_vesselness(in_folder, sub_num, session, scan_type,
-                                   seg_type)
-        subject_summary(sub_num, scan_type, seg_type)
 
-    full_summary(datasink_dir, subject_list, scan_type, seg_type)
-    plt.close('all')
+
+#         session = 'Precon'
+#         in_folder = 'pre_to_post_coregister'
+#         session_summary_vesselness(in_folder, sub_num, session, scan_type,
+#                                    seg_type)
+#         subject_summary(sub_num, scan_type, seg_type)
+#
+#     full_summary(datasink_dir, subject_list, scan_type, seg_type)
+#     plt.close('all')
 
 
 def tof_runner():
@@ -737,9 +786,7 @@ def tof_runner():
     # TOF_subjects = [
     #     '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
     # ]
-    TOF_subjects = [
-        '02', '04', '05', '06', '07', '08', '09', '10', '11', '14'
-    ]
+    TOF_subjects = ['02', '04', '05', '06', '07', '08', '09', '10', '11', '14']
     subject_list = TOF_subjects
     for sub_num in subject_list:
         session = 'Precon'
@@ -763,14 +810,15 @@ def main():
         '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
         '15'
     ]
+    subject_list = ['14']
     scan_type = 'hr'
-    # vesselness_runner(subject_list, scan_type)
+    vesselness_runner(subject_list, scan_type)
     # brain_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
-    tof_runner()
-    snr_runner(subject_list, scan_type)
-    snr_compare()
-    atlas_runner(subject_list, scan_type)
+    # tof_runner()
+    # snr_runner(subject_list, scan_type)
+    # snr_compare()
+    # atlas_runner(subject_list, scan_type)
     return
 
 
