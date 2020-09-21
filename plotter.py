@@ -3,7 +3,7 @@ import math
 import glob
 import numpy as np
 import pandas as pd
-import dask.dataframe as dd
+# import dask.dataframe as dd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import nibabel as nib
@@ -31,66 +31,46 @@ def roi_cut(scan_img, roi_img, t, r):
     # zero can be a true value so mask with nan
     roi[roi == 0] = np.nan
     crop_img = np.multiply(scan_img, roi)
-    return crop_img
+
+    vals = np.reshape(crop_img, -1)
+    vals_df = pd.DataFrame()
+    vals_df[r] = vals
+    vals_df.dropna(inplace=True)
+    vals_df.reset_index(drop=True, inplace=True)
+    vals_df = vals_df.round(0)
+    vals_df = vals_df.astype('Int32')
+    return crop_img, vals_df
 
 
-def roi_extract(scan_img, roi_img, t='equal'):
+def roi_extract(scan_img, roi_img, fname, seg_type, save_dir, t='equal'):
 
-    vals_df_list = []
+    t = 'greater'
+    r = -1000
+    crop_img, vals_df = roi_cut(scan_img, roi_img, t, r)
+    summary_df = vals_df.describe()
+
     unique_roi = np.unique(roi_img)
+
     print(unique_roi)
-    extracted_df = pd.DataFrame()
-
-    # t = 'greater'
-    # r = -1000
-    # crop_img = roi_cut(scan_img, roi_img, t, r)
-    # print('REGION : ' + str(r))
-    # crop_img = roi_cut(scan_img, roi_img, t, r)
-    # vals = np.reshape(crop_img, -1)
-    # print('Starts as:')
-    # print(vals.shape)
-    # vals_df = pd.DataFrame(vals)
-    # print('DataFrame as:')
-    # print(vals_df.shape)
-    # vals_df.dropna(inplace=True)
-    # print('Dropna as:')
-    # print(vals_df.shape)
-    # extracted_df[r] = vals_df[0]
-
     t = 'equal'
     for r in unique_roi:
-        print('REGION : ' + str(r))
-        crop_img = roi_cut(scan_img, roi_img, t, r)
-        vals = np.reshape(crop_img, -1)
-        print('Starts as:')
-        print(vals.shape)
-        vals_df = pd.DataFrame(vals)
-        # print('DataFrame as:')
-        # print(vals_df.shape)
-        vals_df.dropna(inplace=True)
-        print('Dropna as:')
-        print(vals_df.shape)
-        # vals_df[1] = pd.to_numeric(vals_df['index'], downcast='integer')
-        vals_df.reset_index(drop=True, inplace=True)
-        # print('Reset_index as:')
-        # print(vals_df.shape)
-        vals_df = vals_df.round(0)
-        vals_df = vals_df.astype('Int32')
-        print('Head is :')
-        print(vals_df.head())
-        print('Tail is :')
+        crop_img, vals_df = roi_cut(scan_img, roi_img, t, r)
+        save_name = (fname + '_DATA_' + 'seg-{}_r-' + str(int(r)) +
+                     '.csv').format(seg_type)
+        vals_df.to_csv(os.path.join(save_dir, save_name), index=False)
+        print('Save as:')
+        print(os.path.join(save_dir, save_name))
+        r_summary_df = vals_df.describe()
         print(vals_df.tail())
-        print()
-        # vals_df_list.append(vals_df)
+        print(r_summary_df.head())
+        summary_df = pd.merge(summary_df,
+                              r_summary_df,
+                              left_index=True,
+                              right_index=True)
 
-        extracted_df[r] = vals_df[0]
+    print(summary_df.head())
 
-    print('Head is :')
-    print(extracted_df.head())
-    print('Tail is :')
-    print(extracted_df.tail())
-
-    return extracted_df
+    return summary_df
 
 
 def hist_plots(df, seg_type, save_dir):
@@ -289,18 +269,11 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         if scan_type == 'TOF':
             scan_img[np.abs(scan_img) <= 0.2] = np.nan
 
-        extracted_df = roi_extract(scan_img, roi_img)
-
         save_dir = os.path.join(datasink_dir, plots_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        # hist_plots(extracted_df, seg_type, save_dir)
-        # hist_plot_alt(extracted_df, seg_type, save_dir)
-
-        summary_df = extracted_df.describe()
-        print(summary_df)
 
         save_dir = os.path.join(datasink_dir, csv_dir,
                                 'sub-{}'.format(sub_num),
@@ -308,12 +281,17 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        # save_name = ('sub-{}_ses-{}_' + scan_type + '_data_' +
-        save_name = (fname + '_DATA_' + 'seg-{}.csv').format(seg_type)
-        extracted_df.to_csv(os.path.join(save_dir, save_name), index=False)
+        summary_df = roi_extract(scan_img, roi_img, fname, seg_type, save_dir)
+
+        save_dir = os.path.join(datasink_dir, csv_dir,
+                                'sub-{}'.format(sub_num),
+                                'ses-{}'.format(session))
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
         save_name = (fname + '_SUMMARY_' + 'seg-{}.csv').format(seg_type)
         summary_df.to_csv(os.path.join(save_dir, save_name))
+        print('Saved SUMMARY as : ' + os.path.join(save_dir, save_name))
 
         summary_df_list.append(summary_df)
 
@@ -399,8 +377,8 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         # crop initial brain from both scan and vesselness
         t = 'equal'
         r = 1
-        scan_img = roi_cut(scan_img, roi_img, t, r)
-        vessel_img = roi_cut(vessel_img, roi_img, t, r)
+        scan_img, __ = roi_cut(scan_img, roi_img, t, r)
+        vessel_img, __ = roi_cut(vessel_img, roi_img, t, r)
 
         # construct vesselness roi
         med_cut_off = 0.8
@@ -429,17 +407,21 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         save_name = (fname + '_' + 'seg-{}.nii').format(seg_type)
         nib.save(vessel_roi_nii, os.path.join(save_dir, save_name))
 
-        extracted_df = roi_extract(scan_img, vessel_roi_img)
+        save_dir = os.path.join(datasink_dir, csv_dir,
+                                'sub-{}'.format(sub_num),
+                                'ses-{}'.format(session))
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        summary_df = roi_extract(scan_img, vessel_roi_img, fname, seg_type,
+                                 save_dir)
 
         save_dir = os.path.join(datasink_dir, plots_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        hist_plots(extracted_df, seg_type, save_dir)
-
-        summary_df = extracted_df.describe()
-        print(summary_df)
+        # hist_plots(extracted_df, seg_type, save_dir)
 
         save_dir = os.path.join(datasink_dir, csv_dir,
                                 'sub-{}'.format(sub_num),
@@ -447,11 +429,9 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        save_name = (fname + '_DATA_' + 'seg-{}.csv').format(seg_type)
-        extracted_df.to_csv(os.path.join(save_dir, save_name), index=False)
-
         save_name = (fname + '_SUMMARY_' + 'seg-{}.csv').format(seg_type)
         summary_df.to_csv(os.path.join(save_dir, save_name))
+        print('Saved SUMMARY as : ' + os.path.join(save_dir, save_name))
 
         summary_df_list.append(summary_df)
 
@@ -711,18 +691,18 @@ def snr_compare():
 
 
 def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
-    # for sub_num in subject_list:
-    # session = 'Precon'
-    # in_folder = folder_pre
-    # session_summary(in_folder, sub_num, session, scan_type, seg_type)
+    for sub_num in subject_list:
+        session = 'Precon'
+        in_folder = folder_pre
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-    # session = 'Postcon'
-    # in_folder = folder_post
-    # session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        session = 'Postcon'
+        in_folder = folder_post
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-    # subject_summary(sub_num, scan_type, seg_type)
-    full_summary(datasink_dir, subject_list, scan_type, seg_type)
-    plt.close('all')
+        subject_summary(sub_num, scan_type, seg_type)
+    # full_summary(datasink_dir, subject_list, scan_type, seg_type)
+    # plt.close('all')
 
 
 def snr_runner(subject_list, scan_type):
@@ -763,21 +743,20 @@ def brain_runner(subject_list, scan_type):
 
 def vesselness_runner(subject_list, scan_type):
     seg_type = 'vesselness'
-    for sub_num in subject_list:
-        session = 'Postcon'
-        in_folder = 'preprocessing'
-        session_summary_vesselness(in_folder, sub_num, session, scan_type,
-                                   seg_type)
+    # for sub_num in subject_list:
+    #     session = 'Postcon'
+    #     in_folder = 'preprocessing'
+    #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
+    #                                seg_type)
 
+    #     session = 'Precon'
+    #     in_folder = 'pre_to_post_coregister'
+    #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
+    #                                seg_type)
+    #     subject_summary(sub_num, scan_type, seg_type)
 
-#         session = 'Precon'
-#         in_folder = 'pre_to_post_coregister'
-#         session_summary_vesselness(in_folder, sub_num, session, scan_type,
-#                                    seg_type)
-#         subject_summary(sub_num, scan_type, seg_type)
-#
-#     full_summary(datasink_dir, subject_list, scan_type, seg_type)
-#     plt.close('all')
+    full_summary(datasink_dir, subject_list, scan_type, seg_type)
+    plt.close('all')
 
 
 def tof_runner():
@@ -810,11 +789,10 @@ def main():
         '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
         '15'
     ]
-    subject_list = ['14']
     scan_type = 'hr'
-    vesselness_runner(subject_list, scan_type)
+    # vesselness_runner(subject_list, scan_type)
     # brain_runner(subject_list, scan_type)
-    # noise_runner(subject_list, scan_type)
+    noise_runner(subject_list, scan_type)
     # tof_runner()
     # snr_runner(subject_list, scan_type)
     # snr_compare()
