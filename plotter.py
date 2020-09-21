@@ -10,7 +10,6 @@ import nibabel as nib
 import nilearn as nil
 from nipype.utils.filemanip import split_filename
 
-# sns.set_theme(style="whitegrid", palette="muted")
 sns.set_theme()
 
 base_dir = os.path.abspath('../..')
@@ -19,6 +18,23 @@ manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
 
 
 def roi_cut(scan_img, roi_img, t, r):
+    """
+    Crop part of image using roi, give back crop and values.
+
+    Parameters
+    ----------
+    scan_img : numpy array
+    roi_img : numpy array
+    t : string
+        string denoting type of crop
+    r : value of region of interest from the roi_img
+
+    Returns
+    -------
+    crop_img : numpy array
+    vals_df : pandas DataFrame
+
+    """
     if t == 'equal':
         roi = (roi_img == r).astype(int)
     elif t == 'greater':
@@ -26,7 +42,6 @@ def roi_cut(scan_img, roi_img, t, r):
     else:
         print('need valid roi cut type')
 
-    # scan_img = scan_img.astype('int')
     roi = roi.astype('float')
     # zero can be a true value so mask with nan
     roi[roi == 0] = np.nan
@@ -37,43 +52,60 @@ def roi_cut(scan_img, roi_img, t, r):
     vals_df[r] = vals
     vals_df.dropna(inplace=True)
     vals_df.reset_index(drop=True, inplace=True)
-    vals_df = vals_df.round(0)
-    vals_df = vals_df.astype('Int32')
     return crop_img, vals_df
 
 
-def roi_extract(scan_img, roi_img, fname, seg_type, save_dir, t='equal'):
+def roi_extract(scan_img, roi_img, fname, seg_type, save_dir):
+    """
+    Extract, save and summarize every region in an roi image.resample_to_img
+
+    Mostly calls roi_cut and df.describe
+
+    Parameters
+    ----------
+    scan_img : numpy array
+    roi_img : numpy array
+    seg_type : string
+    save_dir : string
+
+    Returns
+    -------
+    summary_df : pandas DataFrame
+
+    """
 
     t = 'greater'
     r = -1000
     crop_img, vals_df = roi_cut(scan_img, roi_img, t, r)
     summary_df = vals_df.describe()
-
     unique_roi = np.unique(roi_img)
-
     print(unique_roi)
+
     t = 'equal'
     for r in unique_roi:
         crop_img, vals_df = roi_cut(scan_img, roi_img, t, r)
-        save_name = (fname + '_DATA_' + 'seg-{}_r-' + str(int(r)) +
-                     '.csv').format(seg_type)
-        vals_df.to_csv(os.path.join(save_dir, save_name), index=False)
-        print('Save as:')
-        print(os.path.join(save_dir, save_name))
         r_summary_df = vals_df.describe()
-        print(vals_df.tail())
-        print(r_summary_df.head())
         summary_df = pd.merge(summary_df,
                               r_summary_df,
                               left_index=True,
                               right_index=True)
-
-    print(summary_df.head())
+        vals_df = vals_df.round(3)
+        print('Head is :')
+        print(vals_df.head())
+        print('Tail is :')
+        print(vals_df.tail())
+        print(r_summary_df.head())
+        save_name = (fname + '_DATA_' + 'seg-{}_r-' + str(int(r)) +
+                     '.csv').format(seg_type)
+        vals_df.to_csv(os.path.join(save_dir, save_name), index=False)
+        print('Data saved as:')
+        print(os.path.join(save_dir, save_name))
 
     return summary_df
 
 
 def hist_plots(df, seg_type, save_dir):
+    # Not working currently
     for i, col in enumerate(df.columns):
         sns.set(color_codes=True)
         sns.set(style="white", palette="muted")
@@ -111,6 +143,19 @@ def hist_plots(df, seg_type, save_dir):
 
 
 def hist_plot_alt(df, seg_type, save_dir):
+    """
+    Should make a histrogram for each region.
+
+    Currently BROKEN
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+
     vals_list = []
     for i, col in enumerate(df.columns):
         vals = df[[col]]
@@ -132,13 +177,33 @@ def hist_plot_alt(df, seg_type, save_dir):
 
 def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                   y_axis):
+    """
+    Plot precontrast vs postcontrast data.
+
+    Applies to a specific subject with a specific seg type,
+    x and y axes are not set. Saves the resulting graph in save_dir.
+
+    Parameters
+    ----------
+    postcon_df : pandas DataFrame
+    precon_df : pandas DataFrame
+    save_dir : string
+    sub_num : string
+    seg_type : string
+    x_axis : string
+    y_axis : string
+
+    Returns
+    -------
+    crop_img : numpy array
+    vals_df : pandas DataFrame
+
+    """
+
     sns.set_theme()
     plot_df = pd.concat([postcon_df, precon_df])
     plot_df = plot_df.reset_index()
     a = plot_df[x_axis].nunique() / 4
-    print()
-    print('plotting :')
-    print(plot_df.head(10))
     sns_plot = sns.catplot(x=x_axis,
                            y=y_axis,
                            hue="session",
@@ -148,14 +213,27 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                            data=plot_df)
 
     save_name = ('sub-' + sub_num + '_' + y_axis + '_seg-' + seg_type + '.png')
-    print('Saving plot as :')
+    print('Saving category_plot as :')
     print(os.path.join(save_dir, save_name))
     sns_plot.savefig(os.path.join(save_dir, save_name))
-
     return
 
 
 def subjects_plot(filt_df, save_dir, seg_type, y_axis):
+    """
+    Plot a parameter across subjects in both precontrast and postcontrast.
+
+    Parameters
+    ----------
+    filt_df : pandas DataFrame
+    save_dir : string
+    seg_type : string
+    y_axis : string
+
+    Returns
+    -------
+
+    """
     sns.set_theme()
     filt_df = filt_df.reset_index()
     print(filt_df.head())
@@ -177,9 +255,25 @@ def subjects_plot(filt_df, save_dir, seg_type, y_axis):
 
 
 def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
+    """
+    Plot a parameter across subjects in both UTE and TOF.
+
+    Must be pre-filtered to only have scans of interest.
+
+    Parameters
+    ----------
+    filt_df : pandas DataFrame
+    save_dir : string
+    seg_type : string
+    y_axis : string
+
+    Returns
+    -------
+
+    """
+
     sns.set_theme()
     filt_df = filt_df.reset_index()
-    # print(filt_df.head())
     a = filt_df['sub_num'].nunique() / 10
     sns_plot = sns.catplot(
         x="sub_num",
@@ -193,20 +287,42 @@ def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
         aspect=a,
         data=filt_df)
 
-    # sns_plot.set_size_inches(11.7, 8.27)
-
     save_name = (y_axis + '_compare_seg-' + seg_type + '.png')
     sns_plot.savefig(os.path.join(save_dir, save_name))
-
     return
 
 
 def session_summary(in_folder, sub_num, session, scan_type, seg_type):
+    """
+    Summarize a single session for a single subject for a given seg_type.
+
+    Loads appropriate nifti data for ROI of seg_type, loads scan data.
+    Then calls roi_extract to get the relevant data for each scan.
+    Saves the summaries and returns a list of them.
+
+    Parameters
+    ----------
+    in_folder : string
+        Directory where the scan images are saved.
+    sub_num : string
+    session : string
+        Precon or Postcon
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+    seg_type : string
+
+    Returns
+    -------
+    summary_df_list : list of pandas DataFrames
+
+    """
+
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
 
     csv_dir = 'csv_work_' + scan_type
-    plots_dir = 'plots_' + scan_type
+    # plots_dir = 'plots_' + scan_type
 
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
@@ -269,12 +385,6 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
         if scan_type == 'TOF':
             scan_img[np.abs(scan_img) <= 0.2] = np.nan
 
-        save_dir = os.path.join(datasink_dir, plots_dir,
-                                'sub-{}'.format(sub_num),
-                                'ses-{}'.format(session))
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
         save_dir = os.path.join(datasink_dir, csv_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
@@ -282,12 +392,6 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
             os.makedirs(save_dir)
 
         summary_df = roi_extract(scan_img, roi_img, fname, seg_type, save_dir)
-
-        save_dir = os.path.join(datasink_dir, csv_dir,
-                                'sub-{}'.format(sub_num),
-                                'ses-{}'.format(session))
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
 
         save_name = (fname + '_SUMMARY_' + 'seg-{}.csv').format(seg_type)
         summary_df.to_csv(os.path.join(save_dir, save_name))
@@ -301,6 +405,31 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
 
 def session_summary_vesselness(in_folder, sub_num, session, scan_type,
                                seg_type):
+    """
+    Summarize a single session for a single subject for only vesselness.
+
+    Loads appropriate nifti data for vesselness, loads scan data.
+    Constructs and saves an ROI based on vesselness for given cut_off value(s).
+    Then calls roi_extract to get the relevant data for each scan.
+    Saves the summaries and returns a list of them.
+
+    Parameters
+    ----------
+    in_folder : string
+        Directory where the scan images are saved.
+    sub_num : string
+    session : string
+        Precon or Postcon
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+    seg_type : string
+
+    Returns
+    -------
+    summary_df_list : list of pandas DataFrames
+
+    """
 
     if seg_type != 'vesselness':
         print('switch to normal session_summary function')
@@ -308,7 +437,7 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
     data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
     csv_dir = 'csv_work_' + scan_type
-    plots_dir = 'plots_' + scan_type
+    # plots_dir = 'plots_' + scan_type
 
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
@@ -340,8 +469,6 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
 
     vesselness_dir = os.path.join(manualwork_dir, 'vesselness_filtered_2',
                                   'sub-{}'.format(sub_num))
-
-    cut_off = 0.95
 
     for f in nii_files:
         scan_file_name = f
@@ -381,29 +508,26 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         vessel_img, __ = roi_cut(vessel_img, roi_img, t, r)
 
         # construct vesselness roi
-        med_cut_off = 0.8
-        small_cut_off = 0.2
-
+        cut_off = 0.95
+        med_cut_off = 0.85
+        small_cut_off = 0.20
         large_vess = (vessel_img >= cut_off).astype(int) * 1
-
         med_vess = ((vessel_img < cut_off) &
                     (vessel_img >= med_cut_off)).astype(int) * 2
-
         small_vess = ((vessel_img < med_cut_off) &
                       (vessel_img >= small_cut_off)).astype(int) * 3
-
         no_vess = (vessel_img < 0.1).astype(int) * 4
-
+        # So we have
         # ['no_vess':4, 'small_vess':3, 'med_vess':2, 'large_vess':1]
-        vessel_roi_img = no_vess + med_vess + small_vess + large_vess
 
+        vessel_roi_img = no_vess + med_vess + small_vess + large_vess
         vessel_roi_nii = nib.Nifti1Image(vessel_roi_img, vessel_nii.affine,
                                          vessel_nii.header)
+
         save_dir = os.path.join(datasink_dir, 'vessel_roi',
                                 'sub-{}'.format(sub_num))
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-
         save_name = (fname + '_' + 'seg-{}.nii').format(seg_type)
         nib.save(vessel_roi_nii, os.path.join(save_dir, save_name))
 
@@ -416,19 +540,6 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         summary_df = roi_extract(scan_img, vessel_roi_img, fname, seg_type,
                                  save_dir)
 
-        save_dir = os.path.join(datasink_dir, plots_dir,
-                                'sub-{}'.format(sub_num),
-                                'ses-{}'.format(session))
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-        # hist_plots(extracted_df, seg_type, save_dir)
-
-        save_dir = os.path.join(datasink_dir, csv_dir,
-                                'sub-{}'.format(sub_num),
-                                'ses-{}'.format(session))
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
         save_name = (fname + '_SUMMARY_' + 'seg-{}.csv').format(seg_type)
         summary_df.to_csv(os.path.join(save_dir, save_name))
         print('Saved SUMMARY as : ' + os.path.join(save_dir, save_name))
@@ -440,6 +551,30 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
 
 
 def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
+    """
+    Load the summary csv files made by session_summary functions.
+
+    Does some processing on the dfs to add session, file name fields.
+    Transposes data from original such that 'mean', 'std' etc. are columns.
+
+    Parameters
+    ----------
+    csv_dir : string
+        Directory where the SUMMARY csv files for each scan are saved.
+    sub_num : string
+    session : string
+        Precon or Postcon
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+    seg_type : string
+
+    Returns
+    -------
+    df_list : list of pandas DataFrames
+
+    """
+
     data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session))
     path_pattern = os.path.join(
@@ -458,26 +593,45 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
     return df_list
 
 
-def load_full_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
-    data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
-                            'ses-{}'.format(session))
-    path_pattern = os.path.join(
-        data_dir, '*' + scan_type + '*_SUMMARY_seg-' + seg_type + '*.csv')
-    load_files = glob.glob(path_pattern)
-    df_list = []
-    for f in load_files:
-        df = pd.read_csv(f)
-        pth, fname, ext = split_filename(f)
-        df.rename(columns={'Unnamed: 0': 'name'}, inplace=True)
-        df = df.set_index('name').T
-        df['session'] = session
-        df['file'] = fname
-        df_list.append(df)
-
-    return df_list
+# def load_full_summary_dfs(seg_type_list, scan_type):
+#     csv_dir = 'csv_work_' + scan_type
+#     data_dir = os.path.join(datasink_dir, csv_dir)
+#     for seg_type in seg_type_list:
+#         path_pattern = os.path.join(data_dir,
+#                                     'FULL_SUMMARY_seg-' + seg_type + '.csv')
+#         df = pd.read_csv(f)
+#         pth, fname, ext = split_filename(f)
+#         df.rename(columns={'Unnamed: 0': 'name'}, inplace=True)
+#         df = df.set_index('name').T
+#         df['session'] = session
+#         df['file'] = fname
+#         df_list.append(df)
+#
+#     return df_list
 
 
 def subject_summary(sub_num, scan_type, seg_type):
+    """
+    Summarize a seg_type's mean and std across sessions for a single subject.
+
+    Loads sessions_summary data output as csv files via load_summary_dfs().
+    Concatenates pre and post summaries into larger DataFrames.
+    Plots across mean value across region number.
+
+    Parameters
+    ----------
+    sub_num : string
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+    seg_type : string
+
+    Returns
+    -------
+    postcon_df : concatenated pandas DataFrame
+    precon_df : concatenated pandas DataFrame
+
+    """
     csv_dir = 'csv_work_' + scan_type
     plots_dir = 'plots_' + scan_type
     session = 'Precon'
@@ -497,13 +651,34 @@ def subject_summary(sub_num, scan_type, seg_type):
     y_axis = "mean"
     category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
                   y_axis)
-
-    # print(postcon_df.head())
+    y_axis = "std"
+    category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
+                  y_axis)
 
     return postcon_df, precon_df
 
 
 def snr_subject_summary(sub_num, scan_type):
+    """
+    Summarize SNR and ISH across sessions for a single subject.
+
+    Reads SNR calculation csv files made by snr_session.
+    Plots SNR and ISH values precontrast and postcontrast.
+    For TOF, postcon_df is left intentionally empty.
+
+    Parameters
+    ----------
+    sub_num : string
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+
+    Returns
+    -------
+    postcon_df : pandas DataFrame
+    precon_df : pandas DataFrame
+
+    """
     csv_dir = 'csv_work_' + scan_type
     plots_dir = 'plots_' + scan_type
     seg_type = 'SNR'
@@ -537,6 +712,28 @@ def snr_subject_summary(sub_num, scan_type):
 
 
 def full_summary(datasink_dir, subject_list, scan_type, seg_type):
+    """
+    Summarize a seg_type's mean across subjects.
+
+    Loads precon_df and postcon_df's for each subject via subject_summary.
+    Adds a sub_num field to them and concatenates them all together.
+    Saves this as FULL_SUMMARY_seg-{}.csv
+
+    Filters for first region of the seg_type ROI. Plots it across subjects.
+
+    Parameters
+    ----------
+    datasink_dir : string
+    subject_list : list of strings
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+    seg_type : string
+
+    Returns
+    -------
+
+    """
     csv_dir = 'csv_work_' + scan_type
     plots_dir = 'plots_' + scan_type
     df_list = []
@@ -551,13 +748,13 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
     full_df = full_df.reset_index()
     full_df['index'] = pd.to_numeric(full_df['index'], downcast='integer')
     full_df['scan_type'] = scan_type
-    print('full_df : ')
+    print(seg_type + ' full_df : ')
     print(full_df.head())
     filt_df = full_df.loc[(full_df['index'] == 1)]
     print(filt_df.head())
+
     save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'mean'
-
     if seg_type != 'Neuromorphometrics':
         subjects_plot(filt_df, save_dir, seg_type, y_axis)
 
@@ -568,11 +765,31 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
 
 
 def snr_full_summary(datasink_dir, subject_list, scan_type):
+    """
+    Summarize a SNR results across subjects.
+
+    Loads precon_df and postcon_df's for each subject via snr_subject_summary.
+    Adds a sub_num field to them and concatenates them all together.
+    Saves this as FULL_SUMMARY_seg-SNR.csv
+
+    Parameters
+    ----------
+    datasink_dir : string
+    subject_list : list of strings
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+
+    Returns
+    -------
+
+    """
+    seg_type = 'SNR'
     csv_dir = 'csv_work_' + scan_type
     plots_dir = 'plots_' + scan_type
-    seg_type = 'SNR'
     df_list = []
     for sub_num in subject_list:
+        # note the subsitution of snr_subject_summary vs subject_summary
         postcon_df, precon_df = snr_subject_summary(sub_num, scan_type)
         postcon_df['sub_num'] = sub_num
         precon_df['sub_num'] = sub_num
@@ -583,13 +800,12 @@ def snr_full_summary(datasink_dir, subject_list, scan_type):
     full_df = full_df.reset_index()
     full_df['index'] = pd.to_numeric(full_df['index'], downcast='integer')
     full_df['scan_type'] = scan_type
-    print('full_df : ')
+    print(seg_type + ' full_df : ')
+    print(full_df.head())
 
     save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'SNR'
     subjects_plot(full_df, save_dir, seg_type, y_axis)
-
-    save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'ISH'
     subjects_plot(full_df, save_dir, seg_type, y_axis)
 
@@ -600,11 +816,25 @@ def snr_full_summary(datasink_dir, subject_list, scan_type):
 
 
 def calc_snr(signal_df, noise_df):
+    """
+    Calculate SNR given a DataFrame for signal and one for noise.
 
+    Parameters
+    ----------
+    signal_df : pandas DataFrame
+    noise_df : pandas DataFrame
+
+    Returns
+    -------
+    snr_df : pandas DataFrame
+
+    """
+
+    # Grab only region 1
     signal_filt_df = signal_df.filter(
-        items=['mean', 'std', 'session', 'file']).filter(like='1',
+        items=['mean', 'std', 'session', 'file']).filter(regex='^1',
                                                          axis=0).reset_index()
-
+    # Rename columns
     signal_filt_df.rename(columns={
         'mean': 'signal_mean',
         'std': 'signal_std'
@@ -614,14 +844,16 @@ def calc_snr(signal_df, noise_df):
     scan_names = signal_filt_df['file'].str.rsplit("_", n=2, expand=True)
     signal_filt_df['scan'] = scan_names[0]
 
+    # Grab only region 1
     noise_filt_df = noise_df.filter(items=['std', 'file']).filter(
-        like='1.0', axis=0).reset_index()
+        regex='^1', axis=0).reset_index()
 
+    # Rename columns
     noise_filt_df.rename(columns={'std': 'noise_std'}, inplace=True)
-
     scan_names = noise_filt_df['file'].str.rsplit("_", n=2, expand=True)
     noise_filt_df['scan'] = scan_names[0]
 
+    # combine them so that noise value in each scan is matched with signal
     snr_df = pd.merge(signal_filt_df, noise_filt_df, on='scan')
     snr_df = snr_df.drop(columns=['file_x', 'file_y'])
     snr_df['SNR'] = snr_df['signal_mean'] / snr_df['noise_std']
@@ -631,6 +863,26 @@ def calc_snr(signal_df, noise_df):
 
 
 def snr_session(sub_num, session, scan_type):
+    """
+    Get and save SNR for a single session of a single subject.
+
+    Sets up signal and noise dfs to pass to calc_snr.
+    Saves the result.
+
+    Parameters
+    ----------
+    sub_num : string
+    session : string
+        Precon or Postcon
+    scan_type : string
+        hr or TOF
+        TODO: add fast support
+
+    Returns
+    -------
+    snr_df : pandas DataFrame
+
+    """
     csv_dir = 'csv_work_' + scan_type
 
     seg_type = 'vesselness'
@@ -649,12 +901,25 @@ def snr_session(sub_num, session, scan_type):
                             'ses-{}'.format(session))
 
     save_name = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
-    snr_df.to_csv(os.path.join(save_dir, save_name))
+    snr_df.to_csv(os.path.join(save_dir, save_name), index=False)
+    print('Calculated SNR :')
     print(snr_df.head())
     return snr_df
 
 
 def snr_compare():
+    """
+    Compare SNR (and other values) between hr_UTE and TOF scans.
+
+    Just saves plots.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     plots_dir = 'plots_hr'
     seg_type = 'SNR'
     scan_type = 'hr'
@@ -676,6 +941,9 @@ def snr_compare():
     print(full_df.tail())
     filt_df = full_df.loc[~((full_df['session'] == 'Precon')
                             & (full_df['scan_type'] == 'hr'))]
+
+    # remove outliers
+    filt_df = filt_df.loc[(filt_df['noise_std'] < 1.85)]
     print('filt_df: ')
     print(filt_df.head())
     print(filt_df.tail())
@@ -685,6 +953,14 @@ def snr_compare():
 
     y_axis = 'ISH'
     subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
+
+    y_axis = 'noise_std'
+    subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
+
+    y_axis = 'signal_std'
+    subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
+
+    return
 
 
 # RUNNING
@@ -700,9 +976,11 @@ def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
         in_folder = folder_post
         session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-        subject_summary(sub_num, scan_type, seg_type)
-    # full_summary(datasink_dir, subject_list, scan_type, seg_type)
-    # plt.close('all')
+        # subject_summary doesn't need to be explicitly called since it is in
+        # full_summary
+        # subject_summary(sub_num, scan_type, seg_type)
+    full_summary(datasink_dir, subject_list, scan_type, seg_type)
+    plt.close('all')
 
 
 def snr_runner(subject_list, scan_type):
@@ -743,17 +1021,17 @@ def brain_runner(subject_list, scan_type):
 
 def vesselness_runner(subject_list, scan_type):
     seg_type = 'vesselness'
-    # for sub_num in subject_list:
-    #     session = 'Postcon'
-    #     in_folder = 'preprocessing'
-    #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
-    #                                seg_type)
+    for sub_num in subject_list:
+        session = 'Postcon'
+        in_folder = 'preprocessing'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
 
-    #     session = 'Precon'
-    #     in_folder = 'pre_to_post_coregister'
-    #     session_summary_vesselness(in_folder, sub_num, session, scan_type,
-    #                                seg_type)
-    #     subject_summary(sub_num, scan_type, seg_type)
+        session = 'Precon'
+        in_folder = 'pre_to_post_coregister'
+        session_summary_vesselness(in_folder, sub_num, session, scan_type,
+                                   seg_type)
+        subject_summary(sub_num, scan_type, seg_type)
 
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
     plt.close('all')
@@ -766,6 +1044,9 @@ def tof_runner():
     #     '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
     # ]
     TOF_subjects = ['02', '04', '05', '06', '07', '08', '09', '10', '11', '14']
+    # TOF_subjects = ['02', '04', '05', '06', '07']
+    # TOF_subjects = ['08', '09', '10', '11', '14']
+    # TOF_subjects = ['14']
     subject_list = TOF_subjects
     for sub_num in subject_list:
         session = 'Precon'
@@ -780,23 +1061,23 @@ def tof_runner():
         session_summary(in_folder, sub_num, session, scan_type, seg_type)
         snr_subject_summary(sub_num, scan_type)
     snr_full_summary(datasink_dir, subject_list, scan_type)
+    plt.close('all')
 
 
 def main():
 
-    # subject_list =['02','03', '04', '05', '06', '07', '08', '10', '11', '14']
     subject_list = [
         '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
         '15'
     ]
     scan_type = 'hr'
-    # vesselness_runner(subject_list, scan_type)
-    # brain_runner(subject_list, scan_type)
+    vesselness_runner(subject_list, scan_type)
     noise_runner(subject_list, scan_type)
-    # tof_runner()
-    # snr_runner(subject_list, scan_type)
-    # snr_compare()
-    # atlas_runner(subject_list, scan_type)
+    tof_runner()
+    brain_runner(subject_list, scan_type)
+    snr_runner(subject_list, scan_type)
+    snr_compare()
+    atlas_runner(subject_list, scan_type)
     return
 
 
