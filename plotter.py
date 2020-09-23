@@ -199,7 +199,6 @@ def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
     vals_df : pandas DataFrame
 
     """
-
     sns.set_theme()
     plot_df = pd.concat([postcon_df, precon_df])
     plot_df = plot_df.reset_index()
@@ -593,21 +592,22 @@ def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):
     return df_list
 
 
-# def load_full_summary_dfs(seg_type_list, scan_type):
-#     csv_dir = 'csv_work_' + scan_type
-#     data_dir = os.path.join(datasink_dir, csv_dir)
-#     for seg_type in seg_type_list:
-#         path_pattern = os.path.join(data_dir,
-#                                     'FULL_SUMMARY_seg-' + seg_type + '.csv')
-#         df = pd.read_csv(f)
-#         pth, fname, ext = split_filename(f)
-#         df.rename(columns={'Unnamed: 0': 'name'}, inplace=True)
-#         df = df.set_index('name').T
-#         df['session'] = session
-#         df['file'] = fname
-#         df_list.append(df)
-#
-#     return df_list
+def load_full_summary_dfs(seg_type_list, scan_type):
+    csv_dir = 'csv_work_' + scan_type
+    data_dir = os.path.join(datasink_dir, csv_dir)
+    df_list = []
+    for seg_type in seg_type_list:
+        f = os.path.join(data_dir, 'FULL_SUMMARY_seg-' + seg_type + '.csv')
+        df = pd.read_csv(f, index_col=0)
+        df.rename(columns={'index': 'region'}, inplace=True)
+        pth, fname, ext = split_filename(f)
+        scan_names = df['file'].str.rsplit("_", n=2, expand=True)
+        df['seg_type'] = seg_type
+        df['scan'] = scan_names[0]
+        print(df.head())
+        df_list.append(df)
+
+    return df_list
 
 
 def subject_summary(sub_num, scan_type, seg_type):
@@ -647,6 +647,9 @@ def subject_summary(sub_num, scan_type, seg_type):
     print(postcon_df_list)
 
     save_dir = os.path.join(datasink_dir, plots_dir, 'sub-{}'.format(sub_num))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
     x_axis = "index"
     y_axis = "mean"
     category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
@@ -699,6 +702,9 @@ def snr_subject_summary(sub_num, scan_type):
         postcon_df = pd.DataFrame()
 
     save_dir = os.path.join(datasink_dir, plots_dir, 'sub-{}'.format(sub_num))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
     x_axis = "index_x"
     y_axis = "SNR"
     category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,
@@ -960,6 +966,31 @@ def snr_compare():
     y_axis = 'signal_std'
     subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
 
+    filt_df.drop(columns=['index', 'sub_num', 'index_x', 'index_y', 'scan'],
+                 inplace=True)
+
+    print(filt_df.groupby('scan_type').mean())
+    print(filt_df.groupby('scan_type').std())
+    print(filt_df.groupby('scan_type').count())
+
+    return
+
+
+def compare():
+    seg_type_list = ['vesselness', 'noise', 'brain_preFLIRT']
+
+    scan_type = 'hr'
+    hr_df_list = load_full_summary_dfs(seg_type_list, scan_type)
+    hr_df = pd.concat(hr_df_list, ignore_index=True)
+    print(hr_df.head())
+    print(hr_df.tail())
+
+    # scan_type = 'TOF'
+    # TOF_df_list = load_full_summary_dfs(seg_type_list, scan_type)
+    # TOF_df = pd.concat(TOF_df_list, ignore_index=True)
+    # print(TOF_df.head())
+    # print(TOF_df.tail())
+
     return
 
 
@@ -1066,18 +1097,19 @@ def tof_runner():
 
 def main():
 
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-        '15'
-    ]
-    scan_type = 'hr'
-    vesselness_runner(subject_list, scan_type)
-    noise_runner(subject_list, scan_type)
-    tof_runner()
-    brain_runner(subject_list, scan_type)
-    snr_runner(subject_list, scan_type)
+    # subject_list = [
+    #   '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+    #     '15'
+    # ]
+    # scan_type = 'hr'
+    # vesselness_runner(subject_list, scan_type)
+    # noise_runner(subject_list, scan_type)
+    # tof_runner()
+    # brain_runner(subject_list, scan_type)
+    # snr_runner(subject_list, scan_type)
     snr_compare()
-    atlas_runner(subject_list, scan_type)
+    # atlas_runner(subject_list, scan_type)
+    # compare()
     return
 
 
