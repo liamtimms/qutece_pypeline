@@ -969,14 +969,14 @@ def snr_compare():
     y_axis = 'signal_std'
     subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
 
-    filt_df.drop(columns=['index', 'sub_num', 'index_x', 'index_y', 'scan'],
+    filt_df.drop(columns=['index', 'index_x', 'index_y', 'scan'],
                  inplace=True)
 
     print(filt_df.groupby('scan_type').mean())
     print(filt_df.groupby('scan_type').std())
     print(filt_df.groupby('scan_type').count())
 
-    return
+    return full_df, filt_df
 
 
 def compare():
