@@ -482,14 +482,17 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
                                                       ROI_file_nii)
             scan_img = np.array(resampled_nii.get_fdata())
 
+        end_str = '_sb=25_sp=10_sig=3_ss=1'
+        end_str = '_sb=25_sp=10'
+
         # load vesselness for scan
         if session == 'Postcon' or scan_type == 'TOF':
-            vessel_fname = fname + '_AutoVess_g=*_sb=25_sp=10.nii'
+            vessel_fname = fname + '_AutoVess_g=*' + end_str + '.nii'
 
         elif session == 'Precon' and scan_type == 'hr':
             vessel_fname = ('rsub-' + sub_num +
                             '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
-                            '_AutoVess_g=*_sb=25_sp=10.nii')
+                            '_AutoVess_g=*' + end_str + '.nii')
 
         vessel_file_name_pattern = os.path.join(vesselness_dir, vessel_fname)
         vessel_file_name = glob.glob(vessel_file_name_pattern)
@@ -1077,7 +1080,7 @@ def tof_runner():
     TOF_subjects = ['02', '04', '05', '06', '07', '08', '09', '10', '11', '14']
     # TOF_subjects = ['02', '04', '05', '06', '07']
     # TOF_subjects = ['08', '09', '10', '11', '14']
-    # TOF_subjects = ['14']
+    TOF_subjects = ['14']
     subject_list = TOF_subjects
     for sub_num in subject_list:
         session = 'Precon'
@@ -1101,13 +1104,14 @@ def main():
     #   '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
     #     '15'
     # ]
-    # scan_type = 'hr'
-    # vesselness_runner(subject_list, scan_type)
+    scan_type = 'hr'
+    subject_list = ['15']
+    vesselness_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
     # tof_runner()
     # brain_runner(subject_list, scan_type)
-    # snr_runner(subject_list, scan_type)
-    snr_compare()
+    snr_runner(subject_list, scan_type)
+    # snr_compare()
     # atlas_runner(subject_list, scan_type)
     # compare()
     return
