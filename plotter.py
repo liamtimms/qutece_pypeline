@@ -101,6 +101,17 @@ def roi_extract(scan_img, roi_img, fname, seg_type, save_dir):
         print('Data saved as:')
         print(os.path.join(save_dir, save_name))
 
+    # UNTESTED
+    # t = 'greater'
+    # r = 0
+    # crop_img, vals_df = roi_cut(scan_img, roi_img, t, r)
+    # r_summary_df = vals_df.describe()
+    # r_summary_df.rename(columns={0: 'all'}, inplace=True)
+    # summary_df = pd.merge(summary_df,
+    #                       r_summary_df,
+    #                       left_index=True,
+    #                       right_index=True)
+
     return summary_df
 
 
@@ -234,7 +245,7 @@ def subjects_plot(filt_df, save_dir, seg_type, y_axis):
 
     """
     sns.set_theme()
-    filt_df = filt_df.reset_index()
+    # filt_df = filt_df.reset_index()
     print(filt_df.head())
     a = filt_df['sub_num'].nunique() / 8
     sns_plot = sns.catplot(x="sub_num",
@@ -281,7 +292,7 @@ def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
         # col="session",
         # hue="session",
         # col="scan_type",
-        kind="swarm",
+        kind="bar",
         height=8,
         aspect=a,
         data=filt_df)
@@ -346,6 +357,17 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                 roi_dir, 'TOF',
                 'rrrsub-' + sub_num + '_ses-Precon_TOF_angio_corrected' +
                 '_noise-Segmentation-label.nii')
+
+    elif seg_type == 'tissue':
+        ROI_file_name = os.path.join(
+            roi_dir,
+            'rsub-' + sub_num + '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
+            '_tissue-Segmentation-label.nii')
+        if scan_type == 'TOF':
+            ROI_file_name = os.path.join(
+                roi_dir, 'TOF',
+                'rrrsub-' + sub_num + '_ses-Precon_TOF_angio_corrected' +
+                '_tissue-Segmentation-label.nii')
 
     elif seg_type == 'brain_preFLIRT':
         ROI_file_name = os.path.join(
@@ -687,11 +709,11 @@ def snr_subject_summary(sub_num, scan_type):
     """
     csv_dir = 'csv_work_' + scan_type
     plots_dir = 'plots_' + scan_type
-    seg_type = 'SNR'
+    seg_type = 'CNR'
     session = 'Precon'
     data_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session))
-    f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
+    f = ('sub-' + sub_num + '_ses-' + session + '_CNR' + '.csv')
     precon_df = pd.read_csv(os.path.join(data_dir, f))
 
     if scan_type != 'TOF':
@@ -699,7 +721,7 @@ def snr_subject_summary(sub_num, scan_type):
         data_dir = os.path.join(datasink_dir, csv_dir,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
-        f = ('sub-' + sub_num + '_ses-' + session + '_SNR' + '.csv')
+        f = ('sub-' + sub_num + '_ses-' + session + '_CNR' + '.csv')
         postcon_df = pd.read_csv(os.path.join(data_dir, f))
     else:
         postcon_df = pd.DataFrame()
@@ -793,7 +815,7 @@ def snr_full_summary(datasink_dir, subject_list, scan_type):
     -------
 
     """
-    seg_type = 'SNR'
+    seg_type = 'CNR'
     csv_dir = 'csv_work_' + scan_type
     plots_dir = 'plots_' + scan_type
     df_list = []
@@ -817,6 +839,8 @@ def snr_full_summary(datasink_dir, subject_list, scan_type):
     subjects_plot(full_df, save_dir, seg_type, y_axis)
     y_axis = 'ISH'
     subjects_plot(full_df, save_dir, seg_type, y_axis)
+    y_axis = 'CNR'
+    subjects_plot(full_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
     save_dir = os.path.join(datasink_dir, csv_dir)
@@ -835,7 +859,7 @@ def calc_snr(signal_df, noise_df):
 
     Returns
     -------
-    snr_df : pandas DataFrame
+    cnr_df : pandas DataFrame
 
     """
 
@@ -869,6 +893,75 @@ def calc_snr(signal_df, noise_df):
     snr_df['ISH'] = snr_df['signal_std'] / snr_df['signal_mean']
 
     return snr_df
+
+
+def calc_cnr(signal_df, tissue_df, noise_df):
+    """
+    Calculate CNR given DataFrames for signal, tissue and noise.
+
+    Parameters
+    ----------
+    signal_df : pandas DataFrame
+    tissue_df : pandas DataFrame
+    noise_df : pandas DataFrame
+
+    Returns
+    -------
+    cnr_df : pandas DataFrame
+
+    """
+
+    # Grab only region 1
+    signal_filt_df = signal_df.filter(
+        items=['mean', 'std', 'session', 'file']).filter(regex='^1',
+                                                         axis=0).reset_index()
+    tissue_filt_df = tissue_df.filter(
+        items=['mean', 'std', 'file']).filter(regex='^1',
+                                                         axis=0).reset_index()
+    # Rename columns
+    signal_filt_df.rename(columns={
+        'mean': 'signal_mean',
+        'std': 'signal_std'
+    },
+                          inplace=True)
+
+    # Rename columns
+    tissue_filt_df.rename(columns={
+        'mean': 'tissue_mean',
+        'std': 'tissue_std'
+    },
+                          inplace=True)
+
+    print('Tissue df :')
+    print(tissue_filt_df.head())
+
+    scan_names = signal_filt_df['file'].str.rsplit("_", n=2, expand=True)
+    signal_filt_df['scan'] = scan_names[0]
+
+    scan_names = tissue_filt_df['file'].str.rsplit("_", n=2, expand=True)
+    tissue_filt_df['scan'] = scan_names[0]
+
+    # Grab only region 1
+    noise_filt_df = noise_df.filter(items=['std', 'file']).filter(
+        regex='^1', axis=0).reset_index()
+
+    # Rename columns
+    noise_filt_df.rename(columns={'std': 'noise_std'}, inplace=True)
+    scan_names = noise_filt_df['file'].str.rsplit("_", n=2, expand=True)
+    noise_filt_df['scan'] = scan_names[0]
+
+    # combine them so that noise value in each scan is matched with signal
+    cnr_df = pd.merge(signal_filt_df, tissue_filt_df, on='scan')
+    cnr_df = pd.merge(cnr_df, noise_filt_df, on='scan')
+
+    cnr_df = cnr_df.drop(columns=['file_x', 'file_y'])
+    cnr_df['SNR'] = cnr_df['signal_mean'] / cnr_df['noise_std']
+    cnr_df['CNR'] = (cnr_df['signal_mean'] -
+                     cnr_df['tissue_mean']) / cnr_df['noise_std']
+    cnr_df['ISH'] = cnr_df['signal_std'] / cnr_df['signal_mean']
+    cnr_df = cnr_df.round(2)
+
+    return cnr_df
 
 
 def snr_session(sub_num, session, scan_type):
@@ -906,6 +999,12 @@ def snr_session(sub_num, session, scan_type):
 
     snr_df = calc_snr(vessel_df, noise_df)
 
+    seg_type = 'tissue'
+    tissue_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
+                                      scan_type)
+    tissue_df = pd.concat(tissue_df_list)
+    cnr_df = calc_cnr(vessel_df, tissue_df, noise_df)
+
     save_dir = os.path.join(datasink_dir, csv_dir, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session))
 
@@ -913,7 +1012,12 @@ def snr_session(sub_num, session, scan_type):
     snr_df.to_csv(os.path.join(save_dir, save_name), index=False)
     print('Calculated SNR :')
     print(snr_df.head())
-    return snr_df
+
+    print('Calculated CNR :')
+    print(cnr_df.head())
+    save_name = ('sub-' + sub_num + '_ses-' + session + '_CNR' + '.csv')
+    cnr_df.to_csv(os.path.join(save_dir, save_name), index=False)
+    return snr_df, cnr_df
 
 
 def snr_compare():
@@ -952,10 +1056,14 @@ def snr_compare():
                             & (full_df['scan_type'] == 'hr'))]
 
     # remove outliers
-    filt_df = filt_df.loc[(filt_df['noise_std'] < 1.85)]
     print('filt_df: ')
     print(filt_df.head())
     print(filt_df.tail())
+
+    subjects = set(list(ute_df['sub_num'])).intersection(list(tof_df['sub_num']))
+    print(subjects)
+
+    filt_df = filt_df[filt_df['sub_num'].isin(subjects)]
 
     y_axis = 'SNR'
     subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
@@ -969,8 +1077,7 @@ def snr_compare():
     y_axis = 'signal_std'
     subjects_plot_compare(filt_df, save_dir, seg_type, y_axis)
 
-    filt_df.drop(columns=['index', 'index_x', 'index_y', 'scan'],
-                 inplace=True)
+    filt_df.drop(columns=['index', 'index_x', 'index_y', 'scan'], inplace=True)
 
     print(filt_df.groupby('scan_type').mean())
     print(filt_df.groupby('scan_type').std())
@@ -1010,8 +1117,8 @@ def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
         in_folder = folder_post
         session_summary(in_folder, sub_num, session, scan_type, seg_type)
 
-        # subject_summary doesn't need to be explicitly called since it is in
-        # full_summary
+        # subject_summary doesn't need to be explicitly called since
+        # it is in full_summary
         # subject_summary(sub_num, scan_type, seg_type)
     full_summary(datasink_dir, subject_list, scan_type, seg_type)
     plt.close('all')
@@ -1041,6 +1148,13 @@ def atlas_runner(subject_list, scan_type):
 
 def noise_runner(subject_list, scan_type):
     seg_type = 'noise'
+    folder_post = 'preprocessing'
+    folder_pre = 'pre_to_post_coregister'
+    base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
+
+
+def tissue_runner(subject_list, scan_type):
+    seg_type = 'tissue'
     folder_post = 'preprocessing'
     folder_pre = 'pre_to_post_coregister'
     base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
@@ -1078,14 +1192,17 @@ def tof_runner():
     #     '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '14'
     # ]
     TOF_subjects = ['02', '04', '05', '06', '07', '08', '09', '10', '11', '14']
+    TOF_subjects = ['02', '04', '05', '06', '07', '08', '10', '11', '14']
     # TOF_subjects = ['02', '04', '05', '06', '07']
     # TOF_subjects = ['08', '09', '10', '11', '14']
-    TOF_subjects = ['14']
+    # TOF_subjects = ['14']
     subject_list = TOF_subjects
     for sub_num in subject_list:
         session = 'Precon'
         in_folder = 'pre_to_post_coregister'
         seg_type = 'noise'
+        session_summary(in_folder, sub_num, session, scan_type, seg_type)
+        seg_type = 'tissue'
         session_summary(in_folder, sub_num, session, scan_type, seg_type)
         seg_type = 'vesselness'
         session_summary_vesselness(in_folder, sub_num, session, scan_type,
@@ -1100,18 +1217,21 @@ def tof_runner():
 
 def main():
 
-    # subject_list = [
-    #   '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-    #     '15'
-    # ]
+    subject_list = [
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+        '15'
+    ]
+    # subject_list = ['10', '11', '12', '13', '14', '15']
+    # subject_list = ['02', '03', '04', '05', '06', '07', '08']
     scan_type = 'hr'
-    subject_list = ['15']
-    vesselness_runner(subject_list, scan_type)
+    # subject_list = ['15']
+    # vesselness_runner(subject_list, scan_type)
+    # tissue_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
     # tof_runner()
     # brain_runner(subject_list, scan_type)
-    snr_runner(subject_list, scan_type)
-    # snr_compare()
+    # snr_runner(subject_list, scan_type)
+    snr_compare()
     # atlas_runner(subject_list, scan_type)
     # compare()
     return
