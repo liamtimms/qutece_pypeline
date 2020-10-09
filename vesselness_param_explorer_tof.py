@@ -182,46 +182,47 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
 
 
 def main():
-    subject_num = '02'
-    scanfolder = os.path.join(datasink_dir, 'preprocessing',
-                              'sub-' + subject_num, 'ses-Postcon', 'qutece')
 
-    infile = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc.nii'
-    scan_file_name = os.path.join(scanfolder, infile)
+    subject_list = ['02']
+    for subject_num in subject_list:
+        scan_dir = os.path.join(datasink_dir, 'pre_to_post_coregister',
+                                'sub-' + subject_num)
+        scan_file_name = 'rrrsub-' + subject_num + '_ses-Precon_TOF_run-01_angio_corrected.nii'
+        scan_file = os.path.join(scan_dir, scan_file_name)
 
-    scan_nii = nib.load(scan_file_name)
-    scan_img = np.array(scan_nii.get_fdata())
-    scan_img[np.isnan(scan_img)] = 0
-    scan_img[scan_img < 0] = 0
-    scan_nii = nib.Nifti1Image(scan_img, scan_nii.affine, scan_nii.header)
-    mean = 117
+        scan_nii = nib.load(scan_file)
+        scan_img = np.array(scan_nii.get_fdata())
+        scan_img[np.isnan(scan_img)] = 0
+        scan_img[scan_img < 0] = 0
+        scan_nii = nib.Nifti1Image(scan_img, scan_nii.affine, scan_nii.header)
+        mean = 59
 
-    suppressBlobs_list = [10, 15, 25, 30, 40, 50]
-    suppressPlates_list = [10, 15, 25, 30]
-    gamma_list = [p * mean for p in [0.1, 0.25, 0.50, 0.75, 1]]
+        suppressBlobs_list = [10, 15, 25, 30, 40, 50]
+        suppressPlates_list = [10, 15, 25, 30]
+        gamma_list = [p * mean for p in [0.1, 0.25, 0.50, 0.75, 1]]
 
-    sigma_max_list = [3]
-    sigma_step_list = [1]
+        sigma_max_list = [3]
+        sigma_step_list = [1]
 
-    # TODO: actual brain mask filename
-    ROI_dir = os.path.join(manualwork_dir, 'segmentations', 'brain_mask4bias',
-                           'sub-' + subject_num)
-    ROI_file_name = ('rsub-' + subject_num +
-                     '_ses-Postcon_T1w_hr_mask_Segmentation-label.nii')
-    ROI_file = os.path.join(ROI_dir, ROI_file_name)
-    ROI_file_nii = nib.load(ROI_file)
-    mask_img = np.array(ROI_file_nii.get_fdata())
+        # TODO: actual brain mask filename
+        ROI_dir = os.path.join(manualwork_dir, 'segmentations', 'brain_mask4bias',
+                               'sub-' + subject_num)
+        ROI_file_name = ('rrrsub-' + subject_num +
+                        '_ses-Precon_TOF_angio_corrected_Segmentation-label.nii')
+        ROI_file = os.path.join(ROI_dir, ROI_file_name)
+        ROI_file_nii = nib.load(ROI_file)
+        mask_img = np.array(ROI_file_nii.get_fdata())
 
-    full_df, __, __ = parameter_test(scan_img, mask_img, suppressBlobs_list,
-                                     suppressPlates_list, gamma_list,
-                                     sigma_max_list, sigma_step_list)
+        full_df, __, __ = parameter_test(scan_img, mask_img, suppressBlobs_list,
+                                         suppressPlates_list, gamma_list,
+                                         sigma_max_list, sigma_step_list)
 
-    save_dir = os.path.join(manualwork_dir, 'vesselness_optimization')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    save_name = 'sub-' + subject_num + '_UTE_vesselness_testing.csv'
-    print(os.path.join(save_dir, save_name))
-    full_df.to_csv(os.path.join(save_dir, save_name))
+        save_dir = os.path.join(manualwork_dir, 'vesselness_optimization')
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        save_name = 'sub-' + subject_num + '_TOF_vesselness_testing.csv'
+        print(os.path.join(save_dir, save_name))
+        full_df.to_csv(os.path.join(save_dir, save_name))
 
     # save_name = 'sub-' + subject_num + '_UTE_vesselness_testing.nii'
     # vessel_nii = nib.Nifti1Image(vessel_img, scan_nii.affine, scan_nii.header)
