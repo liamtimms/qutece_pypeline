@@ -1,13 +1,32 @@
 import os
+import glob
 import numpy as np
 import pandas as pd
 import nibabel as nib
 from plotter import roi_cut
 from skimage.filters import frangi
+from skimage.morphology import skeletonize_3d, label
+from nipype.utils.filemanip import split_filename
 
 base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
+
+ute_sub_means = {
+    '02': 177,
+    '03': 372,
+    '04': 378,
+    '05': 231,
+    '06': 272,
+    '07': 174,
+    '08': 314,
+    '10': 335,
+    '11': 326,
+    '12': 467,
+    '13': 431,
+    '14': 441,
+    '15': 419
+}
 
 
 def SetAlpha(suppressPlates):
@@ -44,6 +63,22 @@ def SetBeta(suppressBlobs):
 #     infiles = os.path.join(basefolder, scanfolder, infile + '.nii')
 #
 #     return
+
+
+def skeleton(img, threshold):
+    bin_img = (img >= threshold).astype(int)
+    skele_img = skeletonize_3d(bin_img)
+    label_img = label(skele_img, connectivity=3)
+    # REMOVE SMALL ISLANDS
+    (unique, counts) = np.unique(label_img, return_counts=True)
+    mask_sizes = counts > 500
+    mask_sizes[0] = 0
+    unique_masked = mask_sizes * unique
+    unique_masked = unique_masked[unique_masked != 0]
+    skele_img_cleaned = np.isin(label_img, unique_masked).astype(int)
+    label_img = label(skele_img_cleaned, connectivity=3)
+    (unique, counts) = np.unique(label_img, return_counts=True)
+    return skele_img_cleaned, unique, counts
 
 
 def vess_roi_extract(scan_img, roi_img):
@@ -163,7 +198,7 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
                 print('FINISHED')
                 break
 
-            except np.linalg.LinAlgError as err:
+            except np.linalg.LinAlgError:
                 print('FAILED')
                 break
 
@@ -181,24 +216,18 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
     return full_df, vessel_img, vessel_roi_img
 
 
-def main():
-    subject_num = '02'
-    scanfolder = os.path.join(datasink_dir, 'preprocessing',
-                              'sub-' + subject_num, 'ses-Postcon', 'qutece')
-
-    infile = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc.nii'
-    scan_file_name = os.path.join(scanfolder, infile)
+def runner(subject_num, scan_file_name):
 
     scan_nii = nib.load(scan_file_name)
     scan_img = np.array(scan_nii.get_fdata())
     scan_img[np.isnan(scan_img)] = 0
     scan_img[scan_img < 0] = 0
     scan_nii = nib.Nifti1Image(scan_img, scan_nii.affine, scan_nii.header)
-    mean = 117
+    mean = ute_sub_means[subject_num]
 
-    suppressBlobs_list = [10, 15, 25, 30, 40, 50]
-    suppressPlates_list = [10, 15, 25, 30]
-    gamma_list = [p * mean for p in [0.1, 0.25, 0.50, 0.75, 1]]
+    suppressBlobs_list = [10]
+    suppressPlates_list = [10]
+    gamma_list = [p * mean for p in [0.10]]
 
     sigma_max_list = [3]
     sigma_step_list = [1]
@@ -219,16 +248,44 @@ def main():
     save_dir = os.path.join(manualwork_dir, 'vesselness_optimization')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    save_name = 'sub-' + subject_num + '_UTE_vesselness_testing.csv'
+
+    pth, fname, ext = split_filename(scan_file_name)
+    save_name = fname + '_vesselness_testing_1012.csv'
     print(os.path.join(save_dir, save_name))
     full_df.to_csv(os.path.join(save_dir, save_name))
 
     # save_name = 'sub-' + subject_num + '_UTE_vesselness_testing.nii'
-    # vessel_nii = nib.Nifti1Image(vessel_img, scan_nii.affine, scan_nii.header)
+    # vessel_nii = nib.Nifti1Image(vessel_img, scan_nii.affine,
+    #                              scan_nii.header)
     # nib.save(vessel_nii, os.path.join(save_dir, save_name))
-    # save_name = 'sub-' + subject_num + '_UTE_vesselness_testing_label.nii'
-    # vessel_roi_nii = nib.Nifti1Image(vessel_roi_img, scan_nii.affine, scan_nii.header)
+    # save_name ='sub-' + subject_num + '_UTE_vesselness_testing_label.nii'
+    # vessel_roi_nii = nib.Nifti1Image(vessel_roi_img, scan_nii.affine,
+    #                                  scan_nii.header)
     # nib.save(vessel_roi_nii, os.path.join(save_dir, save_name))
+
+    return
+
+def all_runner(subject_list):
+    for subject_num in subject_list:
+        scanfolder = os.path.join(datasink_dir, 'preprocessing',
+                                  'sub-' + subject_num, 'ses-Postcon',
+                                  'qutece')
+
+        infile = ('rsub-' + subject_num + '_ses-Postcon_hr_run-*-preproc.nii')
+        scan_file_pattern = os.path.join(scanfolder, infile)
+        in_files = glob.glob(scan_file_pattern)
+        for scan_file_name in in_files:
+            runner(subject_num, scan_file_name)
+    return
+
+
+def main():
+    # subject_list = [
+    #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+    #     '15'
+    # ]
+    subject_list = ['02']
+    all_runner(subject_list)
 
     return
 
