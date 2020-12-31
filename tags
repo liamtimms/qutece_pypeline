@@ -1,0 +1,793 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/a3c87ab5/
+ApplyTransAnat_workflow	nipype_normalize_applytrans_nonUTE.py	/^def ApplyTransAnat_workflow(working_dir, subject_list, session_list,$/;"	f
+CBV_WholeBrain_workflow	nipype_cbv_whbrain.py	/^def CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type):$/;"	f
+CBVmap	CustomNiPype.py	/^class CBVmap(BaseInterface):$/;"	c
+CBVmapInputSpec	CustomNiPype.py	/^class CBVmapInputSpec(BaseInterfaceInputSpec):$/;"	c
+CBVmapOutputSpec	CustomNiPype.py	/^class CBVmapOutputSpec(TraitedSpec):$/;"	c
+CBVwhBrain	CustomNiPype.py	/^class CBVwhBrain(BaseInterface):$/;"	c
+CBVwhBrainInputSpec	CustomNiPype.py	/^class CBVwhBrainInputSpec(BaseInterfaceInputSpec):$/;"	c
+CBVwhBrainOutputSpec	CustomNiPype.py	/^class CBVwhBrainOutputSpec(TraitedSpec):$/;"	c
+CONFIG_FILE	bids_extraction.py	/^CONFIG_FILE = os.path.join(parent_path, 'ConfigV2.json')$/;"	v
+CSVConcatenate	CustomNiPype.py	/^class CSVConcatenate(BaseInterface):$/;"	c
+CSVConcatenateInputSpec	CustomNiPype.py	/^class CSVConcatenateInputSpec(BaseInterfaceInputSpec):$/;"	c
+CSVConcatenateOutputSpec	CustomNiPype.py	/^class CSVConcatenateOutputSpec(TraitedSpec):$/;"	c
+CombineLabels	CustomNiPype.py	/^class CombineLabels(BaseInterface):$/;"	c
+CombineLabelsInputSpec	CustomNiPype.py	/^class CombineLabelsInputSpec(BaseInterfaceInputSpec):$/;"	c
+CombineLabelsOutputSpec	CustomNiPype.py	/^class CombineLabelsOutputSpec(TraitedSpec):$/;"	c
+DICOM_DIR	bids_extraction.py	/^                DICOM_DIR = sess_dcm_dir$/;"	v
+DiffInputSpec	CustomNiPype.py	/^class DiffInputSpec(BaseInterfaceInputSpec):$/;"	c
+DiffNii	CustomNiPype.py	/^class DiffNii(BaseInterface):$/;"	c
+DiffOutputSpec	CustomNiPype.py	/^class DiffOutputSpec(TraitedSpec):$/;"	c
+DivInputSpec	CustomNiPype.py	/^class DivInputSpec(BaseInterfaceInputSpec):$/;"	c
+DivNii	CustomNiPype.py	/^class DivNii(BaseInterface):$/;"	c
+DivOutputSpec	CustomNiPype.py	/^class DivOutputSpec(TraitedSpec):$/;"	c
+FA	snr_extract.py	/^                FA = j_obj['FlipAngle']$/;"	v
+FA	snr_extract_corr.py	/^                FA = j_obj['FlipAngle']$/;"	v
+FFTInputSpec	CustomNiPype.py	/^class FFTInputSpec(BaseInterfaceInputSpec):$/;"	c
+FFTNii	CustomNiPype.py	/^class FFTNii(BaseInterface):$/;"	c
+FFTOutputSpec	CustomNiPype.py	/^class FFTOutputSpec(TraitedSpec):$/;"	c
+FakeRealign	CustomNiPype.py	/^class FakeRealign(BaseInterface):$/;"	c
+FakeRealignInputSpec	CustomNiPype.py	/^class FakeRealignInputSpec(BaseInterfaceInputSpec):$/;"	c
+FakeRealignOutputSpec	CustomNiPype.py	/^class FakeRealignOutputSpec(TraitedSpec):$/;"	c
+GetPixelSpacing	vmtk_vesselness_functions.py	/^def GetPixelSpacing(nii_filename):$/;"	f
+GetPixelSpacing	vmtk_vesselness_param_explorer.py	/^def GetPixelSpacing(nii_filename):$/;"	f
+ImageRescale	CustomNiPype.py	/^class ImageRescale(BaseInterface):$/;"	c
+ImageRescaleInputSpec	CustomNiPype.py	/^class ImageRescaleInputSpec(BaseInterfaceInputSpec):$/;"	c
+ImageRescaleOutputSpec	CustomNiPype.py	/^class ImageRescaleOutputSpec(TraitedSpec):$/;"	c
+LowerSNRInputSpec	CustomNiPype.py	/^class LowerSNRInputSpec(BaseInterfaceInputSpec):$/;"	c
+LowerSNRNii	CustomNiPype.py	/^class LowerSNRNii(BaseInterface):$/;"	c
+LowerSNROutputSpec	CustomNiPype.py	/^class LowerSNROutputSpec(TraitedSpec):$/;"	c
+Normalization_workflow	nipype_normalize_compare.py	/^def Normalization_workflow(working_dir, subject_list, num_cores):$/;"	f
+PARTICIPANT_ID	bids_extraction.py	/^                PARTICIPANT_ID = subject_num$/;"	v
+PlotDistribution	CustomNiPype.py	/^class PlotDistribution(BaseInterface):$/;"	c
+PlotDistributionInputSpec	CustomNiPype.py	/^class PlotDistributionInputSpec(BaseInterfaceInputSpec):$/;"	c
+PlotDistributionOutputSpec	CustomNiPype.py	/^class PlotDistributionOutputSpec(TraitedSpec):$/;"	c
+ROIAnalyze	CustomNiPype.py	/^class ROIAnalyze(BaseInterface):$/;"	c
+ROIAnalyzeInputSpec	CustomNiPype.py	/^class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):$/;"	c
+ROIAnalyzeOutputSpec	CustomNiPype.py	/^class ROIAnalyzeOutputSpec(TraitedSpec):$/;"	c
+ResampInputSpec	CustomNiPype.py	/^class ResampInputSpec(BaseInterfaceInputSpec):$/;"	c
+ResampNii	CustomNiPype.py	/^class ResampNii(BaseInterface):$/;"	c
+ResampOutputSpec	CustomNiPype.py	/^class ResampOutputSpec(TraitedSpec):$/;"	c
+SESSION_ID	bids_extraction.py	/^                SESSION_ID = session_type$/;"	v
+SetAlpha	tester.py	/^def SetAlpha(suppressPlates):$/;"	f
+SetAlpha	tester_tianyi.py	/^def SetAlpha(suppressPlates):$/;"	f
+SetAlpha	vesselness_param_explorer.py	/^def SetAlpha(suppressPlates):$/;"	f
+SetAlpha	vesselness_param_explorer_tof.py	/^def SetAlpha(suppressPlates):$/;"	f
+SetAlpha	vmtk_vesselness_functions.py	/^def SetAlpha(suppressPlates):$/;"	f
+SetAlpha	vmtk_vesselness_param_explorer.py	/^def SetAlpha(suppressPlates):$/;"	f
+SetBeta	tester.py	/^def SetBeta(suppressBlobs):$/;"	f
+SetBeta	tester_tianyi.py	/^def SetBeta(suppressBlobs):$/;"	f
+SetBeta	vesselness_param_explorer.py	/^def SetBeta(suppressBlobs):$/;"	f
+SetBeta	vesselness_param_explorer_tof.py	/^def SetBeta(suppressBlobs):$/;"	f
+SetBeta	vmtk_vesselness_functions.py	/^def SetBeta(suppressBlobs):$/;"	f
+SetBeta	vmtk_vesselness_param_explorer.py	/^def SetBeta(suppressBlobs):$/;"	f
+SetGamma	vmtk_vesselness_functions.py	/^def SetGamma(mean):$/;"	f
+SetGamma	vmtk_vesselness_param_explorer.py	/^def SetGamma(mean):$/;"	f
+TE	snr_extract.py	/^                TE = j_obj['EchoTime']$/;"	v
+TE	snr_extract_corr.py	/^                TE = j_obj['EchoTime']$/;"	v
+TOF_subjects	vmtk_vesselness_param_explorer.py	/^TOF_subjects = [$/;"	v
+TR	snr_extract.py	/^                TR = j_obj['RepetitionTime']$/;"	v
+TR	snr_extract_corr.py	/^                TR = j_obj['RepetitionTime']$/;"	v
+TimeSeries_ROI_workflow	nipype_timeseries_roi.py	/^def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,$/;"	f
+TrimInputSpec	CustomNiPype.py	/^class TrimInputSpec(BaseInterfaceInputSpec):$/;"	c
+TrimNii	CustomNiPype.py	/^class TrimNii(BaseInterface):$/;"	c
+TrimOutputSpec	CustomNiPype.py	/^class TrimOutputSpec(TraitedSpec):$/;"	c
+UnringNii	CustomNiPype.py	/^class UnringNii(BaseInterface):$/;"	c
+UnringNiiInputSpec	CustomNiPype.py	/^class UnringNiiInputSpec(BaseInterfaceInputSpec):$/;"	c
+UnringNiiOutputSpec	CustomNiPype.py	/^class UnringNiiOutputSpec(TraitedSpec):$/;"	c
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:CBVmap
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:CBVwhBrain
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:CSVConcatenate
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:CombineLabels
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:DiffNii
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:DivNii
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:FFTNii
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:FakeRealign
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:ImageRescale
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:LowerSNRNii
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:PlotDistribution
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:ROIAnalyze
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:ResampNii
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:TrimNii
+_list_outputs	CustomNiPype.py	/^    def _list_outputs(self):$/;"	m	class:UnringNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:CBVmap
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:CBVwhBrain
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:CSVConcatenate
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:CombineLabels
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:DiffNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:DivNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:FFTNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:FakeRealign
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:ImageRescale
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:LowerSNRNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:PlotDistribution
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:ROIAnalyze
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:ResampNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:TrimNii
+_run_interface	CustomNiPype.py	/^    def _run_interface(self, runtime):$/;"	m	class:UnringNii
+alpha	tester.py	/^alpha = SetAlpha(suppressPlates)$/;"	v
+alpha	tester_tianyi.py	/^        alpha = SetAlpha(suppressPlates)$/;"	v
+alpha	vmtk_vesselness_param_explorer.py	/^            alpha = SetAlpha(suppressPlates)$/;"	v
+alpha	vmtk_vesselness_param_explorer.py	/^    alpha = SetAlpha(suppressPlates)$/;"	v
+ants	nipype_cbv_whbrain.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_intrasession_coregister.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_normalize_compare.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_post_pre_difference.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_preproc.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_preproc_08.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_preproc_10.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_preproc_kidney.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_preproc_nofast.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_tissue_wmh_analysis.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_vessel_density.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_vessel_density_atlas.py	/^import nipype.interfaces.ants as ants$/;"	I
+ants	nipype_wm_analysis.py	/^import nipype.interfaces.ants as ants$/;"	I
+apply_linear_trans	nipype_apply_transforms.py	/^def apply_linear_trans(working_dir, subject_list, scan_type):$/;"	f
+apply_nonlinear_trans	nipype_apply_transforms.py	/^def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):$/;"	f
+atlas_runner	plotter.py	/^def atlas_runner(subject_list, scan_type):$/;"	f
+ave	snr_extract.py	/^                ave = np.nanmean(vals)$/;"	v
+ave	snr_extract_corr.py	/^                ave = np.nanmean(vals)$/;"	v
+ave_filename	time-series.py	/^    ave_filename = os.path.join($/;"	v
+base_dir	plotter.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
+base_dir	skeleton.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
+base_dir	tester_tianyi.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
+base_dir	vesselness_param_explorer.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
+base_dir	vesselness_param_explorer_tof.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
+base_path	fft-distance_refactor.py	/^base_path = os.path.abspath($/;"	v
+base_path	snr_extract.py	/^base_path = '\/home\/liam\/LaptopSync\/DCM2BIDS_Kidney'$/;"	v
+base_path	snr_extract_corr.py	/^base_path = '\/home\/liam\/LaptopSync\/DCM2BIDS_Kidney'$/;"	v
+base_path	time-series.py	/^base_path = os.path.abspath(upper_dir)$/;"	v
+base_runner	plotter.py	/^def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):$/;"	f
+basefolder	vmtk_vesselness_param_explorer.py	/^    basefolder = os.path.abspath(os.path.join(upper_dir, 'derivatives'))$/;"	v
+beta	tester.py	/^beta = SetBeta(suppressBlobs)$/;"	v
+beta	tester_tianyi.py	/^        beta = SetBeta(suppressBlobs)$/;"	v
+beta	vmtk_vesselness_param_explorer.py	/^            beta = SetBeta(suppressBlobs)$/;"	v
+beta	vmtk_vesselness_param_explorer.py	/^    beta = SetBeta(suppressBlobs)$/;"	v
+bias_norm	nipype_preproc_kidney.py	/^bias_norm = eng.MapNode(ants.N4BiasFieldCorrection(),$/;"	v
+bias_norm2	nipype_preproc_kidney.py	/^bias_norm2 = eng.MapNode(ants.N4BiasFieldCorrection(),$/;"	v
+bias_norm3	nipype_preproc_kidney.py	/^bias_norm3 = eng.MapNode(ants.N4BiasFieldCorrection(),$/;"	v
+bias_norm4	nipype_preproc_kidney.py	/^bias_norm4 = eng.MapNode(ants.N4BiasFieldCorrection(),$/;"	v
+bias_norm5	nipype_preproc_kidney.py	/^bias_norm5 = eng.MapNode(ants.N4BiasFieldCorrection(),$/;"	v
+bids_dir	bids_extraction.py	/^bids_dir = os.path.join(parent_path, 'DCM2BIDS2')$/;"	v
+bids_folders	bids_extraction.py	/^bids_folders = os.listdir(bids_dir)$/;"	v
+blood_csv	CustomNiPype.py	/^    blood_csv = File(exists=True, mandatory=True, desc='csv of blood')$/;"	v	class:CBVwhBrainInputSpec
+blood_mask	CustomNiPype.py	/^    blood_mask = File(exists=True, mandatory=True, desc='mask of blood')$/;"	v	class:CBVmapInputSpec
+blood_noise	snr_extract.py	/^                    blood_noise = std$/;"	v
+blood_signal	snr_extract.py	/^                    blood_signal = ave$/;"	v
+brain_ROI_filename	time-series.py	/^    brain_ROI_filename = os.path.join($/;"	v
+brain_ROI_img	time-series.py	/^    brain_ROI_img = np.array(brain_ROI_nii.get_fdata())$/;"	v
+brain_ROI_nii	time-series.py	/^    brain_ROI_nii = nib.load(brain_ROI_filename)$/;"	v
+brain_ave	time-series.py	/^        brain_ave = np.nanmean(brain_vals[np.nonzero(brain_vals)])$/;"	v
+brain_aves	time-series.py	/^    brain_aves = [[0] * 2 for i in range(num_runs)]$/;"	v
+brain_crop_img	time-series.py	/^        brain_crop_img = np.multiply(postminuspre_img, brain_ROI_img)$/;"	v
+brain_csv	CustomNiPype.py	/^    brain_csv = File(exists=True, mandatory=True, desc='csv of brain')$/;"	v	class:CBVwhBrainInputSpec
+brain_runner	plotter.py	/^def brain_runner(subject_list, scan_type):$/;"	f
+brain_vals	time-series.py	/^        brain_vals = np.reshape(brain_crop_img, -1)$/;"	v
+braincrop	nipype_braincrop.py	/^def braincrop(working_dir, subject_list):$/;"	f
+braincrop_wf	nipype_controller_liam.py	/^braincrop_wf = braincrop(working_dir, subject_list)$/;"	v
+calc_cnr	plotter.py	/^def calc_cnr(signal_df, tissue_df, noise_df):$/;"	f
+calc_dist_from_center	fft-distance_refactor.py	/^def calc_dist_from_center(img):$/;"	f
+calc_snr	plotter.py	/^def calc_snr(signal_df, noise_df):$/;"	f
+calc_transforms	nipype_calc_transforms.py	/^def calc_transforms(working_dir, subject_list):$/;"	f
+calc_transforms_wf	nipype_controller_liam.py	/^calc_transforms_wf = calc_transforms(working_dir, subject_list)$/;"	v
+category_plot	plotter.py	/^def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,$/;"	f
+cmdVesselness	vmtk_vesselness_param_explorer.py	/^            cmdVesselness = ($/;"	v
+cnp	nipype_apply_transforms.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_cbv_whbrain.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_controller_liam.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_controller_tianyi.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_csv_analysis.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_fft.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_normalize_croppedbrain.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_plotter.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_post_pre_difference.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_preproc.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_preproc_08.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_preproc_10.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_preproc_nofast.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_timeseries_roi.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_tissue_wmh_analysis.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_vessel_density.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_vessel_density_atlas.py	/^import CustomNiPype as cnp$/;"	I
+cnp	nipype_wm_analysis.py	/^import CustomNiPype as cnp$/;"	I
+cnp	snr_extract.py	/^import CustomNiPype as cnp$/;"	I
+cnp	snr_extract_corr.py	/^import CustomNiPype as cnp$/;"	I
+cnr	snr_extract.py	/^            cnr = snr - snr_tissue$/;"	v
+cnr	snr_extract_corr.py	/^            cnr = snr - snr_tissue$/;"	v
+command	bids_extraction.py	/^                command = 'dcm2bids -d ' + DICOM_DIR + ' -p ' + PARTICIPANT_ID \\$/;"	v
+command	bids_extraction.py	/^command = 'dcm2bids_scaffold'$/;"	v
+command	bids_extraction.py	/^command = 'gunzip -r ' + bids_dir$/;"	v
+compare	plotter.py	/^def compare():$/;"	f
+contents	bids_extraction.py	/^    contents = os.listdir(pat_dir)$/;"	v
+coreg2_wf	nipype_controller_liam.py	/^coreg2_wf = pre_to_post_coregister(working_dir, subject_list)$/;"	v
+coreg_wf	nipype_controller_liam.py	/^coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)$/;"	v
+corr_fname	snr_extract.py	/^            corr_fname = fname + '_corrected.nii'$/;"	v
+crop_img	snr_extract.py	/^                crop_img = np.multiply(scan_img, roi)$/;"	v
+crop_img	snr_extract_corr.py	/^                crop_img = np.multiply(scan_img, roi)$/;"	v
+csv_analyze	nipype_csv_analysis.py	/^def csv_analyze(working_dir, subject_list, session_list, scan_type):$/;"	f
+curr_time	fft-distance_refactor.py	/^                    curr_time = time.time()$/;"	v
+curr_val	fft-distance_refactor.py	/^                                curr_val = curr_val + fft_vals[i][1]$/;"	v
+curr_val	fft-distance_refactor.py	/^                        curr_val = 0$/;"	v
+data_dir	snr_extract.py	/^    data_dir = os.path.join(base_path, 'sub-' + sub_num, 'ses-Post', 'qutece')$/;"	v
+data_dir	snr_extract_corr.py	/^    data_dir = os.path.join(base_path, 'derivatives', 'datasink',$/;"	v
+datasink	nipype_fft.py	/^datasink = eng.Node(nio.DataSink(base_directory=output_dir,$/;"	v
+datasink	nipype_normalize_croppedbrain.py	/^datasink = eng.Node(nio.DataSink(base_directory=output_dir,$/;"	v
+datasink	nipype_preproc_kidney.py	/^datasink = eng.Node(nio.DataSink(base_directory=output_dir,$/;"	v
+datasink_dir	plotter.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
+datasink_dir	skeleton.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
+datasink_dir	tester_tianyi.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
+datasink_dir	vesselness_param_explorer.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
+datasink_dir	vesselness_param_explorer_tof.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
+dcm_dir	bids_extraction.py	/^dcm_dir = os.path.join(parent_path, 'DCM_working')$/;"	v
+diff_wf	nipype_controller_tianyi.py	/^diff_wf = post_pre_difference(working_dir, subject_list, scan_type='hr', scanfolder='nonlinear_t/;"	v
+difference	CustomNiPype.py	/^    difference = File(exists=True,$/;"	v	class:CBVmapInputSpec
+dist_index	fft-distance_refactor.py	/^                        dist_index = np.where($/;"	v
+dsc	time-series.py	/^            dsc = 'desc-preproc'$/;"	v
+dsc	time-series.py	/^            dsc = 'divby_average_bias_reoriented'$/;"	v
+elapsed_time	fft-distance_refactor.py	/^                                elapsed_time = time.time() - start_time$/;"	v
+eng	nipype_apply_transforms.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_braincrop.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_calc_transforms.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_cbv_whbrain.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_csv_analysis.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_fft.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_initial_braincrop.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_intrasession_coregister.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_normalize_applytrans_nonUTE.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_normalize_compare.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_normalize_croppedbrain.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_normalize_semiauto_postFLIRT.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_plotter.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_post_pre_difference.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_pre_to_post_coregister.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_preproc.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_preproc_08.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_preproc_10.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_preproc_kidney.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_preproc_nofast.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_timeseries_roi.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_tissue_wmh_analysis.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_vessel_density.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_vessel_density_atlas.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	nipype_wm_analysis.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	snr_extract.py	/^import nipype.pipeline.engine as eng$/;"	I
+eng	snr_extract_corr.py	/^import nipype.pipeline.engine as eng$/;"	I
+export	fft-distance_refactor.py	/^                    export = pd.DataFrame(fft_sum_vals)$/;"	v
+export	snr_extract.py	/^        export = pd.DataFrame(sub_vals)$/;"	v
+export	snr_extract_corr.py	/^        export = pd.DataFrame(sub_vals)$/;"	v
+export	time-series.py	/^    export = pd.DataFrame(brain_aves)$/;"	v
+ext	fft-distance_refactor.py	/^                pth, fname, ext = split_filename(fft_filename)$/;"	v
+ext	snr_extract.py	/^            path, fname, ext = split_filename(filename)$/;"	v
+ext	snr_extract_corr.py	/^            path, fname, ext = split_filename(filename)$/;"	v
+fast	nipype_normalize_croppedbrain.py	/^fast = eng.Node(fsl.FAST(), name='fast')$/;"	v
+fft	nipype_fft.py	/^fft = eng.MapNode(interface=cnp.FFTNii(), name='fft', iterfield=['in_file'])$/;"	v
+fft_csv_filename	fft-distance_refactor.py	/^                fft_csv_filename = os.path.join(base_path, 'manualwork',$/;"	v
+fft_directory	fft-distance_refactor.py	/^    fft_directory = os.path.join(base_path, 'datasink', 'FFT',$/;"	v
+fft_filename	fft-distance_refactor.py	/^            fft_filename = os.path.join(fft_directory, name)$/;"	v
+fft_img	fft-distance_refactor.py	/^                    fft_img = np.array(np.double(fft_nii.get_fdata()))$/;"	v
+fft_nii	fft-distance_refactor.py	/^                    fft_nii = nib.load(fft_filename)$/;"	v
+fft_sum_vals	fft-distance_refactor.py	/^                    fft_sum_vals = [[0] * 2$/;"	v
+fft_unique_dist	fft-distance_refactor.py	/^                    fft_unique_dist = np.unique(np.asarray(fft_vals)[:, 0])$/;"	v
+fft_vals	fft-distance_refactor.py	/^                    fft_vals = calc_dist_from_center(fft_img)$/;"	v
+fft_vals	fft-distance_refactor.py	/^                    fft_vals = np.round(fft_vals, 3)$/;"	v
+fft_wf	nipype_fft.py	/^fft_wf = eng.Workflow(name=task)$/;"	v
+file1	CustomNiPype.py	/^    file1 = File(exists=True, mandatory=True)$/;"	v	class:DiffInputSpec
+file1	CustomNiPype.py	/^    file1 = File(exists=True, mandatory=True)$/;"	v	class:DivInputSpec
+file2	CustomNiPype.py	/^    file2 = File(exists=True, mandatory=True)$/;"	v	class:DiffInputSpec
+file2	CustomNiPype.py	/^    file2 = File(exists=True, mandatory=True)$/;"	v	class:DivInputSpec
+filestart	nipype_fft.py	/^filestart = 'sub-{subject_id}_ses-' + session + '_'$/;"	v
+filestart	nipype_normalize_croppedbrain.py	/^filestart = 'sub-{subject_id}_ses-' + session + '_'$/;"	v
+filestart	nipype_preproc_kidney.py	/^filestart = 'sub-{subject_id}_ses-{session_id}'$/;"	v
+filestart	nipype_reconall.py	/^filestart = 'sub-' + subject + '_ses-' + session + '_'$/;"	v
+fname	fft-distance_refactor.py	/^                pth, fname, ext = split_filename(fft_filename)$/;"	v
+fname	snr_extract.py	/^            path, fname, ext = split_filename(filename)$/;"	v
+fname	snr_extract_corr.py	/^            fname = fname.replace('_corrected', '')$/;"	v
+fname	snr_extract_corr.py	/^            path, fname, ext = split_filename(filename)$/;"	v
+fnirt_and_fast	nipype_normalize_semiauto_postFLIRT.py	/^def fnirt_and_fast(working_dir, subject_list):$/;"	f
+fs	nipype_fft.py	/^import nipype.interfaces.freesurfer as fs$/;"	I
+fs	nipype_normalize_croppedbrain.py	/^import nipype.interfaces.freesurfer as fs$/;"	I
+fsl	nipype_apply_transforms.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_braincrop.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_calc_transforms.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_cbv_whbrain.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_csv_analysis.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_initial_braincrop.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_normalize_applytrans_nonUTE.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_normalize_compare.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_normalize_croppedbrain.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_normalize_semiauto_postFLIRT.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_plotter.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_post_pre_difference.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_pre_to_post_coregister.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_preproc.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_preproc_08.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_preproc_10.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_preproc_nofast.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_timeseries_roi.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_tissue_wmh_analysis.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_vessel_density.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_vessel_density_atlas.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+fsl	nipype_wm_analysis.py	/^import nipype.interfaces.fsl as fsl$/;"	I
+full_summary	plotter.py	/^def full_summary(datasink_dir, subject_list, scan_type, seg_type):$/;"	f
+gamma	tester.py	/^gamma = 177 * 0.75$/;"	v
+gamma	tester_tianyi.py	/^        suppressPlates, suppressBlobs, gamma, sigma_max, sigma_step = params$/;"	v
+gamma	vmtk_vesselness_param_explorer.py	/^    gamma = 75$/;"	v
+gamma	vmtk_vesselness_param_explorer.py	/^    gamma = SetGamma(mean)$/;"	v
+gamma_list	tester_tianyi.py	/^    gamma_list = [p * 177 for p in [0.25]]$/;"	v
+hist_plot_alt	plotter.py	/^def hist_plot_alt(df, seg_type, save_dir):$/;"	f
+hist_plots	plotter.py	/^def hist_plots(df, seg_type, save_dir):$/;"	f
+i	fft-distance_refactor.py	/^                                i = int(i)$/;"	v
+inVesselness_list	vmtk_vesselness_param_explorer.py	/^    inVesselness_list = glob.glob(inVesselness_pattern)$/;"	v
+inVesselness_pattern	vmtk_vesselness_param_explorer.py	/^    inVesselness_pattern = os.path.join(basefolder, scanfolder,$/;"	v
+in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:FFTInputSpec
+in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:ImageRescaleInputSpec
+in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:LowerSNRInputSpec
+in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:ResampInputSpec
+in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:TrimInputSpec
+in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:UnringNiiInputSpec
+in_file	CustomNiPype.py	/^    in_file = InputMultiObject(exists=True,$/;"	v	class:FakeRealignInputSpec
+in_file_fixed	CustomNiPype.py	/^    in_file_fixed = File(exists=True, mandatory=True, desc='label to be added')$/;"	v	class:CombineLabelsInputSpec
+in_file_modifier	CustomNiPype.py	/^    in_file_modifier = File(exists=True,$/;"	v	class:CombineLabelsInputSpec
+in_files	CustomNiPype.py	/^    in_files = InputMultiObject(exists=True,$/;"	v	class:CSVConcatenateInputSpec
+in_files	CustomNiPype.py	/^    in_files = InputMultiObject(exists=True,$/;"	v	class:PlotDistributionInputSpec
+infile	vmtk_vesselness_param_explorer.py	/^        infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'$/;"	v
+infile	vmtk_vesselness_param_explorer.py	/^        infile = '*sub-' + subject_num + '_ses-Precon_TOF*angio_corrected'$/;"	v
+infosource	nipype_fft.py	/^infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),$/;"	v
+infosource	nipype_normalize_croppedbrain.py	/^infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),$/;"	v
+infosource	nipype_preproc_kidney.py	/^infosource = eng.Node($/;"	v
+initial_braincrop	nipype_initial_braincrop.py	/^def initial_braincrop(working_dir, subject_list, session_list):$/;"	f
+initial_braincrop_wf	nipype_controller_liam.py	/^initial_braincrop_wf = initial_braincrop(working_dir, subject_list,$/;"	v
+input_spec	CustomNiPype.py	/^    input_spec = CBVmapInputSpec$/;"	v	class:CBVmap
+input_spec	CustomNiPype.py	/^    input_spec = CBVwhBrainInputSpec$/;"	v	class:CBVwhBrain
+input_spec	CustomNiPype.py	/^    input_spec = CSVConcatenateInputSpec$/;"	v	class:CSVConcatenate
+input_spec	CustomNiPype.py	/^    input_spec = CombineLabelsInputSpec$/;"	v	class:CombineLabels
+input_spec	CustomNiPype.py	/^    input_spec = DiffInputSpec$/;"	v	class:DiffNii
+input_spec	CustomNiPype.py	/^    input_spec = DivInputSpec$/;"	v	class:DivNii
+input_spec	CustomNiPype.py	/^    input_spec = FFTInputSpec$/;"	v	class:FFTNii
+input_spec	CustomNiPype.py	/^    input_spec = FakeRealignInputSpec$/;"	v	class:FakeRealign
+input_spec	CustomNiPype.py	/^    input_spec = ImageRescaleInputSpec$/;"	v	class:ImageRescale
+input_spec	CustomNiPype.py	/^    input_spec = LowerSNRInputSpec$/;"	v	class:LowerSNRNii
+input_spec	CustomNiPype.py	/^    input_spec = PlotDistributionInputSpec$/;"	v	class:PlotDistribution
+input_spec	CustomNiPype.py	/^    input_spec = ROIAnalyzeInputSpec$/;"	v	class:ROIAnalyze
+input_spec	CustomNiPype.py	/^    input_spec = ResampInputSpec$/;"	v	class:ResampNii
+input_spec	CustomNiPype.py	/^    input_spec = TrimInputSpec$/;"	v	class:TrimNii
+input_spec	CustomNiPype.py	/^    input_spec = UnringNiiInputSpec$/;"	v	class:UnringNii
+intrasession_coregister	nipype_intrasession_coregister.py	/^def intrasession_coregister(working_dir, subject_list, session_list):$/;"	f
+ish	snr_extract.py	/^            ish = blood_noise \/ blood_signal$/;"	v
+j_obj	snr_extract.py	/^                j_obj = json.load(json_file)$/;"	v
+j_obj	snr_extract_corr.py	/^                j_obj = json.load(json_file)$/;"	v
+json_dir	snr_extract_corr.py	/^    json_dir = os.path.join(base_path, 'sub-' + sub_num, 'ses-Post', 'qutece')$/;"	v
+jsonfilename	snr_extract.py	/^            jsonfilename = os.path.join(data_dir, fname + '.json')$/;"	v
+jsonfilename	snr_extract_corr.py	/^            jsonfilename = os.path.join(json_dir, fname + '.json')$/;"	v
+load_full_summary_dfs	plotter.py	/^def load_full_summary_dfs(seg_type_list, scan_type):$/;"	f
+load_summary_dfs	plotter.py	/^def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):$/;"	f
+main	plotter.py	/^def main():$/;"	f
+main	skeleton.py	/^def main():$/;"	f
+main	vesselness_param_explorer.py	/^def main():$/;"	f
+main	vesselness_param_explorer_tof.py	/^def main():$/;"	f
+manualwork_dir	plotter.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
+manualwork_dir	skeleton.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
+manualwork_dir	tester_tianyi.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
+manualwork_dir	vesselness_param_explorer.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
+manualwork_dir	vesselness_param_explorer_tof.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
+mask_file	CustomNiPype.py	/^    mask_file = File(exists=True, mandatory=True)$/;"	v	class:ImageRescaleInputSpec
+mean	vmtk_vesselness_param_explorer.py	/^    mean = sub_means[subject_num]$/;"	v
+merge	nipype_fft.py	/^merge = eng.Node(utl.Merge(2), name='merge')$/;"	v
+merge	nipype_normalize_croppedbrain.py	/^merge = eng.Node(utl.Merge(5), name='merge')$/;"	v
+merge2	nipype_normalize_croppedbrain.py	/^merge2 = eng.Node(utl.Merge(8), name='merge2')$/;"	v
+multiplication_factor	CustomNiPype.py	/^    multiplication_factor = traits.Int(mandatory=True,$/;"	v	class:CombineLabelsInputSpec
+n	fft-distance_refactor.py	/^                            n = n + 1$/;"	v
+n	fft-distance_refactor.py	/^                    n = 0$/;"	v
+n	snr_extract.py	/^            n = n + 1$/;"	v
+n	snr_extract.py	/^    n = 0$/;"	v
+n	snr_extract_corr.py	/^            n = n + 1$/;"	v
+n	snr_extract_corr.py	/^    n = 0$/;"	v
+nib	CustomNiPype.py	/^import nibabel as nib$/;"	I
+nib	fft-distance_refactor.py	/^import nibabel as nib$/;"	I
+nib	plotter.py	/^import nibabel as nib$/;"	I
+nib	skeleton.py	/^import nibabel as nib$/;"	I
+nib	snr_extract.py	/^import nibabel as nib$/;"	I
+nib	snr_extract_corr.py	/^import nibabel as nib$/;"	I
+nib	tester.py	/^import nibabel as nib$/;"	I
+nib	tester_tianyi.py	/^import nibabel as nib$/;"	I
+nib	time-series.py	/^import nibabel as nib$/;"	I
+nib	vesselness_param_explorer.py	/^import nibabel as nib$/;"	I
+nib	vesselness_param_explorer_tof.py	/^import nibabel as nib$/;"	I
+nib	vmtk_vesselness_functions.py	/^import nibabel as nib$/;"	I
+nib	vmtk_vesselness_param_explorer.py	/^import nibabel as nib$/;"	I
+nil	plotter.py	/^import nilearn as nil$/;"	I
+nil	skeleton.py	/^import nilearn as nil$/;"	I
+nilimg	CustomNiPype.py	/^import nilearn.image as nilimg$/;"	I
+nio	nipype_apply_transforms.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_braincrop.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_calc_transforms.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_cbv_whbrain.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_csv_analysis.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_fft.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_initial_braincrop.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_intrasession_coregister.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_normalize_applytrans_nonUTE.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_normalize_compare.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_normalize_croppedbrain.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_normalize_semiauto_postFLIRT.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_plotter.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_post_pre_difference.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_pre_to_post_coregister.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_preproc.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_preproc_08.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_preproc_10.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_preproc_kidney.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_preproc_nofast.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_timeseries_roi.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_tissue_wmh_analysis.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_vessel_density.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_vessel_density_atlas.py	/^import nipype.interfaces.io as nio$/;"	I
+nio	nipype_wm_analysis.py	/^import nipype.interfaces.io as nio$/;"	I
+noise	snr_extract.py	/^                    noise = std$/;"	v
+noise	snr_extract_corr.py	/^                    noise = std$/;"	v
+noise_runner	plotter.py	/^def noise_runner(subject_list, scan_type):$/;"	f
+norm_wf	nipype_normalize_croppedbrain.py	/^norm_wf = eng.Workflow(name=task)$/;"	v
+normalize	nipype_normalize_croppedbrain.py	/^normalize = eng.Node(spm.Normalize12(), name='normalize')$/;"	v
+np	CustomNiPype.py	/^import numpy as np$/;"	I
+np	fft-distance_refactor.py	/^import numpy as np$/;"	I
+np	plotter.py	/^import numpy as np$/;"	I
+np	skeleton.py	/^import numpy as np$/;"	I
+np	snr_extract.py	/^import numpy as np$/;"	I
+np	snr_extract_corr.py	/^import numpy as np$/;"	I
+np	tester.py	/^import numpy as np$/;"	I
+np	tester_tianyi.py	/^import numpy as np$/;"	I
+np	time-series.py	/^import numpy as np$/;"	I
+np	vesselness_param_explorer.py	/^import numpy as np$/;"	I
+np	vesselness_param_explorer_tof.py	/^import numpy as np$/;"	I
+num_cores	nipype_controller_liam.py	/^num_cores = 4$/;"	v
+num_cores	nipype_controller_tianyi.py	/^num_cores = 12$/;"	v
+num_runs	time-series.py	/^    num_runs = len([$/;"	v
+out	snr_extract.py	/^            out = ([int(sub_num), n])$/;"	v
+out	snr_extract_corr.py	/^            out = ([int(sub_num), n])$/;"	v
+outVesselness	vmtk_vesselness_param_explorer.py	/^            outVesselness = os.path.join($/;"	v
+out_csv	CustomNiPype.py	/^    out_csv = File(exists=True, desc='concatenated csv')$/;"	v	class:CSVConcatenateOutputSpec
+out_fig	CustomNiPype.py	/^    out_fig = File(exists=True, disc='distribution plot')$/;"	v	class:PlotDistributionOutputSpec
+out_fig	CustomNiPype.py	/^    out_fig = File(exists=True, disc='timeseries plots')$/;"	v	class:CSVConcatenateOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='Adding Gaussian Noise')$/;"	v	class:LowerSNROutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='Fast Fourier Transform')$/;"	v	class:FFTOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='Resampled nii')$/;"	v	class:ResampOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='Trimmed nii')$/;"	v	class:TrimOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='calculated CBV map')$/;"	v	class:CBVmapOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='calculated CBV')$/;"	v	class:CBVwhBrainOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='file with statistical data')$/;"	v	class:ROIAnalyzeOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='file1 divided by file2')$/;"	v	class:DivOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='file2 minus file1')$/;"	v	class:DiffOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='rescale intensity in mask by average')$/;"	v	class:ImageRescaleOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, desc='the unringed file')$/;"	v	class:UnringNiiOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, disc='copied file to mimix mean from spm')$/;"	v	class:FakeRealignOutputSpec
+out_file	CustomNiPype.py	/^    out_file = File(exists=True, disc='output combined label')$/;"	v	class:CombineLabelsOutputSpec
+out_mean_csv	CustomNiPype.py	/^    out_mean_csv = File(exists=True, desc='mean csv')$/;"	v	class:CSVConcatenateOutputSpec
+out_std_csv	CustomNiPype.py	/^    out_std_csv = File(exists=True, desc='std csv')$/;"	v	class:CSVConcatenateOutputSpec
+outfile	vmtk_vesselness_param_explorer.py	/^        outfile = os.path.basename(inVesselness)$/;"	v
+outfile	vmtk_vesselness_param_explorer.py	/^        outfile = os.path.splitext(outfile)[0]$/;"	v
+outfolder	vmtk_vesselness_param_explorer.py	/^        outfolder = os.path.join(basefolder, 'manualwork',$/;"	v
+output_dir	nipype_fft.py	/^output_dir = os.path.join(working_dir, 'derivatives\/')$/;"	v
+output_dir	nipype_normalize_croppedbrain.py	/^output_dir = os.path.join(working_dir, 'derivatives\/')$/;"	v
+output_dir	nipype_preproc_kidney.py	/^output_dir = os.path.join(working_dir, 'derivatives\/')$/;"	v
+output_dir	nipype_reconall.py	/^output_dir = os.path.join(working_dir, 'derivatives\/')$/;"	v
+output_spec	CustomNiPype.py	/^    output_spec = CBVmapOutputSpec$/;"	v	class:CBVmap
+output_spec	CustomNiPype.py	/^    output_spec = CBVwhBrainOutputSpec$/;"	v	class:CBVwhBrain
+output_spec	CustomNiPype.py	/^    output_spec = CSVConcatenateOutputSpec$/;"	v	class:CSVConcatenate
+output_spec	CustomNiPype.py	/^    output_spec = CombineLabelsOutputSpec$/;"	v	class:CombineLabels
+output_spec	CustomNiPype.py	/^    output_spec = DiffOutputSpec$/;"	v	class:DiffNii
+output_spec	CustomNiPype.py	/^    output_spec = DivOutputSpec$/;"	v	class:DivNii
+output_spec	CustomNiPype.py	/^    output_spec = FFTOutputSpec$/;"	v	class:FFTNii
+output_spec	CustomNiPype.py	/^    output_spec = FakeRealignOutputSpec$/;"	v	class:FakeRealign
+output_spec	CustomNiPype.py	/^    output_spec = ImageRescaleOutputSpec$/;"	v	class:ImageRescale
+output_spec	CustomNiPype.py	/^    output_spec = LowerSNROutputSpec$/;"	v	class:LowerSNRNii
+output_spec	CustomNiPype.py	/^    output_spec = PlotDistributionOutputSpec$/;"	v	class:PlotDistribution
+output_spec	CustomNiPype.py	/^    output_spec = ROIAnalyzeOutputSpec$/;"	v	class:ROIAnalyze
+output_spec	CustomNiPype.py	/^    output_spec = ResampOutputSpec$/;"	v	class:ResampNii
+output_spec	CustomNiPype.py	/^    output_spec = TrimOutputSpec$/;"	v	class:TrimNii
+output_spec	CustomNiPype.py	/^    output_spec = UnringNiiOutputSpec$/;"	v	class:UnringNii
+parameter_test	vesselness_param_explorer.py	/^def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,$/;"	f
+parameter_test	vesselness_param_explorer_tof.py	/^def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,$/;"	f
+params_space	tester_tianyi.py	/^    params_space = [(suppressPlates, suppressBlobs, gamma, sigma_max,$/;"	v
+params_space	vmtk_vesselness_param_explorer.py	/^    params_space = [(suppressPlates, suppressBlobs)$/;"	v
+parent_path	bids_extraction.py	/^parent_path = '\/run\/media\/mri\/4e43a4f6-7402-4881-bcf5-d280e54cc385\/Analysis'$/;"	v
+pat_dir	bids_extraction.py	/^    pat_dir = os.path.join(dcm_dir, pat_folder)$/;"	v
+pat_folders	bids_extraction.py	/^pat_folders = os.listdir(dcm_dir)$/;"	v
+path	snr_extract.py	/^            path, fname, ext = split_filename(filename)$/;"	v
+path	snr_extract_corr.py	/^            path, fname, ext = split_filename(filename)$/;"	v
+pd	CustomNiPype.py	/^import pandas as pd$/;"	I
+pd	fft-distance_refactor.py	/^import pandas as pd$/;"	I
+pd	plotter.py	/^import pandas as pd$/;"	I
+pd	snr_extract.py	/^import pandas as pd$/;"	I
+pd	snr_extract_corr.py	/^import pandas as pd$/;"	I
+pd	time-series.py	/^import pandas as pd$/;"	I
+pd	vesselness_param_explorer.py	/^import pandas as pd$/;"	I
+pd	vesselness_param_explorer_tof.py	/^import pandas as pd$/;"	I
+pixdim	snr_extract.py	/^            pixdim = scan_hdr['pixdim']$/;"	v
+pixdim	snr_extract_corr.py	/^            pixdim = scan_hdr['pixdim']$/;"	v
+pixelspacing	vmtk_vesselness_param_explorer.py	/^        pixelspacing = GetPixelSpacing(inVesselness)$/;"	v
+plot_bins	CustomNiPype.py	/^    plot_bins = traits.Int(mandatory=True, desc='number of bins in histogram')$/;"	v	class:PlotDistributionInputSpec
+plot_xlim_max	CustomNiPype.py	/^    plot_xlim_max = traits.Float(mandatory=True, desc='x-axis limit max')$/;"	v	class:PlotDistributionInputSpec
+plot_xlim_min	CustomNiPype.py	/^    plot_xlim_min = traits.Float(mandatory=True, desc='x-axis limit min')$/;"	v	class:PlotDistributionInputSpec
+plots	nipype_plotter.py	/^def plots(working_dir, subject_list, scan_type):$/;"	f
+plt	CustomNiPype.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	plotter.py	/^import matplotlib.pyplot as plt$/;"	I
+post_pre_difference	nipype_post_pre_difference.py	/^def post_pre_difference(working_dir, subject_list, scan_type, scanfolder):$/;"	f
+postcon_UTE_files	nipype_normalize_croppedbrain.py	/^postcon_UTE_files = os.path.join(subdirectory, 'qutece',$/;"	v
+postcon_nonUTE_files	nipype_normalize_croppedbrain.py	/^postcon_nonUTE_files = os.path.join(subdirectory, 'r' + filestart + '*.nii')$/;"	v
+postminuspre_directory	time-series.py	/^    postminuspre_directory = os.path.join(base_path, 'datasink',$/;"	v
+postminuspre_filename	time-series.py	/^        postminuspre_filename = os.path.join($/;"	v
+postminuspre_img	time-series.py	/^        postminuspre_img = np.array(postminuspre_nii.get_fdata())$/;"	v
+postminuspre_nii	time-series.py	/^        postminuspre_nii = nib.load(postminuspre_filename)$/;"	v
+pre_to_post_coregister	nipype_pre_to_post_coregister.py	/^def pre_to_post_coregister(working_dir, subject_list):$/;"	f
+precon_T1w_brain_files	nipype_normalize_croppedbrain.py	/^precon_T1w_brain_files = os.path.join(subdirectory,$/;"	v
+precon_T1w_brain_label_files	nipype_normalize_croppedbrain.py	/^precon_T1w_brain_label_files = os.path.join($/;"	v
+precon_T1w_files	nipype_normalize_croppedbrain.py	/^precon_T1w_files = os.path.join(subdirectory, 'rr' + filestart + 'T1w.nii')$/;"	v
+precon_T1w_files	nipype_reconall.py	/^precon_T1w_files = os.path.join(subdirectory, 'sub-' + subject,$/;"	v
+precon_nonT1w_files	nipype_normalize_croppedbrain.py	/^precon_nonT1w_files = os.path.join(subdirectory,$/;"	v
+preproc	nipype_preproc.py	/^def preproc(working_dir, subject_list, session_list):$/;"	f
+preproc_08	nipype_preproc_08.py	/^def preproc_08(working_dir, subject_list, session_list):$/;"	f
+preproc_10	nipype_preproc_10.py	/^def preproc_10(working_dir, subject_list, session_list):$/;"	f
+preproc_nofast	nipype_preproc_nofast.py	/^def preproc_nofast(working_dir, subject_list, session_list):$/;"	f
+preproc_wf	nipype_preproc_kidney.py	/^preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '\/workflow')$/;"	v
+pth	fft-distance_refactor.py	/^                pth, fname, ext = split_filename(fft_filename)$/;"	v
+qutece_breathhold_files	nipype_preproc_kidney.py	/^qutece_breathhold_files = os.path.join(subdirectory, scantype,$/;"	v
+qutece_files	nipype_preproc_kidney.py	/^qutece_files = os.path.join(subdirectory, scantype, filestart + '_*UTE.nii')$/;"	v
+qutece_highres_files	nipype_preproc_kidney.py	/^qutece_highres_files = os.path.join(subdirectory, scantype,$/;"	v
+qutece_hr_postcon_files	nipype_fft.py	/^qutece_hr_postcon_files = os.path.join(subdirectory, filestart + '*hr*UTE.nii')$/;"	v
+recon_all	nipype_reconall.py	/^recon_all = create_reconall_workflow()$/;"	v
+resamp	nipype_fft.py	/^resamp = eng.MapNode(interface=cnp.ResampNii(),$/;"	v
+roi	snr_extract.py	/^                roi = (snr_ROI_img == r).astype(int)$/;"	v
+roi	snr_extract.py	/^                roi = roi.astype('float')$/;"	v
+roi	snr_extract_corr.py	/^                roi = (snr_ROI_img == r).astype(int)$/;"	v
+roi	snr_extract_corr.py	/^                roi = roi.astype('float')$/;"	v
+roi_cut	plotter.py	/^def roi_cut(scan_img, roi_img, t, r):$/;"	f
+roi_extract	plotter.py	/^def roi_extract(scan_img, roi_img, fname, seg_type, save_dir):$/;"	f
+roi_file	CustomNiPype.py	/^    roi_file = File(exists=True, mandatory=True)$/;"	v	class:ROIAnalyzeInputSpec
+run_vess	vesselness_param_explorer.py	/^def run_vess(scan_img, params):$/;"	f
+run_vess	vesselness_param_explorer_tof.py	/^def run_vess(scan_img, params):$/;"	f
+runner	vesselness_param_explorer.py	/^def runner(subject_num, scan_file_name):$/;"	f
+save_name	tester.py	/^save_name = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc_maths_flirt_Vesselness_liam.nii'$/;"	v
+save_name	tester_tianyi.py	/^save_name = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc_maths_flirt_Vesselness.nii'$/;"	v
+save_nii	tester.py	/^save_nii = nib.Nifti1Image(vesselness_img, header=scan_nii.header, affine=scan_nii.affine)$/;"	v
+save_nii	tester_tianyi.py	/^save_nii = nib.Nifti1Image(vesselness_img, header=scan_nii.header, affine=scan_nii.affine)$/;"	v
+scan_dir	tester_tianyi.py	/^    scan_dir = os.path.join(datasink_dir, 'preprocessing',$/;"	v
+scan_file	CustomNiPype.py	/^    scan_file = File(exists=True, mandatory=True)$/;"	v	class:ROIAnalyzeInputSpec
+scan_file	tester_tianyi.py	/^    scan_file = os.path.join(scan_dir, scan_file_name)$/;"	v
+scan_file_name	tester.py	/^scan_file_name = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc_maths_flirt.nii'$/;"	v
+scan_file_name	tester_tianyi.py	/^    scan_file_name = 'rsub-' + subject_num + '_ses-Postcon_hr_run-03_UTE_desc-preproc.nii'$/;"	v
+scan_filename	snr_extract.py	/^            scan_filename = os.path.join(data_dir, filename)$/;"	v
+scan_filename	snr_extract_corr.py	/^            scan_filename = os.path.join(data_dir, filename)$/;"	v
+scan_hdr	snr_extract.py	/^            scan_hdr = scan_nii.header$/;"	v
+scan_hdr	snr_extract_corr.py	/^            scan_hdr = scan_nii.header$/;"	v
+scan_img	snr_extract.py	/^            scan_img = np.array(scan_nii.get_fdata())$/;"	v
+scan_img	snr_extract_corr.py	/^            scan_img = np.array(scan_nii.get_fdata())$/;"	v
+scan_img	tester.py	/^scan_img = np.array(scan_nii.get_fdata())$/;"	v
+scan_img	tester_tianyi.py	/^    scan_img = np.array(scan_nii.get_fdata())$/;"	v
+scan_nii	snr_extract.py	/^            scan_nii = nib.load(scan_filename)$/;"	v
+scan_nii	snr_extract_corr.py	/^            scan_nii = nib.load(scan_filename)$/;"	v
+scan_nii	tester.py	/^scan_nii = nib.Nifti1Image(scan_img, scan_nii.affine, scan_nii.header)$/;"	v
+scan_nii	tester.py	/^scan_nii = nib.load(scan_file_name)$/;"	v
+scan_nii	tester_tianyi.py	/^    scan_nii = nib.Nifti1Image(scan_img, scan_nii.affine, scan_nii.header)$/;"	v
+scan_nii	tester_tianyi.py	/^    scan_nii = nib.load(scan_file)$/;"	v
+scan_type	nipype_controller_liam.py	/^scan_type = 'hr'$/;"	v
+scan_type	time-series.py	/^scan_type = 'fast'$/;"	v
+scan_type	vmtk_vesselness_param_explorer.py	/^scan_type = 'hr'$/;"	v
+scan_vals	snr_extract.py	/^            scan_vals = [fname, blood_signal, ish, snr, cnr, voxelsize, TE, TR, FA]$/;"	v
+scan_vals	snr_extract_corr.py	/^            scan_vals = [fname, signal, snr, cnr, voxelsize, TE, TR, FA]$/;"	v
+scan_vals_csv_filename	snr_extract.py	/^        scan_vals_csv_filename = os.path.join(snr_mask_dir,$/;"	v
+scan_vals_csv_filename	snr_extract_corr.py	/^        scan_vals_csv_filename = os.path.join($/;"	v
+scanfolder	nipype_normalize_croppedbrain.py	/^scanfolder = 'IntersessionCoregister_preconScans'$/;"	v
+scanfolder	nipype_normalize_croppedbrain.py	/^scanfolder = 'IntrasessionCoregister_nonT1w'  # note that this also includes T1w for some reason/;"	v
+scanfolder	nipype_normalize_croppedbrain.py	/^scanfolder = 'ManualBrainCrop'$/;"	v
+scanfolder	nipype_normalize_croppedbrain.py	/^scanfolder = 'Preprocessing'$/;"	v
+scanfolder	nipype_reconall.py	/^scanfolder = 'IntersessionCoregister_preconScans'$/;"	v
+scanfolder	vmtk_vesselness_param_explorer.py	/^        scanfolder = os.path.join(basefolder, 'datasink', 'preprocessing',$/;"	v
+scanfolder	vmtk_vesselness_param_explorer.py	/^        scanfolder = os.path.join(basefolder, 'datasink',$/;"	v
+scantype	nipype_fft.py	/^scantype = 'anat'$/;"	v
+scantype	nipype_fft.py	/^scantype = 'qutece'$/;"	v
+scantype	nipype_preproc_kidney.py	/^scantype = 'qutece'$/;"	v
+selectfiles	nipype_fft.py	/^selectfiles = eng.Node(nio.SelectFiles(templates,$/;"	v
+selectfiles	nipype_normalize_croppedbrain.py	/^selectfiles = eng.Node(nio.SelectFiles(templates,$/;"	v
+selectfiles	nipype_preproc_kidney.py	/^selectfiles = eng.Node(nio.SelectFiles(templates,$/;"	v
+sess_dcm_dir	bids_extraction.py	/^            sess_dcm_dir = os.path.join(pat_dir, f)$/;"	v
+session	nipype_fft.py	/^session = 'Postcon'$/;"	v
+session	nipype_fft.py	/^session = 'Precon'$/;"	v
+session	nipype_normalize_croppedbrain.py	/^session = 'Postcon'$/;"	v
+session	nipype_normalize_croppedbrain.py	/^session = 'Precon'$/;"	v
+session	nipype_reconall.py	/^session = 'Precon'$/;"	v
+session_list	nipype_controller_liam.py	/^session_list = ['Postcon']$/;"	v
+session_list	nipype_controller_liam.py	/^session_list = ['Precon', 'Postcon']$/;"	v
+session_list	nipype_controller_liam.py	/^session_list = ['Precon']$/;"	v
+session_list	nipype_controller_tianyi.py	/^session_list = ['Precon', 'Postcon']$/;"	v
+session_list	nipype_preproc_kidney.py	/^session_list = ['Post']$/;"	v
+session_summary	plotter.py	/^def session_summary(in_folder, sub_num, session, scan_type, seg_type):$/;"	f
+session_summary_vesselness	plotter.py	/^def session_summary_vesselness(in_folder, sub_num, session, scan_type,$/;"	f
+session_type	bids_extraction.py	/^            session_type = f$/;"	v
+sigma_max	tester_tianyi.py	/^        suppressPlates, suppressBlobs, gamma, sigma_max, sigma_step = params$/;"	v
+sigma_max_list	tester_tianyi.py	/^    sigma_max_list = [3]$/;"	v
+sigma_step	tester_tianyi.py	/^        suppressPlates, suppressBlobs, gamma, sigma_max, sigma_step = params$/;"	v
+sigma_step_list	tester_tianyi.py	/^    sigma_step_list = [0.4]$/;"	v
+sigmamax	vmtk_vesselness_param_explorer.py	/^            sigmamax = pixelspacing * voxelmax$/;"	v
+sigmamax	vmtk_vesselness_param_explorer.py	/^        sigmamax = pixelspacing * voxelmax$/;"	v
+sigmamin	vmtk_vesselness_param_explorer.py	/^        sigmamin = pixelspacing * voxelmin$/;"	v
+sigmasteps	vmtk_vesselness_param_explorer.py	/^        sigmasteps = 5  # default = 5 in vmtkSlicerExtension$/;"	v
+signal	snr_extract_corr.py	/^                    signal = ave$/;"	v
+skeles	skeleton.py	/^def skeles(in_folder, sub_num, session, scan_type):$/;"	f
+skeleton	vesselness_param_explorer.py	/^def skeleton(img, threshold):$/;"	f
+skeletonize_nii	skeleton.py	/^def skeletonize_nii(scan_nii, threshold):$/;"	f
+snr	snr_extract.py	/^            snr = blood_signal \/ noise$/;"	v
+snr	snr_extract_corr.py	/^            snr = signal \/ noise$/;"	v
+snr_ROI_img	snr_extract.py	/^            snr_ROI_img = np.array(snr_ROI_nii.get_fdata())$/;"	v
+snr_ROI_img	snr_extract_corr.py	/^            snr_ROI_img = np.array(snr_ROI_nii.get_fdata())$/;"	v
+snr_ROI_nii	snr_extract.py	/^            snr_ROI_nii = nib.load(snr_filename)$/;"	v
+snr_ROI_nii	snr_extract_corr.py	/^            snr_ROI_nii = nib.load(snr_filename)$/;"	v
+snr_compare	plotter.py	/^def snr_compare():$/;"	f
+snr_filename	snr_extract.py	/^            snr_filename = os.path.join(snr_mask_dir, snr_fname)$/;"	v
+snr_filename	snr_extract_corr.py	/^            snr_filename = os.path.join(snr_mask_dir, snr_fname)$/;"	v
+snr_fname	snr_extract.py	/^            snr_fname = 'SNR_' + fname + '_Segmentation-label.nii'$/;"	v
+snr_fname	snr_extract_corr.py	/^            snr_fname = 'SNR_' + fname + '_Segmentation-label.nii'$/;"	v
+snr_full_summary	plotter.py	/^def snr_full_summary(datasink_dir, subject_list, scan_type):$/;"	f
+snr_mask_dir	snr_extract.py	/^    snr_mask_dir = os.path.join(base_path, 'derivatives', 'manual-work', 'snr',$/;"	v
+snr_mask_dir	snr_extract_corr.py	/^    snr_mask_dir = os.path.join(base_path, 'derivatives', 'manual-work', 'snr',$/;"	v
+snr_runner	plotter.py	/^def snr_runner(subject_list, scan_type):$/;"	f
+snr_session	plotter.py	/^def snr_session(sub_num, session, scan_type):$/;"	f
+snr_subject_summary	plotter.py	/^def snr_subject_summary(sub_num, scan_type):$/;"	f
+snr_tissue	snr_extract.py	/^            snr_tissue = tissue \/ noise$/;"	v
+snr_tissue	snr_extract_corr.py	/^            snr_tissue = tissue \/ noise$/;"	v
+sns	CustomNiPype.py	/^import seaborn as sns$/;"	I
+sns	plotter.py	/^import seaborn as sns$/;"	I
+spm	nipype_apply_transforms.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_csv_analysis.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_fft.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_intrasession_coregister.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_normalize_compare.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_normalize_croppedbrain.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_pre_to_post_coregister.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_preproc.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_preproc_08.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_preproc_10.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_preproc_nofast.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_tissue_wmh_analysis.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_vessel_density.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_vessel_density_atlas.py	/^import nipype.interfaces.spm as spm$/;"	I
+spm	nipype_wm_analysis.py	/^import nipype.interfaces.spm as spm$/;"	I
+st	time-series.py	/^            st = 'fast-task-rest'$/;"	v
+start_time	fft-distance_refactor.py	/^start_time = time.time()$/;"	v
+std	CustomNiPype.py	/^    std = traits.Float(mandatory=True, desc='std of noise to add')$/;"	v	class:LowerSNRInputSpec
+std	snr_extract.py	/^                std = np.nanstd(vals)$/;"	v
+std	snr_extract_corr.py	/^                std = np.nanstd(vals)$/;"	v
+str_run_num	time-series.py	/^            str_run_num = '0' + str(run_num)$/;"	v
+sub_means	vmtk_vesselness_param_explorer.py	/^        sub_means = tof_sub_means$/;"	v
+sub_means	vmtk_vesselness_param_explorer.py	/^        sub_means = ute_sub_means$/;"	v
+sub_runner	vesselness_param_explorer.py	/^def sub_runner(subject_num):$/;"	f
+sub_vals	snr_extract.py	/^    sub_vals = [[$/;"	v
+sub_vals	snr_extract_corr.py	/^    sub_vals = [['Scan Name', 'Blood Intensity', 'SNR', 'CNR', 'Voxel Size', 'TE', 'TR', 'FA']]$/;"	v
+subdirectory	nipype_fft.py	/^subdirectory = os.path.join(working_dir, 'sub-{subject_id}', 'ses-' + session,$/;"	v
+subdirectory	nipype_normalize_croppedbrain.py	/^subdirectory = os.path.join(temp_dir, scanfolder)$/;"	v
+subdirectory	nipype_normalize_croppedbrain.py	/^subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')$/;"	v
+subdirectory	nipype_normalize_croppedbrain.py	/^subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',$/;"	v
+subdirectory	nipype_preproc_kidney.py	/^subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')$/;"	v
+subdirectory	nipype_reconall.py	/^subdirectory = os.path.join(temp_dir, scanfolder)$/;"	v
+subjFolders	nipype_normalize_croppedbrain.py	/^subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub)) for sub in subject_list]$/;"	v
+subjFolders	nipype_preproc_kidney.py	/^subjFolders = [('ses-%ssub-%s' % (ses, sub),$/;"	v
+subject	nipype_reconall.py	/^subject = '11'$/;"	v
+subject_list	fft-distance_refactor.py	/^subject_list = ['02', '03', '05', '04', '06', '07', '08', '10', '11']$/;"	v
+subject_list	nipype_controller_liam.py	/^subject_list = [$/;"	v
+subject_list	nipype_controller_liam.py	/^subject_list = ['05', '07', '09']$/;"	v
+subject_list	nipype_controller_tianyi.py	/^subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12','13', '14', '15/;"	v
+subject_list	nipype_fft.py	/^subject_list = ['02', '03', '05', '04', '06', '08', '09', '10', '11']$/;"	v
+subject_list	nipype_normalize_croppedbrain.py	/^subject_list = ['02', '03', '05', '06', '08', '10', '11']$/;"	v
+subject_list	nipype_normalize_croppedbrain.py	/^subject_list = ['02', '03', '05', '06', '10']$/;"	v
+subject_list	nipype_preproc_kidney.py	/^subject_list = ['3', '4', '5', '6', '8']$/;"	v
+subject_list	snr_extract.py	/^subject_list = ['3', '4', '5', '6']$/;"	v
+subject_list	snr_extract_corr.py	/^subject_list = ['3', '4', '5', '6']$/;"	v
+subject_list	tester_tianyi.py	/^subject_list = ['02']$/;"	v
+subject_list	time-series.py	/^subject_list = ['02', '03', '04', '06', '09', '10', '11']$/;"	v
+subject_list	time-series.py	/^subject_list = ['02', '03', '05', '06', '08', '10', '11']$/;"	v
+subject_list	time-series.py	/^subject_list = ['08']$/;"	v
+subject_list	vmtk_vesselness_param_explorer.py	/^subject_list = [$/;"	v
+subject_num	bids_extraction.py	/^            subject_num = pat_folder[2:4]  # extract subject number$/;"	v
+subject_summary	plotter.py	/^def subject_summary(sub_num, scan_type, seg_type):$/;"	f
+subjects_plot	plotter.py	/^def subjects_plot(filt_df, save_dir, seg_type, y_axis):$/;"	f
+subjects_plot_compare	plotter.py	/^def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):$/;"	f
+substitutions	nipype_fft.py	/^substitutions = [('_subject_id_', 'sub-')]$/;"	v
+substitutions	nipype_normalize_croppedbrain.py	/^substitutions = [('_subject_id_', 'sub-')]$/;"	v
+substitutions	nipype_preproc_kidney.py	/^substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]$/;"	v
+suppressBlobs	tester.py	/^suppressBlobs = 50$/;"	v
+suppressBlobs	tester_tianyi.py	/^        suppressPlates, suppressBlobs, gamma, sigma_max, sigma_step = params$/;"	v
+suppressBlobs	vmtk_vesselness_param_explorer.py	/^            suppressPlates, suppressBlobs = params$/;"	v
+suppressBlobs	vmtk_vesselness_param_explorer.py	/^    suppressBlobs = 40$/;"	v
+suppressBlobs_list	tester_tianyi.py	/^    suppressBlobs_list = [40]$/;"	v
+suppressBlobs_list	vmtk_vesselness_param_explorer.py	/^    suppressBlobs_list = [40]$/;"	v
+suppressPlates	tester.py	/^suppressPlates = 10$/;"	v
+suppressPlates	tester_tianyi.py	/^        suppressPlates, suppressBlobs, gamma, sigma_max, sigma_step = params$/;"	v
+suppressPlates	vmtk_vesselness_param_explorer.py	/^            suppressPlates, suppressBlobs = params$/;"	v
+suppressPlates	vmtk_vesselness_param_explorer.py	/^    suppressPlates = 25$/;"	v
+suppressPlates_list	tester_tianyi.py	/^    suppressPlates_list = [25]$/;"	v
+suppressPlates_list	vmtk_vesselness_param_explorer.py	/^    suppressPlates_list = [25]$/;"	v
+task	nipype_fft.py	/^task = 'FFT'$/;"	v
+task	nipype_normalize_croppedbrain.py	/^task = 'SpatialNormalization'$/;"	v
+task	nipype_preproc_kidney.py	/^task = 'preprocessing'$/;"	v
+temp_dir	nipype_fft.py	/^temp_dir = os.path.join(output_dir, 'datasink\/')$/;"	v
+temp_dir	nipype_normalize_croppedbrain.py	/^temp_dir = os.path.join(output_dir, 'datasink\/')$/;"	v
+temp_dir	nipype_preproc_kidney.py	/^temp_dir = os.path.join(output_dir, 'datasink\/')$/;"	v
+temp_dir	nipype_reconall.py	/^temp_dir = os.path.join(output_dir, 'datasink\/')$/;"	v
+templates	nipype_fft.py	/^templates = {'qutece_postcon': qutece_hr_postcon_files, 'tof': tof_files}$/;"	v
+templates	nipype_normalize_croppedbrain.py	/^templates = {$/;"	v
+templates	nipype_preproc_kidney.py	/^templates = {'qutece': qutece_files}$/;"	v
+tissue	snr_extract.py	/^                    tissue = ave$/;"	v
+tissue	snr_extract_corr.py	/^                    tissue = ave$/;"	v
+tissue_runner	plotter.py	/^def tissue_runner(subject_list, scan_type):$/;"	f
+tissue_wmh_analysis	nipype_tissue_wmh_analysis.py	/^def tissue_wmh_analysis(working_dir, subject_list):$/;"	f
+tof_files	nipype_fft.py	/^tof_files = os.path.join(subdirectory, filestart + '*TOF*.nii')$/;"	v
+tof_runner	plotter.py	/^def tof_runner():$/;"	f
+tof_sub_means	vmtk_vesselness_param_explorer.py	/^tof_sub_means = {$/;"	v
+trim_tof	nipype_fft.py	/^trim_tof = eng.MapNode(interface=cnp.TrimNii(), name='trim_tof',$/;"	v
+trim_ute	nipype_fft.py	/^trim_ute = eng.MapNode(interface=cnp.TrimNii(), name='trim_ute',$/;"	v
+trim_width	CustomNiPype.py	/^    trim_width = traits.Int(default_value=2,$/;"	v	class:TrimInputSpec
+upper_dir	nipype_controller_liam.py	/^upper_dir = os.path.realpath('..\/..')$/;"	v
+upper_dir	nipype_controller_tianyi.py	/^upper_dir = os.path.realpath('..\/..')$/;"	v
+upper_dir	nipype_preproc_kidney.py	/^upper_dir = os.path.realpath('..\/..')$/;"	v
+upper_dir	time-series.py	/^upper_dir = os.path.realpath('..\/..\/derivatives\/')$/;"	v
+upper_dir	vmtk_vesselness_param_explorer.py	/^    upper_dir = os.path.realpath('..\/..')$/;"	v
+ute_sub_means	vesselness_param_explorer.py	/^ute_sub_means = {$/;"	v
+ute_sub_means	vmtk_vesselness_param_explorer.py	/^ute_sub_means = {$/;"	v
+utl	nipype_apply_transforms.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_braincrop.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_calc_transforms.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_cbv_whbrain.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_csv_analysis.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_fft.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_initial_braincrop.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_intrasession_coregister.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_normalize_applytrans_nonUTE.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_normalize_compare.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_normalize_croppedbrain.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_normalize_semiauto_postFLIRT.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_plotter.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_post_pre_difference.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_pre_to_post_coregister.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_preproc.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_preproc_08.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_preproc_10.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_preproc_kidney.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_preproc_nofast.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_timeseries_roi.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_tissue_wmh_analysis.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_vessel_density.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_vessel_density_atlas.py	/^import nipype.interfaces.utility as utl$/;"	I
+utl	nipype_wm_analysis.py	/^import nipype.interfaces.utility as utl$/;"	I
+vals	snr_extract.py	/^                vals = np.reshape(crop_img, -1)$/;"	v
+vals	snr_extract_corr.py	/^                vals = np.reshape(crop_img, -1)$/;"	v
+vess_roi_extract	vesselness_param_explorer.py	/^def vess_roi_extract(scan_img, roi_img):$/;"	f
+vess_roi_extract	vesselness_param_explorer_tof.py	/^def vess_roi_extract(scan_img, roi_img):$/;"	f
+vessel_density	nipype_vessel_density.py	/^def vessel_density(working_dir, subject_list):$/;"	f
+vessel_density_atlas	nipype_vessel_density_atlas.py	/^def vessel_density_atlas(working_dir, subject_list):$/;"	f
+vesselness_img	tester.py	/^vesselness_img = frangi(scan_img,$/;"	v
+vesselness_img	tester_tianyi.py	/^        vesselness_img = frangi(scan_img,$/;"	v
+vesselness_runner	plotter.py	/^def vesselness_runner(subject_list, scan_type):$/;"	f
+vmtk_vesselness	vmtk_vesselness_functions.py	/^def vmtk_vesselness(image_file_name,$/;"	f
+voxelmax	vmtk_vesselness_param_explorer.py	/^        voxelmax = 3  # default = 5$/;"	v
+voxelmax_list	vmtk_vesselness_param_explorer.py	/^    voxelmax_list = [3]$/;"	v
+voxelmin	vmtk_vesselness_param_explorer.py	/^        voxelmin = 1$/;"	v
+voxelsize	snr_extract.py	/^            voxelsize = pixdim[1] * pixdim[2] * pixdim[3]$/;"	v
+voxelsize	snr_extract_corr.py	/^            voxelsize = pixdim[1] * pixdim[2] * pixdim[3]$/;"	v
+wm_analysis	nipype_wm_analysis.py	/^def wm_analysis(working_dir, subject_list):$/;"	f
+workflow_list	nipype_controller_liam.py	/^workflow_list = []$/;"	v
+workflow_list	nipype_controller_tianyi.py	/^workflow_list = []$/;"	v
+workflow_list_2	nipype_controller_liam.py	/^workflow_list_2 = []$/;"	v
+workflow_list_2	nipype_controller_tianyi.py	/^workflow_list_2 = []$/;"	v
+workflow_runner	CustomNiPype.py	/^def workflow_runner(workflow, num_cores):$/;"	f
+working_dir	nipype_controller_liam.py	/^working_dir = os.path.abspath(upper_dir)$/;"	v
+working_dir	nipype_controller_tianyi.py	/^working_dir = os.path.abspath(upper_dir)$/;"	v
+working_dir	nipype_fft.py	/^working_dir = os.path.abspath('..\/..')$/;"	v
+working_dir	nipype_normalize_croppedbrain.py	/^working_dir = os.path.abspath('\/mnt\/hgfs\/VMshare\/WorkingBIDS\/')$/;"	v
+working_dir	nipype_preproc_kidney.py	/^working_dir = os.path.abspath(upper_dir)$/;"	v
+working_dir	nipype_reconall.py	/^working_dir = os.path.abspath('\/mnt\/hgfs\/VMshare\/WorkingBIDS\/')$/;"	v
