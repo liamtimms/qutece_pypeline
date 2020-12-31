@@ -12,7 +12,7 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
-def post_pre_difference(working_dir, subject_list, session_list, scan_type, scanfolder):
+def post_pre_difference(working_dir, subject_list, scan_type, scanfolder):
 
     # -----------------Inputs--------------------------------
     # Define subject list, session list and relevent file types
@@ -23,7 +23,8 @@ def post_pre_difference(working_dir, subject_list, session_list, scan_type, scan
 
     session = 'Precon'
     filestart = '*sub-{subject_id}_ses-' + session + '_'
-    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}')
+    subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
+                                'ses-' + session)
     precon_UTE_files = os.path.join(
         subdirectory, filestart + '*' + scan_type + '*UTE*.nii')
 
@@ -31,10 +32,9 @@ def post_pre_difference(working_dir, subject_list, session_list, scan_type, scan
     session = 'Postcon'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
                                 'ses-' + session)
-    filestart = 'sub-{subject_id}_ses-' + session + '_'
+    filestart = '*sub-{subject_id}_ses-' + session + '_'
     postcon_UTE_files = os.path.join(
-        subdirectory, 'qutece',
-        'r' + filestart + '*' + scan_type + '*UTE*.nii')
+        subdirectory, filestart + '*' + scan_type + '*UTE*.nii')
 
     templates = {
         'qutece_pre': precon_UTE_files,

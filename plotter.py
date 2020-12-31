@@ -10,7 +10,7 @@ import nibabel as nib
 import nilearn as nil
 from nipype.utils.filemanip import split_filename
 
-sns.set_theme()
+# sns.set_theme()
 
 base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
@@ -38,7 +38,7 @@ def roi_cut(scan_img, roi_img, t, r):
     if t == 'equal':
         roi = (roi_img == r).astype(int)
     elif t == 'greater':
-        roi = (roi_img > r).astype(int)
+        roi = (roi_img >= r).astype(int)
     else:
         print('need valid roi cut type')
 
@@ -357,6 +357,11 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                 roi_dir, 'TOF',
                 'rrrsub-' + sub_num + '_ses-Precon_TOF_angio_corrected' +
                 '_noise-Segmentation-label.nii')
+        if scan_type == 'T1w':
+            ROI_file_name = os.path.join(
+                roi_dir, 'T1w',
+                'rsub-' + sub_num + '_ses-Postcon_T1w_corrected' +
+                '_noise-Segmentation-label.nii')
 
     elif seg_type == 'tissue':
         ROI_file_name = os.path.join(
@@ -468,6 +473,9 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
     if not os.path.exists(data_dir):
         data_dir = os.path.join(datasink_dir, in_folder,
                                 'sub-{}'.format(sub_num))
+
+    print('data dir is :')
+    print(data_dir)
     # load brain mask
     roi_dir = os.path.join(manualwork_dir, 'segmentations', 'brain_dil')
     ROI_file_name = os.path.join(
@@ -508,10 +516,10 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         end_str = '_sb=25_sp=10'
 
         # load vesselness for scan
-        if session == 'Postcon' or scan_type == 'TOF':
+        if (session == 'Postcon' and scan_type == 'hr') or scan_type == 'TOF':
             vessel_fname = fname + '_AutoVess_g=*' + end_str + '.nii'
 
-        elif session == 'Precon' and scan_type == 'hr':
+        elif (session == 'Precon' and scan_type == 'hr') or scan_type == 'T1w':
             vessel_fname = ('rsub-' + sub_num +
                             '_ses-Postcon_hr_run-01_UTE_desc-preproc' +
                             '_AutoVess_g=*' + end_str + '.nii')
@@ -520,6 +528,7 @@ def session_summary_vesselness(in_folder, sub_num, session, scan_type,
         vessel_file_name = glob.glob(vessel_file_name_pattern)
         print(fname)
         print('possible vesselness:')
+        print(vessel_file_name_pattern)
         print(vessel_file_name)
         vessel_file_name = vessel_file_name[0]
         vessel_nii = nib.load(vessel_file_name)
@@ -669,7 +678,11 @@ def subject_summary(sub_num, scan_type, seg_type):
     postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
                                        scan_type)
     postcon_df = pd.concat(postcon_df_list)
-    print(postcon_df_list)
+    # print(postcon_df_list)
+    # if len(postcon_df_list) > 1:
+    #     postcon_df = pd.concat(postcon_df_list)
+    # else:
+    #     postcon_df = postcon_df_list[0]
 
     save_dir = os.path.join(datasink_dir, plots_dir, 'sub-{}'.format(sub_num))
     if not os.path.exists(save_dir):
@@ -915,9 +928,8 @@ def calc_cnr(signal_df, tissue_df, noise_df):
     signal_filt_df = signal_df.filter(
         items=['mean', 'std', 'session', 'file']).filter(regex='^1',
                                                          axis=0).reset_index()
-    tissue_filt_df = tissue_df.filter(
-        items=['mean', 'std', 'file']).filter(regex='^1',
-                                                         axis=0).reset_index()
+    tissue_filt_df = tissue_df.filter(items=['mean', 'std', 'file']).filter(
+        regex='^1', axis=0).reset_index()
     # Rename columns
     signal_filt_df.rename(columns={
         'mean': 'signal_mean',
@@ -1060,7 +1072,8 @@ def snr_compare():
     print(filt_df.head())
     print(filt_df.tail())
 
-    subjects = set(list(ute_df['sub_num'])).intersection(list(tof_df['sub_num']))
+    subjects = set(list(ute_df['sub_num'])).intersection(
+        list(tof_df['sub_num']))
     print(subjects)
 
     filt_df = filt_df[filt_df['sub_num'].isin(subjects)]
@@ -1125,7 +1138,7 @@ def base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre):
 
 
 def snr_runner(subject_list, scan_type):
-    scan_type = 'hr'
+    # scan_type = 'hr'
     for sub_num in subject_list:
         session = 'Precon'
         snr_session(sub_num, session, scan_type)
@@ -1148,14 +1161,23 @@ def atlas_runner(subject_list, scan_type):
 
 def noise_runner(subject_list, scan_type):
     seg_type = 'noise'
-    folder_post = 'preprocessing'
+
+    if scan_type == 'hr':
+        folder_post = 'preprocessing'
+    elif scan_type == 'T1w':
+        folder_post = 'intrasession_coregister'
+
     folder_pre = 'pre_to_post_coregister'
     base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
 
 def tissue_runner(subject_list, scan_type):
     seg_type = 'tissue'
-    folder_post = 'preprocessing'
+    if scan_type == 'hr':
+        folder_post = 'preprocessing'
+    elif scan_type == 'T1w':
+        folder_post = 'intrasession_coregister'
+
     folder_pre = 'pre_to_post_coregister'
     base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
@@ -1171,7 +1193,11 @@ def vesselness_runner(subject_list, scan_type):
     seg_type = 'vesselness'
     for sub_num in subject_list:
         session = 'Postcon'
-        in_folder = 'preprocessing'
+        if scan_type == 'hr':
+            in_folder = 'preprocessing'
+        elif scan_type == 'T1w':
+            in_folder = 'intrasession_coregister'
+
         session_summary_vesselness(in_folder, sub_num, session, scan_type,
                                    seg_type)
 
@@ -1215,6 +1241,23 @@ def tof_runner():
     plt.close('all')
 
 
+# def load_meta_data(df):
+#     for filename in df['file']:
+#
+#       json_dir=os.path.join(base_path, 'sub-'+sub_num,'ses-Postcon','qutece')
+#
+#         jsonfilename = os.path.join(json_dir, fname + '.json')
+#
+#         'rrrsub-02_ses-Precon_hr_run-01_UTE_desc-preproc'
+#         'rsub-02_ses-Postcon_hr_run-01_UTE_desc-preproc'
+#
+#         with open(jsonfilename) as json_file:
+#             j_obj = json.load(json_file)
+#             FA = j_obj['FlipAngle']
+#
+#     return summary_df
+
+
 def main():
 
     subject_list = [
@@ -1223,15 +1266,17 @@ def main():
     ]
     # subject_list = ['10', '11', '12', '13', '14', '15']
     # subject_list = ['02', '03', '04', '05', '06', '07', '08']
-    scan_type = 'hr'
-    # subject_list = ['15']
+    subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11']
+    # scan_type = 'hr'
+    # subject_list = ['11']
+    scan_type = 'T1w'
     # vesselness_runner(subject_list, scan_type)
     # tissue_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
     # tof_runner()
     # brain_runner(subject_list, scan_type)
-    # snr_runner(subject_list, scan_type)
-    snr_compare()
+    snr_runner(subject_list, scan_type)
+    # snr_compare()
     # atlas_runner(subject_list, scan_type)
     # compare()
     return

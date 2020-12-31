@@ -14,7 +14,7 @@ def SetBeta(suppressBlobs):
 
 
 def SetGamma(mean):
-    return mean * .5
+    return mean * .25
 
 
 def GetPixelSpacing(nii_filename):
@@ -26,10 +26,10 @@ def GetPixelSpacing(nii_filename):
 
 # ----------------------- Input ------------------------------------------
 subject_list = [
-    '02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15'
+    '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15'
 ]
 # subject_list = ['05', '07']
-subject_list = ['10']
+# subject_list = ['10']
 
 ute_sub_means = {
     '02': 177,
@@ -66,8 +66,8 @@ TOF_subjects = [
 ]
 
 scan_type = 'hr'
-scan_type = 'TOF'
-subject_list = TOF_subjects
+# scan_type = 'TOF'
+# subject_list = TOF_subjects
 
 for subject_num in subject_list:
 
@@ -81,7 +81,7 @@ for subject_num in subject_list:
         infile = '*sub-' + subject_num + '_ses-Postcon_hr_run-*-preproc'
 
         outfolder = os.path.join(basefolder, 'manualwork',
-                                 'vesselness_filtered_2', 'sub-' + subject_num)
+                                 'vesselness_filtered_3', 'sub-' + subject_num)
         sub_means = ute_sub_means
     elif scan_type == 'TOF':
         scanfolder = os.path.join(basefolder, 'datasink',
@@ -90,7 +90,7 @@ for subject_num in subject_list:
         infile = '*sub-' + subject_num + '_ses-Precon_TOF*angio_corrected'
 
         outfolder = os.path.join(basefolder, 'manualwork',
-                                 'vesselness_filtered_2', 'sub-' + subject_num)
+                                 'vesselness_filtered_3', 'sub-' + subject_num)
         sub_means = tof_sub_means
 
     print(outfolder)
@@ -107,7 +107,7 @@ for subject_num in subject_list:
     print(inVesselness_list)
 
     suppressPlates = 25
-    suppressBlobs = 25
+    suppressBlobs = 40
     alpha = SetAlpha(suppressPlates)
     beta = SetBeta(suppressBlobs)
 
@@ -117,8 +117,9 @@ for subject_num in subject_list:
     print(gamma)
 
     # --------------------- Param Space --------------------------------------
-    suppressBlobs_list = [25]
-    suppressPlates_list = [10, 25]
+    suppressPlates_list = [25]
+    suppressBlobs_list = [40]
+    voxelmax_list = [3]
     # gamma_list = [50, 100]
     # params_space = [(vmax, g) for vmax in voxelmax_list for g in gamma_list]
     # params_space =[(suppressBlobs, g) for suppressBlobs in suppressBlobs_list
@@ -131,7 +132,7 @@ for subject_num in subject_list:
         print(inVesselness)
         pixelspacing = GetPixelSpacing(inVesselness)
         voxelmin = 1
-        voxelmax = 5
+        voxelmax = 3  # default = 5
         sigmamin = pixelspacing * voxelmin
         sigmamax = pixelspacing * voxelmax
         sigmasteps = 5  # default = 5 in vmtkSlicerExtension
@@ -145,19 +146,18 @@ for subject_num in subject_list:
             alpha = SetAlpha(suppressPlates)
             beta = SetBeta(suppressBlobs)
             outVesselness = os.path.join(
-                outfolder,
-                outfile + '_AutoVess' + '_g=' + str(gamma) + '_sb=' +
-                str(suppressBlobs) + '_sp=' + str(suppressPlates) + '.nii')
+                outfolder, outfile + '_AutoVess' + '_g=' + str(round(gamma)) +
+                '_sb=' + str(suppressBlobs) + '_sp=' + str(suppressPlates) +
+                '_sig=' + str(voxelmax) + '_ss=' + str(sigmasteps) + '.nii')
             print(outVesselness)
 
             cmdVesselness = (
                 'vmtkimagecast -type float -ifile {} ' +
                 '--pipe vmtkimagevesselenhancement -ofile {} ' +
                 '-method frangi -sigmamin {} -sigmamax {} -sigmasteps {} ' +
-                '-alpha {} -beta {} -gamma {}').format(inVesselness,
-                                                       outVesselness, sigmamin,
-                                                       sigmamax, sigmasteps,
-                                                       alpha, beta, gamma)
+                '-alpha {} -beta {} -gamma {} -iterations 10').format(
+                    inVesselness, outVesselness, sigmamin, sigmamax,
+                    sigmasteps, alpha, beta, gamma)
 
             pypes.PypeRun(cmdVesselness)
 

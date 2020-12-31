@@ -14,6 +14,8 @@ from nipype_post_pre_difference import post_pre_difference
 from nipype_apply_transforms import apply_linear_trans
 from nipype_apply_transforms import apply_nonlinear_trans
 from nipype_tissue_wmh_analysis import tissue_wmh_analysis
+from nipype_wm_analysis import wm_analysis
+from nipype_vessel_density import vessel_density
 # from nipype_normalize_semiauto_postFLIRT import fnirt_and_fast
 # from nipype_normalize_applytrans_nonUTE import ApplyTransAnat_workflow
 # from nipype_timeseries_roi import TimeSeries_ROI_workflow
@@ -127,10 +129,13 @@ workflow_list_2 = []
 # #   and final vesselness segmentation should be organized in to_use folder
 # ----------------------------------------------------------------------------
 #
-subject_list = ['02', '03', '04', '06', '08', '10', '11', '12','13', '14', '15']
-tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
-workflow_list_2.append(tissue_wf)
+# subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11', '12','13', '14', '15']
+# tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
+# workflow_list_2.append(tissue_wf)
 
+# subject_list = ['02', '06','11']
+# wm_wf = wm_analysis(working_dir, subject_list)
+# workflow_list_2.append(wm_wf)
 # scan_type = 'fast'
 # apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list, scan_type)
 # workflow_list_2.append(apply_transforms_fast_wf)
@@ -153,14 +158,21 @@ workflow_list_2.append(tissue_wf)
 #
 # scan_type = 'hr'
 # CBV_WholeBrain_workflow(working_dir, subject_list, num_cores, scan_type)
+
+# subject_list = ['02', '03', '04', '05', '06', '07', '08', '11', '12','13', '14', '15']
+# density_wf = vessel_density(working_dir, subject_list)
+# workflow_list_2.append(density_wf)
+
+subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12','13', '14', '15']
+diff_wf = post_pre_difference(working_dir, subject_list, scan_type='hr', scanfolder='nonlinear_transfomed_hr')
+workflow_list_2.append(diff_wf)
+
+# num_cores = 1
 #
-
-num_cores = 1
-
-for workflow in workflow_list:
-    cnp.workflow_runner(workflow, num_cores)
-
-num_cores = 1
+# for workflow in workflow_list:
+#     cnp.workflow_runner(workflow, num_cores)
+#
+num_cores = 12
 
 for workflow in workflow_list_2:
     cnp.workflow_runner(workflow, num_cores)

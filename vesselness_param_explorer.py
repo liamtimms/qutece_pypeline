@@ -7,6 +7,7 @@ from plotter import roi_cut
 from skimage.filters import frangi
 from skimage.morphology import skeletonize_3d, label
 from nipype.utils.filemanip import split_filename
+from multiprocessing import Pool
 
 base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
@@ -71,7 +72,7 @@ def skeleton(img, threshold):
     label_img = label(skele_img, connectivity=3)
     # REMOVE SMALL ISLANDS
     (unique, counts) = np.unique(label_img, return_counts=True)
-    mask_sizes = counts > 500
+    mask_sizes = counts > 100
     mask_sizes[0] = 0
     unique_masked = mask_sizes * unique
     unique_masked = unique_masked[unique_masked != 0]
@@ -186,6 +187,8 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
                 summary_df = vess_roi_extract(cropped_img, vessel_roi_img)
                 df = summary_df.T
 
+                __, unique_skele, __  = skeleton(vessel_roi_img, 2)
+
                 df['gamma'] = gamma
                 df['suppressBlobs'] = suppressBlobs
                 df['suppressPlates'] = suppressPlates
@@ -194,8 +197,12 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
 
                 df['d'] = df['count'] / N_brain
                 df['Quality'] = df['mean'] * df['d']
+                df['skele_island'] = len(unique_skele)
+
                 df_list.append(df)
                 print('FINISHED')
+
+
                 break
 
             except np.linalg.LinAlgError:
@@ -225,12 +232,12 @@ def runner(subject_num, scan_file_name):
     scan_nii = nib.Nifti1Image(scan_img, scan_nii.affine, scan_nii.header)
     mean = ute_sub_means[subject_num]
 
-    suppressBlobs_list = [10]
-    suppressPlates_list = [10]
-    gamma_list = [p * mean for p in [0.10]]
+    suppressBlobs_list = [10, 15, 20, 25, 50]
+    suppressPlates_list = [10, 15, 20, 25, 50]
+    gamma_list = [p * mean for p in [0.05, 0.10, 0.20, 0.30]]
 
-    sigma_max_list = [3]
-    sigma_step_list = [1]
+    sigma_max_list = [2, 3, 5, 8]
+    sigma_step_list = [1, 2]
 
     # TODO: actual brain mask filename
     ROI_dir = os.path.join(manualwork_dir, 'segmentations', 'brain_mask4bias',
@@ -250,7 +257,7 @@ def runner(subject_num, scan_file_name):
         os.makedirs(save_dir)
 
     pth, fname, ext = split_filename(scan_file_name)
-    save_name = fname + '_vesselness_testing_1012.csv'
+    save_name = fname + '_vesselness_testing_1017.csv'
     print(os.path.join(save_dir, save_name))
     full_df.to_csv(os.path.join(save_dir, save_name))
 
@@ -265,27 +272,28 @@ def runner(subject_num, scan_file_name):
 
     return
 
-def all_runner(subject_list):
-    for subject_num in subject_list:
-        scanfolder = os.path.join(datasink_dir, 'preprocessing',
-                                  'sub-' + subject_num, 'ses-Postcon',
-                                  'qutece')
 
-        infile = ('rsub-' + subject_num + '_ses-Postcon_hr_run-*-preproc.nii')
-        scan_file_pattern = os.path.join(scanfolder, infile)
-        in_files = glob.glob(scan_file_pattern)
-        for scan_file_name in in_files:
-            runner(subject_num, scan_file_name)
+def sub_runner(subject_num):
+    scanfolder = os.path.join(datasink_dir, 'preprocessing',
+                              'sub-' + subject_num, 'ses-Postcon', 'qutece')
+
+    infile = ('rsub-' + subject_num + '_ses-Postcon_hr_run-*-preproc.nii')
+    scan_file_pattern = os.path.join(scanfolder, infile)
+    in_files = glob.glob(scan_file_pattern)
+    for scan_file_name in in_files:
+        runner(subject_num, scan_file_name)
     return
 
 
 def main():
-    # subject_list = [
-    #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-    #     '15'
-    # ]
-    subject_list = ['02']
-    all_runner(subject_list)
+    subject_list = [
+        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+        '15'
+    ]
+    # subject_list = ['02', '11']
+    p = Pool()
+    with Pool(13) as p:
+        p.map(sub_runner, subject_list)
 
     return
 
