@@ -9,7 +9,7 @@ import nibabel as nib
 import nilearn.image as nilimg
 from nipype.utils.filemanip import split_filename
 import matplotlib.pyplot as plt
-import matplotlib
+# import matplotlib
 import seaborn as sns
 
 
@@ -24,6 +24,20 @@ def workflow_runner(workflow, num_cores):
         workflow.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
 
     os.system("notify-send " + workflow.name + " done")
+
+
+# -------------------------------------------------------
+
+
+# -------------------WorkflowRunner--------------
+def set_common_dirs(working_dir):
+    output_dir = os.path.join(working_dir, 'derivatives/')
+    temp_dir = os.path.join(output_dir, 'datasink/')
+    workflow_dir = working_dir + '/workflow'
+    fsl_dir = '/opt/fsl/data/standard/'
+    spm_dir = '/opt/spm12/tpm/'
+
+    return output_dir, temp_dir, workflow_dir, fsl_dir, spm_dir
 
 
 # -------------------------------------------------------
@@ -343,69 +357,6 @@ class TrimNii(BaseInterface):
 # -----------------------------------------------
 
 
-# -------------- TrimNii -------------------------
-class TrimInputSpec(BaseInterfaceInputSpec):
-    in_file = File(exists=True, mandatory=True)
-    trim_width = traits.Int(default_value=2,
-                            desc='Width of image edge to be cut')
-
-
-class TrimOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Trimmed nii')
-
-
-class TrimNii(BaseInterface):
-    input_spec = TrimInputSpec
-    output_spec = TrimOutputSpec
-
-    def _run_interface(self, runtime):
-        in_file_name = self.inputs.in_file
-        in_file_nii = nib.load(in_file_name)
-        in_file_img = np.array(in_file_nii.get_fdata())
-
-        width = self.inputs.trim_width
-        x_dim, y_dim, z_dim = in_file_img.shape
-        x_range = range(width, x_dim - width)
-        y_range = range(width, y_dim - width)
-        z_range = range(width, z_dim - width)
-        trimmed_img = in_file_img[x_range, :, :]
-        trimmed_img = trimmed_img[:, y_range, :]
-        trimmed_img = trimmed_img[:, :, z_range]
-
-        trimmed_nii = nib.Nifti1Image(trimmed_img, in_file_nii.affine,
-                                      in_file_nii.header)
-
-        # Update dimension info in trimmed image header
-        x_dim_trm, y_dim_trm, z_dim_trm = trimmed_img.shape
-        dim_in_header = np.array([
-            3,
-            x_dim_trm,
-            y_dim_trm,
-            z_dim_trm,
-            1,
-            1,
-            1,
-            1,
-        ])
-        dim_in_header = dim_in_header.astype(int)
-        in_file_nii.header['dim'] = dim_in_header
-
-        pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_trimmed.nii')
-        nib.save(trimmed_nii, out_file_name)
-        setattr(self, '_out_file', out_file_name)
-        return runtime
-
-    def _list_outputs(self):
-        outputs = self._outputs().get()
-        in_file_name = self.inputs.in_file
-        pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_trimmed.nii')
-        outputs['out_file'] = os.path.abspath(out_file_name)
-        return outputs
-
-
-# -----------------------------------------------
 # -------------- ROI Anlayze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
     roi_file = File(exists=True, mandatory=True)
@@ -869,10 +820,10 @@ class FakeRealign(BaseInterface):
     def _run_interface(self, runtime):
         in_file = self.inputs.in_file
 
-        pth, fname, ext = split_filename(in_files)
+        pth, fname, ext = split_filename(in_file)
         out_file_name = os.path.join('rmean' + fname[1:] + ext)
 
-        setattr(self, '_out_fig', out_fig_name)
+        setattr(self, '_out_fig', out_file_name)
         return runtime
 
     def _list_outputs(self):

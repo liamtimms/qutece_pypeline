@@ -14,8 +14,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def pre_to_post_coregister(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     # * realigned precontrast average
     scantype = 'qutece'
@@ -97,7 +96,7 @@ def pre_to_post_coregister(working_dir, subject_list):
     # -----------------CoregistrationWorkflow----------------
     task = 'pre_to_post_coregister'
     coreg2_wf = eng.Workflow(name=task)
-    coreg2_wf.base_dir = working_dir + '/workflow'
+    coreg2_wf.base_dir = workflow_dir
 
     coreg2_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
@@ -109,8 +108,8 @@ def pre_to_post_coregister(working_dir, subject_list):
         (coreg_to_postcon, coreg_to_postcon2,
          [('coregistered_source', 'source'),
           ('coregistered_files', 'apply_to_files')]),
-        (coreg_to_postcon2, datasink, [('coregistered_files',
-                                        task + '.@con')]),
+        (coreg_to_postcon2, datasink, [('coregistered_files', task + '.@con')
+                                       ]),
     ])
     # -------------------------------------------------------
 

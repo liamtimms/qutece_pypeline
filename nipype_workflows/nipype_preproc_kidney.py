@@ -18,8 +18,7 @@ import nipype.interfaces.io as nio
 # we can navigate to the relative path
 upper_dir = os.path.realpath('../..')
 working_dir = os.path.abspath(upper_dir)
-output_dir = os.path.join(working_dir, 'derivatives/')
-temp_dir = os.path.join(output_dir, 'datasink/')
+output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
 subject_list = ['3', '4', '5', '6', '8']
 # subject_list = ['5']
@@ -107,13 +106,12 @@ subjFolders = [('ses-%ssub-%s' % (ses, sub),
                for ses in session_list for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_bias_norm.',
-                                         '')]
+datasink.inputs.regexp_substitutions = [('_bias_norm.', '')]
 # -------------------------------------------------------
 
 # -----------------PreprocWorkflow------------------------
 task = 'preprocessing'
-preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
+preproc_wf = eng.Workflow(name=task, base_dir=workflow_dir)
 #preproc_wf.connect([
 #    (infosource, selectfiles, [('subject_id', 'subject_id'),
 #                               ('session_id', 'session_id')]),
@@ -127,10 +125,11 @@ preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
 #])
 
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                         ('session_id', 'session_id')]),
-              (selectfiles, bias_norm, [('qutece', 'input_image')]),
-              (bias_norm, datasink,  [('bias_image', task+'_bias.@con')]),
-              (bias_norm, datasink,  [('output_image', task+'.@con')])])
+                                               ('session_id', 'session_id')]),
+                    (selectfiles, bias_norm, [('qutece', 'input_image')]),
+                    (bias_norm, datasink, [('bias_image', task + '_bias.@con')
+                                           ]),
+                    (bias_norm, datasink, [('output_image', task + '.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------

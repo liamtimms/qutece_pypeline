@@ -9,13 +9,12 @@ import nipype.interfaces.io as nio
 
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
+
 def plots(working_dir, subject_list, scan_type):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(working_dir)
 
-    fsl_dir = '/opt/fsl/data/standard/'
     MNI_file = os.path.join(fsl_dir, 'MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.join(fsl_dir, 'MNI152_T1_1mm_brain.nii.gz')
     MNI_mask_file = os.path.join(fsl_dir,
@@ -146,15 +145,14 @@ def plots(working_dir, subject_list, scan_type):
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [
-        ('_roi_analyze.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
 
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
     task = 'plotting'
     plotting_wf = eng.Workflow(name=task)
-    plotting_wf.base_dir = working_dir + '/workflow'
+    plotting_wf.base_dir = workflow_dir
 
     plotting_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

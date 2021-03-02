@@ -13,8 +13,7 @@ import nipype.interfaces.io as nio
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
-output_dir = os.path.join(working_dir, 'derivatives/')
-temp_dir = os.path.join(output_dir, 'datasink/')
+output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 subject_list = ['02', '03', '05', '06', '08', '10', '11']
 subject_list = ['02', '03', '05', '06', '10']
 #subject_list =['11']
@@ -130,7 +129,7 @@ datasink.inputs.substitutions = substitutions
 # -----------------NormalizationWorkflow-----------------
 task = 'SpatialNormalization'
 norm_wf = eng.Workflow(name=task)
-norm_wf.base_dir = working_dir + '/workflow'
+norm_wf.base_dir = workflow_dir
 
 norm_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')])])
 norm_wf.connect([(selectfiles, merge, [('nonUTE_postcon', 'in1'),

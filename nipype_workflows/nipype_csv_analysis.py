@@ -11,11 +11,11 @@ import nipype.interfaces.io as nio
 
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
+
 def csv_analyze(working_dir, subject_list, session_list, scan_type):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     # UTE Files, split into pre and post for easier processing
     scanfolder = 'nonlinear_transfomed_' + scan_type + '_csv'
@@ -116,7 +116,7 @@ def csv_analyze(working_dir, subject_list, session_list, scan_type):
     # -----------------NormalizationWorkflow-----------------
     task = 'nonlinear_transfomed_' + scan_type
     trans_wf = eng.Workflow(name=task)
-    trans_wf.base_dir = working_dir + '/workflow'
+    trans_wf.base_dir = workflow_dir
 
     trans_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),

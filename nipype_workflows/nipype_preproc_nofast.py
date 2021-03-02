@@ -15,8 +15,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def preproc_nofast(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
     filestart = 'sub-{subject_id}_ses-{session_id}'
 
     subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
@@ -132,7 +131,7 @@ def preproc_nofast(working_dir, subject_list, session_list):
 
     # -----------------PreprocWorkflow------------------------
     task = 'preprocessing_nofast'
-    preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
+    preproc_wf = eng.Workflow(name=task, base_dir=workflow_dir)
     preproc_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),

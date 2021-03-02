@@ -1,6 +1,7 @@
 # Linear and Nonlinear Calculation Pipeline
 # -----------------Imports-------------------------------
 import os
+import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
@@ -14,8 +15,8 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def calc_transforms(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(
+        working_dir)
 
     session = 'Precon'
     subdirectory = os.path.join(temp_dir, 'pre_to_post_coregister',
@@ -29,7 +30,6 @@ def calc_transforms(working_dir, subject_list):
                                 'brain_preFLIRT')
     brain_mask_files = os.path.join(subdirectory,
                                     'rrr' + filestart + '*_T1w*-label.nii')
-    fsl_dir = '/opt/fsl/data/standard/'
 
     MNI_file = os.path.join(fsl_dir, 'MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.join(fsl_dir, 'MNI152_T1_1mm_brain.nii.gz')
@@ -114,7 +114,7 @@ def calc_transforms(working_dir, subject_list):
     # -----------------NormalizationWorkflow-----------------
     task = 'calc_transforms'
     norm_wf = eng.Workflow(name=task)
-    norm_wf.base_dir = working_dir + '/workflow'
+    norm_wf.base_dir = workflow_dir
 
     norm_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

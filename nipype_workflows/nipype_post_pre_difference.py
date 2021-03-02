@@ -18,23 +18,21 @@ def post_pre_difference(working_dir, subject_list, scan_type, scanfolder):
     # Define subject list, session list and relevent file types
     # working_dir = os.path.abspath(
     #    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     session = 'Precon'
     filestart = '*sub-{subject_id}_ses-' + session + '_'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
                                 'ses-' + session)
-    precon_UTE_files = os.path.join(
-        subdirectory, filestart + '*' + scan_type + '*UTE*.nii')
-
+    precon_UTE_files = os.path.join(subdirectory,
+                                    filestart + '*' + scan_type + '*UTE*.nii')
 
     session = 'Postcon'
     subdirectory = os.path.join(temp_dir, scanfolder, 'sub-{subject_id}',
                                 'ses-' + session)
     filestart = '*sub-{subject_id}_ses-' + session + '_'
-    postcon_UTE_files = os.path.join(
-        subdirectory, filestart + '*' + scan_type + '*UTE*.nii')
+    postcon_UTE_files = os.path.join(subdirectory,
+                                     filestart + '*' + scan_type + '*UTE*.nii')
 
     templates = {
         'qutece_pre': precon_UTE_files,
@@ -96,7 +94,7 @@ def post_pre_difference(working_dir, subject_list, scan_type, scanfolder):
     # -----------------NormalizationWorkflow-----------------
     task = 'postminuspre_' + scan_type
     diff_wf = eng.Workflow(name=task)
-    diff_wf.base_dir = working_dir + '/workflow'
+    diff_wf.base_dir = workflow_dir
 
     diff_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

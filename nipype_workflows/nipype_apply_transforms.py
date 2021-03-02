@@ -18,10 +18,9 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def apply_linear_trans(working_dir, subject_list, scan_type):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(
+        working_dir)
 
-    fsl_dir = '/opt/fsl/data/standard/'
     MNI_file = os.path.join(fsl_dir, 'MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.join(fsl_dir, 'MNI152_T1_1mm_brain.nii.gz')
     MNI_mask_file = os.path.join(fsl_dir,
@@ -132,7 +131,7 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
     # -----------------NormalizationWorkflow-----------------
     task = 'linear_transfomed_' + scan_type
     trans_wf = eng.Workflow(name=task)
-    trans_wf.base_dir = working_dir + '/workflow'
+    trans_wf.base_dir = workflow_dir
 
     trans_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
@@ -156,10 +155,9 @@ def apply_linear_trans(working_dir, subject_list, scan_type):
 def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(
+        working_dir)
 
-    fsl_dir = '/opt/fsl/data/standard/'
     MNI_file = os.path.join(fsl_dir, 'MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.join(fsl_dir, 'MNI152_T1_1mm_brain.nii.gz')
     MNI_mask_file = os.path.join(fsl_dir,
@@ -271,8 +269,8 @@ def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
                      ('desc-preproc_maths_flirt_maths_warp_ROI-labels_',
                       'desc-processed_')]
     subjFolders = [('ses-%ssub-%s' % (ses, sub),
-                    ('sub-%s/ses-%s/') % (sub, ses))
-                   for ses in session_list for sub in subject_list]
+                    ('sub-%s/ses-%s/') % (sub, ses)) for ses in session_list
+                   for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
     datasink.inputs.regexp_substitutions = [('_apply_nonlinear.*/', ''),
@@ -282,7 +280,7 @@ def apply_nonlinear_trans(working_dir, subject_list, session_list, scan_type):
     # -----------------NormalizationWorkflow-----------------
     task = 'nonlinear_transfomed_' + scan_type
     trans_wf = eng.Workflow(name=task)
-    trans_wf.base_dir = working_dir + '/workflow'
+    trans_wf.base_dir = workflow_dir
 
     trans_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),

@@ -16,8 +16,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def vessel_density_atlas(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     # Vesselness
     filestart = 'sub-{subject_id}_ses-Postcon'
@@ -26,21 +25,17 @@ def vessel_density_atlas(working_dir, subject_list):
     vesselness_files = os.path.join(subdirectory,
                                     'r' + filestart + '*' + '.nii')
     # brain mask
-    brainmask_dir = os.path.join(
-        output_dir, 'manualwork', 'segmentations', 'brain_mask4bias', 'sub-{subject_id}')
+    brainmask_dir = os.path.join(output_dir, 'manualwork', 'segmentations',
+                                 'brain_mask4bias', 'sub-{subject_id}')
     brainmask_files = os.path.join(
-        brainmask_dir, '*' + filestart + '*T1w_hr_mask*' + 'Segmentation-label.nii')
+        brainmask_dir,
+        '*' + filestart + '*T1w_hr_mask*' + 'Segmentation-label.nii')
 
-
-    templates = {
-        'vesselness': vesselness_files,
-        'brainmask': brainmask_files
-    }
+    templates = {'vesselness': vesselness_files, 'brainmask': brainmask_files}
 
     # Infosource - a function free node to iterate over the list of subjects
-    infosource = eng.Node(
-        utl.IdentityInterface(fields=['subject_id']),
-        name="infosource")
+    infosource = eng.Node(utl.IdentityInterface(fields=['subject_id']),
+                          name="infosource")
     infosource.iterables = [('subject_id', subject_list)]
 
     # Selectfiles to provide specific scans within a subject to other functions
@@ -57,8 +52,7 @@ def vessel_density_atlas(working_dir, subject_list):
     # -------------------------------------------------------
 
     # -----------------------ThresholdImage-------------
-    threshold = eng.Node(ants.ThresholdImage(),
-                            name='threshold')
+    threshold = eng.Node(ants.ThresholdImage(), name='threshold')
     threshold.inputs.dimension = 3
     threshold.inputs.th_low = 0.05
     threshold.inputs.th_high = 1
@@ -91,15 +85,14 @@ def vessel_density_atlas(working_dir, subject_list):
 
     # -----------------PreprocWorkflow------------------------
     task = 'vessel_density'
-    density_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
-    density_wf.connect([
-        (infosource, selectfiles, [('subject_id', 'subject_id')]),
-        (selectfiles, maths, [('vesselness', 'in_file')]),
-        (maths, threshold, [('out_file', 'input_image')]),
-        (threshold, applymask, [('output_image', 'in_file')]),
-        (selectfiles, applymask, [('brainmask', 'mask_file')]),
-        (applymask, datasink, [('out_file', task + '.@con')])
-    ])
+    density_wf = eng.Workflow(name=task, base_dir=workflow_dir)
+    density_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')
+                                                   ]),
+                        (selectfiles, maths, [('vesselness', 'in_file')]),
+                        (maths, threshold, [('out_file', 'input_image')]),
+                        (threshold, applymask, [('output_image', 'in_file')]),
+                        (selectfiles, applymask, [('brainmask', 'mask_file')]),
+                        (applymask, datasink, [('out_file', task + '.@con')])])
     # -------------------------------------------------------
 
     return density_wf

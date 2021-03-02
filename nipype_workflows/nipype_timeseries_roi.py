@@ -17,8 +17,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     # -----------------Inputs--------------------------------
     # Define fast scan files (grab from flirt)
     # _rsub-02_ses-Postcon_fast-task-rest_run-01_UTE_desc-preproc_maths_flirt.nii
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     # subdirectory = os.path.join(temp_dir,
     #                            'NormalizationTransform_fast_linear',
@@ -99,7 +98,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
     rmbloodSegName = [('ROI-sub-%s_fast_blood-flirt-label' % sub, 'blood')
                       for sub in subject_list]
     rmbrainSegName = [('ROI-sub-%s_ses-Precon_T1w_corrected_masked_flirt'
-                      '_Segmentation-label' % sub, 'brain')
+                       '_Segmentation-label' % sub, 'brain')
                       for sub in subject_list]
     substitutions.extend(subjFolders + rmbloodSegName + rmbrainSegName)
     datasink.inputs.substitutions = substitutions
@@ -109,7 +108,7 @@ def TimeSeries_ROI_workflow(working_dir, subject_list, session_list, num_cores,
 
     # -----------------TimeSeriesWorkflow--------------------
     task = 'timeseries'
-    timeseries_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
+    timeseries_wf = eng.Workflow(name=task, base_dir=workflow_dir)
     timeseries_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),

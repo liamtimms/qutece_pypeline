@@ -4,7 +4,7 @@ import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
-import nipype.interfaces.spm as spm
+# import nipype.interfaces.spm as spm
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
@@ -16,8 +16,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def wm_analysis(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
     manualwork_dir = os.path.join(output_dir, 'manualwork/')
 
     # UTE precon
@@ -41,15 +40,17 @@ def wm_analysis(working_dir, subject_list):
     # normal wm segmentation
     filestart = 'sub-{subject_id}_ses-Precon'
     scanfolder = 'calc_transforms_FAST_outs'
-    subdirectory = os.path.join(manualwork_dir, 'for_segmentation_work', 'sub-{subject_id}')
-    nwm_seg_files = os.path.join(subdirectory,
-                                  'rrr' + filestart + '*normalWM*' + '-label.nii')
+    subdirectory = os.path.join(manualwork_dir, 'for_segmentation_work',
+                                'sub-{subject_id}')
+    nwm_seg_files = os.path.join(
+        subdirectory, 'rrr' + filestart + '*normalWM*' + '-label.nii')
 
     # wmh segmentation
     filestart = 'sub-{subject_id}_ses-Precon'
-    subdirectory = os.path.join(manualwork_dir, 'for_segmentation_work', 'sub-{subject_id}')
-    wmh_seg_files = os.path.join(subdirectory,
-                                 'rrr' + filestart + '*manual-WMH*' + '-label.nii')
+    subdirectory = os.path.join(manualwork_dir, 'for_segmentation_work',
+                                'sub-{subject_id}')
+    wmh_seg_files = os.path.join(
+        subdirectory, 'rrr' + filestart + '*manual-WMH*' + '-label.nii')
 
     # Vesselness
     filestart = 'sub-{subject_id}_ses-Postcon'
@@ -130,7 +131,7 @@ def wm_analysis(working_dir, subject_list):
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat = eng.Node(interface=cnp.CSVConcatenate(), name='concat')
+    # concat = eng.Node(interface=cnp.CSVConcatenate(), name='concat')
     # -------------------------------------------------------
 
     # ------------------------Output-------------------------
@@ -139,26 +140,23 @@ def wm_analysis(working_dir, subject_list):
                                      container=temp_dir),
                         name="datasink")
     # Use the following DataSink output substitutions
-    substitutions = [
-        ('_subject_id_', 'sub-'),
-        ('ses-Precon_normalWM_Segmentation-label-ADD', 'nWM'),
-        ('_manual-WMH_Segmentation-label-ADD', 'WMH'),
-        ('hr_run-01_UTE_desc-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
-         'vesselness')
-    ]
+    substitutions = [('_subject_id_', 'sub-'),
+                     ('ses-Precon_normalWM_Segmentation-label-ADD', 'nWM'),
+                     ('_manual-WMH_Segmentation-label-ADD', 'WMH'),
+                     ('hr_run-01_UTE_desc-preproc_AutoVesselness_' +
+                      'sblobs=25_splates=25_maths_resampled', 'vesselness')]
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [
-        ('_roi_analyze.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
 
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
     task = 'wm_analysis'
     wm_wf = eng.Workflow(name=task)
-    wm_wf.base_dir = working_dir + '/workflow'
+    wm_wf.base_dir = workflow_dir
 
     wm_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

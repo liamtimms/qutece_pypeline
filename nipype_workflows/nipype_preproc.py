@@ -1,4 +1,6 @@
-# Preprocessing Pipeline
+# Preprocessing Pipelines
+# These are designed to deal with the initial artefact corrections
+# and realignment of QUTE-CE scans only
 # -----------------Imports-------------------------------
 import os
 import CustomNiPype as cnp
@@ -13,16 +15,27 @@ import nipype.interfaces.io as nio
 fsl.FSLCommand.set_default_output_type('NIFTI')
 
 
+def decider(working_dir, subject_list, session_list):
+    """ Decides which preproc workflow to use for each subject
+    currently a placeholder function only
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+
+    return
+
+
 def preproc(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
-    filestart = 'sub-{subject_id}_ses-{session_id}'
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
+    filestart = 'sub-{subject_id}_ses-{session_id}'
     subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 
-    # UTE Files
+    # UTE File templates to load
     scantype = 'qutece'
     qutece_fast_files = os.path.join(
         subdirectory, scantype, filestart + '*fast*_run-*[0123456789]_UTE.nii')
@@ -105,8 +118,6 @@ def preproc(working_dir, subject_list, session_list):
     # -----------------------Merge---------------------------
     merge = eng.Node(utl.Merge(2), name='merge')
     merge.ravel_inputs = True
-    # -------------------------------------------------------
-    # -----------------------Merge---------------------------
     merge2 = eng.Node(utl.Merge(2), name='merge2')
     merge2.ravel_inputs = True
     # -------------------------------------------------------
@@ -168,8 +179,9 @@ def preproc(working_dir, subject_list, session_list):
     # -------------------------------------------------------
 
     # -----------------PreprocWorkflow------------------------
+    # now we connect all of the nodes.
     task = 'preprocessing'
-    preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
+    preproc_wf = eng.Workflow(name=task, base_dir=workflow_dir)
     preproc_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),

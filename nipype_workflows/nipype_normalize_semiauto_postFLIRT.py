@@ -14,8 +14,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def fnirt_and_fast(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     scantype = 'anat'
     subdirectory = os.path.join(
@@ -126,7 +125,7 @@ def fnirt_and_fast(working_dir, subject_list):
     # -----------------NormalizationWorkflow-----------------
     task = 'SpatialNormalization_SemiAuto_PostFLIRT'
     norm_wf = eng.Workflow(name=task)
-    norm_wf.base_dir = working_dir + '/workflow'
+    norm_wf.base_dir = workflow_dir
 
     norm_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

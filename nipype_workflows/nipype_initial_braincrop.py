@@ -1,6 +1,7 @@
 # BrainCrop Pipeline
 # -----------------Imports-------------------------------
 import os
+import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
@@ -13,8 +14,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def initial_braincrop(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
     filestart = 'sub-{subject_id}_ses-{session_id}'
 
     scantype = 'anat'
@@ -91,7 +91,7 @@ def initial_braincrop(working_dir, subject_list, session_list):
     # -----------------NormalizationWorkflow-----------------
     task = 'initial_braincrop'
     braincrop_wf = eng.Workflow(name=task)
-    braincrop_wf.base_dir = working_dir + '/workflow'
+    braincrop_wf.base_dir = workflow_dir
 
     braincrop_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),

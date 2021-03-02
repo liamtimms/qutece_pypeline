@@ -21,8 +21,7 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list,
     # Define subject list, session list and relevent file types
     # working_dir = os.path.abspath(
     #    '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2')
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     session = 'Precon'
     # * precon T1w from IntersessionCoregister_preconScans
@@ -126,7 +125,7 @@ def ApplyTransAnat_workflow(working_dir, subject_list, session_list,
     # -----------------NormalizationWorkflow-----------------
     task = 'linear_transformed_' + scan_type
     trans_wf = eng.Workflow(name=task)
-    trans_wf.base_dir = working_dir + '/workflow'
+    trans_wf.base_dir = workflow_dir
 
     trans_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

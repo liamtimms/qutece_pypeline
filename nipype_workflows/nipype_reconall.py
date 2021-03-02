@@ -2,8 +2,7 @@ import os
 from nipype.workflows.smri.freesurfer import create_reconall_workflow
 
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')
-output_dir = os.path.join(working_dir, 'derivatives/')
-temp_dir = os.path.join(output_dir, 'datasink/')
+output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 #subject_list = ['02', '03', '05', '06', '08', '10', '11']
 #subject_list =['11']
 subject = '11'

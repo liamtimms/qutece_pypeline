@@ -3,7 +3,7 @@
 import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
+# import nipype.interfaces.spm as spm
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
@@ -16,8 +16,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def preproc_10(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
     filestart = 'sub-{subject_id}_ses-{session_id}'
@@ -110,7 +109,7 @@ def preproc_10(working_dir, subject_list, session_list):
 
     # -----------------PreprocWorkflow------------------------
     task = 'preprocessing10'
-    preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
+    preproc_wf = eng.Workflow(name=task, base_dir=workflow_dir)
     preproc_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id'),
                                    ('session_id', 'session_id')]),

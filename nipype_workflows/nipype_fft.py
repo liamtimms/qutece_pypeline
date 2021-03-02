@@ -12,8 +12,7 @@ import nipype.interfaces.io as nio
 # -----------------Inputs--------------------------------
 # Define subject list, session list and relevent file types
 working_dir = os.path.abspath('../..')
-output_dir = os.path.join(working_dir, 'derivatives/')
-temp_dir = os.path.join(output_dir, 'datasink/')
+output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
 subject_list = ['02', '03', '05', '04', '06', '08', '09', '10', '11']
 # subject_list = ['02', '05', '09', '11']
@@ -60,14 +59,16 @@ resamp = eng.MapNode(interface=cnp.ResampNii(),
 # -------------------------------------------------------
 
 # -----------------------TrimNode-----------------
-trim_tof = eng.MapNode(interface=cnp.TrimNii(), name='trim_tof',
-                     iterfield=['in_file'])
+trim_tof = eng.MapNode(interface=cnp.TrimNii(),
+                       name='trim_tof',
+                       iterfield=['in_file'])
 trim_tof.inputs.trim_width = 2
 # -------------------------------------------------------
 
 # -----------------------TrimNode-----------------
-trim_ute = eng.MapNode(interface=cnp.TrimNii(), name='trim_ute',
-                     iterfield=['in_file'])
+trim_ute = eng.MapNode(interface=cnp.TrimNii(),
+                       name='trim_ute',
+                       iterfield=['in_file'])
 trim_ute.inputs.trim_width = 6
 # -------------------------------------------------------
 
@@ -102,18 +103,16 @@ datasink.inputs.regexp_substitutions = [('_fft[0123456789].', '')]
 # -----------------FFT Workflow----------------
 task = 'FFT'
 fft_wf = eng.Workflow(name=task)
-fft_wf.base_dir = working_dir + '/workflow'
+fft_wf.base_dir = workflow_dir
 
-fft_wf.connect([
-    (infosource, selectfiles, [('subject_id', 'subject_id')]),
-    (selectfiles, resamp, [('tof', 'in_file')]),
-    (resamp, trim_tof, [('out_file', 'in_file')]),
-    (selectfiles, trim_ute, [('qutece_postcon', 'in_file')]),
-    (trim_tof, merge, [('out_file', 'in1')]),
-    (trim_ute, merge, [('out_file', 'in2')]),
-    (merge, fft, [('out', 'in_file')]),
-    (fft, datasink, [('out_file', task + '.@con')])
-])
+fft_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id')]),
+                (selectfiles, resamp, [('tof', 'in_file')]),
+                (resamp, trim_tof, [('out_file', 'in_file')]),
+                (selectfiles, trim_ute, [('qutece_postcon', 'in_file')]),
+                (trim_tof, merge, [('out_file', 'in1')]),
+                (trim_ute, merge, [('out_file', 'in2')]),
+                (merge, fft, [('out', 'in_file')]),
+                (fft, datasink, [('out_file', task + '.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------

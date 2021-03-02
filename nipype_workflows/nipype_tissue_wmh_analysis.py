@@ -4,7 +4,7 @@ import os
 import CustomNiPype as cnp
 import nipype.pipeline.engine as eng
 import nipype.interfaces.fsl as fsl
-import nipype.interfaces.spm as spm
+# import nipype.interfaces.spm as spm
 import nipype.interfaces.ants as ants
 import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
@@ -16,8 +16,7 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def tissue_wmh_analysis(working_dir, subject_list):
 
     # -----------------Inputs--------------------------------
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     # UTE precon
     session = 'Precon'
@@ -129,7 +128,7 @@ def tissue_wmh_analysis(working_dir, subject_list):
     # -------------------------------------------------------
 
     # -----------------CSV_Concatenate-----------------------
-    concat = eng.Node(interface=cnp.CSVConcatenate(), name='concat')
+    # concat = eng.Node(interface=cnp.CSVConcatenate(), name='concat')
     # -------------------------------------------------------
 
     # ------------------------Output-------------------------
@@ -142,22 +141,21 @@ def tissue_wmh_analysis(working_dir, subject_list):
         ('_subject_id_', 'sub-'),
         ('ses-Precon_T1w_corrected_masked_seg-ADD', 'tissue'),
         ('ses-Precon_WMHs-segmentation-ADD', 'WMH'),
-        ('ses-Postcon_hr_run-01_UTE_desc-preproc_AutoVesselness_sblobs=25_splates=25_maths_resampled',
-         'vesselness')
+        ('ses-Postcon_hr_run-01_UTE_desc-preproc_AutoVesselness_' +
+         'sblobs=25_splates=25_maths_resampled', 'vesselness')
     ]
     subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
                    for sub in subject_list]
     substitutions.extend(subjFolders)
     datasink.inputs.substitutions = substitutions
-    datasink.inputs.regexp_substitutions = [
-        ('_roi_analyze.*/', '')]
+    datasink.inputs.regexp_substitutions = [('_roi_analyze.*/', '')]
 
     # -------------------------------------------------------
 
     # -----------------NormalizationWorkflow-----------------
     task = 'tissue_wmh_analysis'
     tissue_wf = eng.Workflow(name=task)
-    tissue_wf.base_dir = working_dir + '/workflow'
+    tissue_wf.base_dir = workflow_dir
 
     tissue_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),

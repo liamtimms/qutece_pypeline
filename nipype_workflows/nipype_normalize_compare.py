@@ -19,8 +19,7 @@ def Normalization_workflow(working_dir, subject_list, num_cores):
 
     # -----------------Inputs--------------------------------
     # Define subject list, session list and relevent file types
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
+    output_dir, temp_dir, workflow_dir, _, _ = cnp.set_common_dirs(working_dir)
 
     session = 'Precon'
     subdirectory = os.path.join(temp_dir,
@@ -161,7 +160,7 @@ def Normalization_workflow(working_dir, subject_list, num_cores):
     # -----------------NormalizationWorkflow-----------------
     task = 'SpatialNormalization'
     norm_wf = eng.Workflow(name=task)
-    norm_wf.base_dir = working_dir + '/workflow'
+    norm_wf.base_dir = workflow_dir
 
     norm_wf.connect([
         (infosource, selectfiles, [('subject_id', 'subject_id')]),
