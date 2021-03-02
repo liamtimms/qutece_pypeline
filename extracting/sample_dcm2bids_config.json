@@ -1,0 +1,101 @@
+{
+  "descriptions": [
+    {
+      "dataType": "anat",
+      "modalityLabel": "T1w",
+      "criteria": {
+        "SeriesDescription": "mprage*"
+      }
+    },
+    {
+      "dataType": "qutece",
+      "modalityLabel": "UTE",
+      "customLabels": "hr",
+      "criteria": {
+        "ImageType": ["ORIGINAL", "PRIMARY", "M", "NORM", "DIS2D"],
+        "ReceiveCoilActiveElements": "HC1-6",
+        "SeriesDescription": "fl3d_UTESpiralVIBE_cor_1mm_iso_NuFT",
+        "SliceThickness": 1,
+        "BaseResolution": 256
+      },
+      "sidecarChanges": {
+        "SeriesDescription": "fl3d_UTESpiralVIBE_cor_1mm_iso_NuFT",
+        "ProtocolName": "fl3d_UTESpiralVIBE_cor_1mm_iso_NuFT"
+      }
+    },
+    {
+      "dataType": "qutece",
+      "modalityLabel": "UTE",
+      "customLabels": "hr_phase",
+      "criteria": {
+        "ImageType": ["ORIGINAL", "PRIMARY", "P", "NORM", "DIS2D"],
+        "SeriesDescription": "fl3d_UTESpiralVIBE_cor_1mm_iso_NuFT"
+      },
+      "sidecarChanges": {
+        "SeriesDescription": "fl3d_UTESpiralVIBE_cor_1mm_iso_NuFT",
+        "ProtocolName": "fl3d_UTESpiralVIBE_cor_1mm_iso_NuFT"
+      }
+    },
+    {
+      "dataType": "qutece",
+      "modalityLabel": "UTE",
+      "customLabels": "fast-task-rest",
+      "criteria": {
+        "ReceiveCoilActiveElements": "HC1-6",
+        "ImageType": ["ORIGINAL", "PRIMARY", "M", "NORM", "DIS2D"],
+        "SeriesDescription": "fl3d_UTESpiralVIBE_cor_NuFT"
+      },
+      "sidecarChanges": {
+        "SeriesDescription": "fl3d_UTESpiralVIBE_cor_iso_NuFT",
+        "ProtocolName": "fl3d_UTESpiralVIBE_cor_iso_NuFT"
+      }
+    },
+    {
+      "dataType": "anat",
+      "modalityLabel": "FLAIR",
+      "criteria": {
+        "SeriesDescription": "*FLAIR*"
+      }
+    },
+    {
+      "dataType": "anat",
+      "modalityLabel": "angio",
+      "customLabels": "TOF",
+      "criteria": {
+        "SeriesDescription": "tof_fl3d_tra_p2_multi-slab"
+      }
+    },
+    {
+      "dataType": "anat",
+      "modalityLabel": "angio",
+      "customLabels": "SWI",
+      "criteria": {
+        "SeriesDescription": "SWI_Images"
+      }
+    },
+    {
+      "dataType": "func",
+      "modalityLabel": "bold",
+      "customLabels": "task-rest",
+      "criteria": {
+        "SeriesDescription": "*fMRI*"
+      }
+    },
+    {
+      "dataType": "fmap",
+      "modalityLabel": "FAmap",
+      "criteria": {
+        "ImageType": ["ORIGINAL", "PRIMARY", "FLIP", "ANGLE", "MAP", "DIS2D"],
+        "SeriesDescription": "*B1*"
+      }
+    },
+    {
+      "dataType": "fmap",
+      "modalityLabel": "FAref",
+      "criteria": {
+        "ImageType": ["ORIGINAL", "PRIMARY", "M", "DIS2D"],
+        "SeriesDescription": "*B1*"
+      }
+    }
+  ]
+}
