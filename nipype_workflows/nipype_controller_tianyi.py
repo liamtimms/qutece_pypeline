@@ -163,8 +163,14 @@ workflow_list_2 = []
 # density_wf = vessel_density(working_dir, subject_list)
 # workflow_list_2.append(density_wf)
 
-subject_list = ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12','13', '14', '15']
-diff_wf = post_pre_difference(working_dir, subject_list, scan_type='hr', scanfolder='nonlinear_transfomed_hr')
+subject_list = [
+    '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
+    '14', '15'
+]
+diff_wf = post_pre_difference(working_dir,
+                              subject_list,
+                              scan_type='hr',
+                              scanfolder='nonlinear_transfomed_hr')
 workflow_list_2.append(diff_wf)
 
 # num_cores = 1
