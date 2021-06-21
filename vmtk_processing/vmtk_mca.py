@@ -6,7 +6,7 @@ from vmtk import vmtkscripts
 import vmtk_sss_lts_rts as vslr
 
 def runner(subject_list, vessel_type, vessel_list):
-    base_dir = os.path.abspath('../')
+    base_dir = os.path.abspath('../../../../')
     output_dir = os.path.join(base_dir, 'derivatives', 'manualwork',
                               'vmtk_tof')
     segmentation_dir = os.path.join(base_dir, 'derivatives', 'manualwork',
