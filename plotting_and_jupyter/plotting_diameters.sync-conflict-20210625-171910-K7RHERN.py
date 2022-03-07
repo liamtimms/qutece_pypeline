@@ -424,15 +424,25 @@ def centerline_plotting_old():
     pass
 
 
-def diameter_summary(sub_num, session, scan_type, threshold, seg_type):
-    """TODO: Docstring for diameter_summary.
+def plot_from_full():
+    """TODO: Docstring for plot_from_full.
 
     :function: TODO
     :returns: TODO
 
     """
+    sub_num = '02'
+    session = 'Postcon'
+    scan_type = 'hr'
     in_folder = 'morphometery'
-    csv_dir = 'csv_work_diam_' + scan_type
+    threshold = '600'
+
+    # scan_type = 'TOF'
+    # threshold = '1.0'
+    # session = 'Precon'
+    # data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
+                            # 'ses-{}'.format(session), 'qutece')
+    csv_dir = 'csv_work_diam' + scan_type
 
     # if not os.path.exists(data_dir):
     #     data_dir = os.path.join(datasink_dir, in_folder,
@@ -446,6 +456,7 @@ def diameter_summary(sub_num, session, scan_type, threshold, seg_type):
 
     data_dir = os.path.join(datasink_dir, in_folder)
 
+    seg_type = 'named_arteries'
     roi_dir = os.path.join(manualwork_dir, 'segmentations', seg_type)
 
     if seg_type == 'named_arteries':
@@ -459,7 +470,7 @@ def diameter_summary(sub_num, session, scan_type, threshold, seg_type):
         # if scan_type == 'T1w':
         #     ROI_file_name = os.path.join(
         #         roi_dir, 'T1w', 'rsub-' + sub_num +
-        #      '_ses-Postcon_T1w_corrected' + '_noise-Segmentation-label.nii')
+        #         '_ses-Postcon_T1w_corrected' + '_noise-Segmentation-label.nii')
 
     ROI_file_nii = nib.load(ROI_file_name)
     roi_img = np.array(ROI_file_nii.get_fdata())
@@ -496,35 +507,7 @@ def diameter_summary(sub_num, session, scan_type, threshold, seg_type):
         summary_df_list.append(summary_df)
 
     plt.close('all')
-
     return summary_df_list
-
-    pass
-
-
-def plot_from_full():
-    """TODO: Docstring for plot_from_full.
-
-    :function: TODO
-    :returns: TODO
-
-    """
-    seg_type = 'named_arteries'
-    sub_num = '02'
-    session = 'Postcon'
-    scan_type = 'hr'
-    threshold = '600'
-    diameter_summary(sub_num, session, scan_type, threshold, seg_type)
-
-    scan_type = 'TOF'
-    threshold = '1.0'
-    session = 'Precon'
-    diameter_summary(sub_num, session, scan_type, threshold, seg_type)
-
-    csv_dir = 'csv_work_diam_' + scan_type
-    plotter.load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type)
-
-    return
 
 
 def main():

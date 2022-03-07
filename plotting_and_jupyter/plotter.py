@@ -48,6 +48,7 @@ def roi_cut(scan_img, roi_img, t, r):
     crop_img = np.multiply(scan_img, roi)
 
     vals = np.reshape(crop_img, -1)
+    vals[vals == 0] = np.nan
     vals_df = pd.DataFrame()
     vals_df[r] = vals
     vals_df.dropna(inplace=True)

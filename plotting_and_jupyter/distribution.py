@@ -139,21 +139,25 @@ def calc_kde(df):
 def plot_dis(full_df, t, save_name):
     # calc_kde(full_df)
     if t == 'seaborn':
-        # sns.set_theme()
+        sns.set_theme(font_scale=1.15)
         sns_fig = sns.displot(
             data=full_df,
             y="intensity",
             # hue="sub_num",
             hue="scan type",
-            col="scan type",
+            # col="scan type",
             linewidth=1,
-            binwidth=0.025,
+            # binwidth=0.025,
+            binwidth=10,
             # multiple='dodge',
             # kde=True,
-            log_scale=True,
+            # log_scale=True,
+            height=8,
+            aspect=.8,
             element='step',
             palette=['darkorange', 'mediumseagreen'],
-            fill=False)
+            # fill=False
+            )
         sns_fig.set(xscale='log')
         sns_fig.savefig(save_name, dpi=300)
 
@@ -238,8 +242,9 @@ def run_from_nii():
                                           ["QUTE-CE", "Gd MPRAGE"])
     full_df = full_df.sort_values(by=['scan type'], ascending=False)
 
-    save_name = 'test_hist/sub_02.png'
-    plot_dis(full_df, 'seaborn', save_name)
+    save_name = 'sub_02_new.png'
+    save_path = os.path.join(datasink_dir, 'dist_test', save_name)
+    plot_dis(full_df, 'seaborn', save_path)
 
     return 0
 

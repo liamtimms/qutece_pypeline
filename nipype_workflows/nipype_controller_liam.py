@@ -12,6 +12,7 @@ from nipype_intrasession_coregister import intrasession_coregister_onlyT1w
 from nipype_calc_transforms import calc_transforms
 from nipype_post_pre_difference import post_pre_difference
 from nipype_apply_transforms import apply_linear_trans
+from nipype_apply_transforms import apply_linear_trans_morph
 from nipype_apply_transforms import apply_nonlinear_trans
 from nipype_tissue_wmh_analysis import tissue_wmh_analysis
 from nipype_wm_analysis import wm_analysis
@@ -108,27 +109,31 @@ def get_norm_wfs(working_dir):
 
     subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
     calc_transforms_wf = calc_transforms(working_dir, subject_list)
-    workflow_list.append(calc_transforms_wf)
+    # workflow_list.append(calc_transforms_wf)
 
     session_list = ['Precon', 'Postcon']
     scan_type = 'hr'
 
     apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list,
                                                 scan_type)
-    workflow_list.append(apply_transforms_hr_wf)
+    # workflow_list.append(apply_transforms_hr_wf)
 
     apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(
         working_dir, subject_list, session_list, scan_type)
-    workflow_list.append(apply_nonlinear_transforms_hr_wf)
+    # workflow_list.append(apply_nonlinear_transforms_hr_wf)
+
+    apply_transforms_morph_wf = apply_linear_trans_morph(
+        working_dir, subject_list, scan_type)
+    workflow_list.append(apply_transforms_morph_wf)
 
     scan_type = 'fast'
-    apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
-                                                  scan_type)
-    workflow_list.append(apply_transforms_fast_wf)
+    # apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
+    # scan_type)
+    # workflow_list.append(apply_transforms_fast_wf)
 
     apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(
         working_dir, subject_list, session_list, scan_type)
-    workflow_list.append(apply_nonlinear_transforms_fast_wf)
+    # workflow_list.append(apply_nonlinear_transforms_fast_wf)
 
     return workflow_list
 
@@ -172,14 +177,14 @@ def main():
 
     num_cores = 4  # a resonable default
 
-    # Define sections to do define whether things have run correctly
-    preprocessing = True
-    coregister = True
+    # Define sections to define whether things have run correctly
+    preprocessing = False
+    coregister = False
     manual_manipulation = False
     spatial_normalization = True
-    manual_masks_good = False
-    vesselness_segmented = False
-    processing = True
+    manual_masks_good = True
+    vesselness_segmented = True
+    processing = False
 
     if preprocessing:
         print("--- Starting PREPROCESSING ---")
