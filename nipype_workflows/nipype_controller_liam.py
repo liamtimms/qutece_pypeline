@@ -5,10 +5,10 @@ from nipype_preproc import preproc
 from nipype_preproc_nofast import preproc_nofast
 from nipype_preproc_08 import preproc_08
 from nipype_preproc_10 import preproc_10
-# from nipype_intrasession_coregister import intrasession_coregister
+from nipype_intrasession_coregister import intrasession_coregister
 from nipype_intrasession_coregister import intrasession_coregister_onlyT1w
-# from nipype_pre_to_post_coregister import pre_to_post_coregister
-# from nipype_braincrop import braincrop
+from nipype_pre_to_post_coregister import pre_to_post_coregister
+from nipype_braincrop import braincrop
 from nipype_calc_transforms import calc_transforms
 from nipype_post_pre_difference import post_pre_difference
 from nipype_apply_transforms import apply_linear_trans
@@ -22,44 +22,46 @@ from nipype_vessel_density import vessel_density
 def get_preproc_wfs(working_dir):
     session_list = ['Precon', 'Postcon']
     workflow_list = []
+    subject_list = []
     # Subjects with both hr and fast scans
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-        '15'
-    ]
+    # subject_list = [
+    #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+    #     '15'
+    # ]
     initial_braincrop_wf = initial_braincrop(working_dir, subject_list,
                                              session_list)
-    workflow_list.append(initial_braincrop_wf)
+    # workflow_list.append(initial_braincrop_wf)
 
     # Subjects with all main scan types, pre and post
-    subject_list = ['02', '03', '04', '06', '11', '12', '15']
+    # subject_list = ['02', '03', '04', '06', '11', '12', '15']
     preproc_wf = preproc(working_dir, subject_list, session_list)
-    workflow_list.append(preproc_wf)
+    # workflow_list.append(preproc_wf)
 
     # Subjects without Fast Scans
-    subject_list = ['05', '07', '09']
+    # subject_list = ['05', '07', '09']
     preproc_nofast_wf = preproc_nofast(working_dir, subject_list, session_list)
-    workflow_list.append(preproc_nofast_wf)
+    # workflow_list.append(preproc_nofast_wf)
 
     # Subjects with Fast Scans but only one precon scan
-    subject_list = ['08', '13', '14']
+    # subject_list = ['08', '13', '14']
     session_list = ['Postcon']
     preproc_wf = preproc(working_dir, subject_list, session_list)
-    workflow_list.append(preproc_wf)
+    # workflow_list.append(preproc_wf)
     session_list = ['Precon']
     preproc_08_wf = preproc_08(working_dir, subject_list, session_list)
-    workflow_list.append(preproc_08_wf)
+    # workflow_list.append(preproc_08_wf)
 
     # Subject with only one precon scan, also missing Fast
-    subject_list = ['10']
+    # subject_list = ['10']
     session_list = ['Precon']
     preproc_10_pre_wf = preproc_10(working_dir, subject_list, session_list)
-    workflow_list.append(preproc_10_pre_wf)
+    # workflow_list.append(preproc_10_pre_wf)
 
     return workflow_list
 
 
 def get_coreg_wfs(working_dir):
+    subject_list = []
     workflow_list = []
 
     # # Subjects with nonT1w precon scans
@@ -69,8 +71,8 @@ def get_coreg_wfs(working_dir):
     # # subject_list = ['05', '07', '09']
     # subject_list = ['14']
 
-    # session_list = ['Precon']
-    # coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
+    session_list = ['Precon']
+    coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
     # workflow_list.append(coreg_wf)
 
     # # Subjects with nonT1w postcon scans
@@ -81,10 +83,10 @@ def get_coreg_wfs(working_dir):
     # workflow_list.append(coreg_wf)
 
     # Subjects without nonT1w postcon scans
-    subject_list = ['12', '13', '14', '15']
+    # subject_list = ['12', '13', '14', '15']
     coreg_wf = intrasession_coregister_onlyT1w(working_dir, subject_list,
                                                session_list)
-    workflow_list.append(coreg_wf)
+    # workflow_list.append(coreg_wf)
 
     # All Coreg'd Subjects
     # subject_list = [
@@ -93,21 +95,22 @@ def get_coreg_wfs(working_dir):
     # # subject_list = ['05', '07', '09']
 
     # # subject_list = ['02', '03', '04', '06', '11', '12', '15']
-    # coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
+    coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
     # workflow_list.append(coreg2_wf)
 
-    # braincrop_wf = braincrop(working_dir, subject_list)
+    braincrop_wf = braincrop(working_dir, subject_list)
     # workflow_list.append(braincrop_wf)
     return workflow_list
 
 
 def get_norm_wfs(working_dir):
     workflow_list = []
+    subject_list = []
     # AT THIS POINT MANUAL MASKS MUST BE COMPLETED ON THE BRAIN CROPPED IMAGES
     # subject_list = ['08', '09', '10']
     # subject_list =['02','03','04', '05', '06', '07', '08', '09', '10', '11']
 
-    subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
+    # subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
     calc_transforms_wf = calc_transforms(working_dir, subject_list)
     # workflow_list.append(calc_transforms_wf)
 
@@ -129,6 +132,10 @@ def get_norm_wfs(working_dir):
     scan_type = 'fast'
     # apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
     # scan_type)
+
+    scan_type = 'fast'
+    apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
+                                                  scan_type)
     # workflow_list.append(apply_transforms_fast_wf)
 
     apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(
@@ -139,32 +146,33 @@ def get_norm_wfs(working_dir):
 
 
 def get_proc_wfs(working_dir):
+    subject_list = []
     workflow_list = []
 
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
-        '14', '15'
-    ]
+    # subject_list = [
+    #     '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
+    #     '14', '15'
+    # ]
     diff_wf = post_pre_difference(working_dir,
                                   subject_list,
                                   scan_type='hr',
                                   scanfolder='nonlinear_transfomed_hr')
-    workflow_list.append(diff_wf)
+    # workflow_list.append(diff_wf)
 
-    subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
+    # subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
     tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
-    workflow_list.append(tissue_wf)
+    # workflow_list.append(tissue_wf)
 
-    subject_list = ['02', '06', '11']
+    # subject_list = ['02', '06', '11']
     wm_wf = wm_analysis(working_dir, subject_list)
-    workflow_list.append(wm_wf)
+    # workflow_list.append(wm_wf)
 
-    subject_list = [
-        '02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15'
-    ]
+    # subject_list = [
+    #     '02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15'
+    # ]
 
     density_wf = vessel_density(working_dir, subject_list)
-    workflow_list.append(density_wf)
+    # workflow_list.append(density_wf)
 
     return workflow_list
 
@@ -185,6 +193,14 @@ def main():
     manual_masks_good = True
     vesselness_segmented = True
     processing = False
+    # Define sections to do define whether things have run correctly
+    preprocessing = True
+    coregister = True
+    manual_manipulation = True
+    spatial_normalization = True
+    manual_masks_good = True
+    vesselness_segmented = True
+    processing = True
 
     if preprocessing:
         print("--- Starting PREPROCESSING ---")
