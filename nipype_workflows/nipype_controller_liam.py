@@ -1,22 +1,23 @@
 import os
+
 import CustomNiPype as cnp
-from nipype_initial_braincrop import initial_braincrop
-from nipype_preproc import preproc
-from nipype_preproc_nofast import preproc_nofast
-from nipype_preproc_08 import preproc_08
-from nipype_preproc_10 import preproc_10
-from nipype_intrasession_coregister import intrasession_coregister
-from nipype_intrasession_coregister import intrasession_coregister_onlyT1w
-from nipype_pre_to_post_coregister import pre_to_post_coregister
+from nipype_apply_transforms import (apply_linear_trans,
+                                     apply_linear_trans_morph,
+                                     apply_nonlinear_trans)
 from nipype_braincrop import braincrop
 from nipype_calc_transforms import calc_transforms
+from nipype_initial_braincrop import initial_braincrop
+from nipype_intrasession_coregister import (intrasession_coregister,
+                                            intrasession_coregister_onlyT1w)
 from nipype_post_pre_difference import post_pre_difference
-from nipype_apply_transforms import apply_linear_trans
-from nipype_apply_transforms import apply_linear_trans_morph
-from nipype_apply_transforms import apply_nonlinear_trans
+from nipype_pre_to_post_coregister import pre_to_post_coregister
+from nipype_preproc import preproc
+from nipype_preproc_08 import preproc_08
+from nipype_preproc_10 import preproc_10
+from nipype_preproc_nofast import preproc_nofast
 from nipype_tissue_wmh_analysis import tissue_wmh_analysis
-from nipype_wm_analysis import wm_analysis
 from nipype_vessel_density import vessel_density
+from nipype_wm_analysis import wm_analysis
 
 
 def get_preproc_wfs(working_dir):

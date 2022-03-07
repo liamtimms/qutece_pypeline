@@ -1,9 +1,10 @@
 import os
+
 import numpy as np
 import pandas as pd
-from vmtk import pypes
-from vmtk import vmtkscripts
 import vmtk_sss_lts_rts as vslr
+from vmtk import pypes, vmtkscripts
+
 
 def runner(subject_list, vessel_type, vessel_list):
     base_dir = os.path.abspath('../../../../')

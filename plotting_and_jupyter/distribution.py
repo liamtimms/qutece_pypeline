@@ -1,12 +1,13 @@
-import os
 import glob
-import numpy as np
-import nibabel as nib
-import pandas as pd
-import seaborn as sns
-import plotter
-from sklearn.neighbors import KernelDensity
+import os
+
 import matplotlib.pyplot as plt
+import nibabel as nib
+import numpy as np
+import pandas as pd
+import plotter
+import seaborn as sns
+from sklearn.neighbors import KernelDensity
 
 base_dir = os.path.abspath('../../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')

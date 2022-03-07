@@ -1,4 +1,5 @@
 import os
+
 import nibabel as nib
 import nipype.interfaces.spm as spm
 

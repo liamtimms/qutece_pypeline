@@ -1,10 +1,11 @@
 import os
-import numpy as np
-import pandas as pd
-import nibabel as nib
-import seaborn as sns
+
 import matplotlib
 import matplotlib.pyplot as plt
+import nibabel as nib
+import numpy as np
+import pandas as pd
+import seaborn as sns
 import sklearn.preprocessing as preproc
 
 

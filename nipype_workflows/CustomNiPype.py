@@ -1,16 +1,18 @@
-from nipype.interfaces.matlab import MatlabCommand
-from nipype.interfaces.base import TraitedSpec, \
-    BaseInterface, BaseInterfaceInputSpec, File, InputMultiObject, traits
 import os
 from string import Template
-import numpy as np
-import pandas as pd
+
+import matplotlib.pyplot as plt
 import nibabel as nib
 import nilearn.image as nilimg
-from nipype.utils.filemanip import split_filename
-import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 # import matplotlib
 import seaborn as sns
+from nipype.interfaces.base import (BaseInterface, BaseInterfaceInputSpec,
+                                    File, InputMultiObject, TraitedSpec,
+                                    traits)
+from nipype.interfaces.matlab import MatlabCommand
+from nipype.utils.filemanip import split_filename
 
 
 # -------------------WorkflowRunner--------------

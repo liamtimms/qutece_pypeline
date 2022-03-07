@@ -1,8 +1,8 @@
 import os
+
 import numpy as np
 import pandas as pd
-from vmtk import pypes
-from vmtk import vmtkscripts
+from vmtk import pypes, vmtkscripts
 
 
 def vmtk_processor(input_fn_pattern, vessel, subject, output_dir,

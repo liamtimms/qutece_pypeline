@@ -1,13 +1,13 @@
-import os
 import glob
-import numpy as np
-import pandas as pd
-import nibabel as nib
-import seaborn as sns
+import os
+
 import matplotlib
 import matplotlib.pyplot as plt
+import nibabel as nib
+import numpy as np
+import pandas as pd
+import seaborn as sns
 import sklearn.preprocessing as preproc
-
 
 base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')

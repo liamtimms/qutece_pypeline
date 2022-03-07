@@ -1,12 +1,14 @@
 # FFT Pipeline
 # -----------------Imports-------------------------------
 import os
+
 import CustomNiPype as cnp
-import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
-import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
+import nipype.interfaces.spm as spm
+import nipype.interfaces.utility as utl
+import nipype.pipeline.engine as eng
+
 # -------------------------------------------------------
 
 # -----------------Inputs--------------------------------

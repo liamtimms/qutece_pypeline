@@ -1,8 +1,9 @@
 # import vmtk
-from vmtk import pypes
-import os
-import nibabel as nib
 import glob
+import os
+
+import nibabel as nib
+from vmtk import pypes
 
 
 def SetAlpha(suppressPlates):

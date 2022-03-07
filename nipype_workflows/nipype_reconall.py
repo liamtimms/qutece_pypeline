@@ -1,4 +1,5 @@
 import os
+
 from nipype.workflows.smri.freesurfer import create_reconall_workflow
 
 working_dir = os.path.abspath('/mnt/hgfs/VMshare/WorkingBIDS/')

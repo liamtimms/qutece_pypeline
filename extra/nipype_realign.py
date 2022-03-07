@@ -2,13 +2,14 @@
 
 # -----------------Imports-------------------------------
 import os
+
 import CustomNiPype as cnp
-import nipype.pipeline.engine as eng
-import nipype.interfaces.spm as spm
 import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
-import nipype.interfaces.utility as utl
 import nipype.interfaces.io as nio
+import nipype.interfaces.spm as spm
+import nipype.interfaces.utility as utl
+import nipype.pipeline.engine as eng
 
 # -------------------------------------------------------
 
@@ -105,5 +106,6 @@ realign_wf.connect([(realign, datasink, [('realigned_files', task + '.@con'),
 # -------------------WorkflowPlotting--------------------
 realign_wf.write_graph(graph2use='flat')
 from IPython.display import Image
+
 Image(filename=working_dir + "/workflow/" + task + "/graph_detailed.png")
 # -------------------------------------------------------

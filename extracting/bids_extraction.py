@@ -1,6 +1,7 @@
-import shutil
 import os
+import shutil
 import subprocess
+
 parent_path = '/run/media/mri/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis'
 dcm_dir = os.path.join(parent_path, 'DCM_working')
 bids_dir = os.path.join(parent_path, 'DCM2BIDS2')

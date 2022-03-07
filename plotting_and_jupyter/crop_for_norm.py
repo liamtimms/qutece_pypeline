@@ -1,8 +1,9 @@
 import glob
-import numpy as np
 import os
-import plotter
+
 import nibabel as nib
+import numpy as np
+import plotter
 
 base_dir = os.path.abspath('../../../..')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')

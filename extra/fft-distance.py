@@ -1,10 +1,11 @@
+import os
 import time
+
 import nibabel as nib
 import numpy as np
 import pandas as pd
-from scipy import spatial
 from nipype.utils.filemanip import split_filename
-import os
+from scipy import spatial
 
 base_path = os.path.abspath(
     '/mnt/4e43a4f6-7402-4881-bcf5-d280e54cc385/Analysis/DCM2BIDS2/derivatives')

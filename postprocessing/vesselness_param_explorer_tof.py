@@ -1,7 +1,8 @@
 import os
+
+import nibabel as nib
 import numpy as np
 import pandas as pd
-import nibabel as nib
 from plotter import roi_cut
 from skimage.filters import frangi
 

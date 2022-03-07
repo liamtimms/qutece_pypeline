@@ -1,7 +1,8 @@
+import os
+
 import nibabel as nib
 import numpy as np
 import pandas as pd
-import os
 
 upper_dir = os.path.realpath('../../derivatives/')
 base_path = os.path.abspath(upper_dir)

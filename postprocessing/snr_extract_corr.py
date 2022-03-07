@@ -1,10 +1,11 @@
+import json
+import os
+
+import CustomNiPype as cnp
 import nibabel as nib
+import nipype.pipeline.engine as eng
 import numpy as np
 import pandas as pd
-import os
-import json
-import CustomNiPype as cnp
-import nipype.pipeline.engine as eng
 from nipype.utils.filemanip import split_filename
 
 base_path = '/home/liam/LaptopSync/DCM2BIDS_Kidney'

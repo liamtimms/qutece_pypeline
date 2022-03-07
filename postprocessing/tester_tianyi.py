@@ -1,6 +1,7 @@
 import os
-import numpy as np
+
 import nibabel as nib
+import numpy as np
 from skimage.filters import frangi
 
 base_dir = os.path.abspath('../..')

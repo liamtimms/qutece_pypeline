@@ -1,5 +1,6 @@
-import os
 import glob
+import os
+
 import nibabel as nib
 import nilearn as nil
 import numpy as np

@@ -3,15 +3,17 @@
 
 # -----------------Imports-------------------------------
 import os
+
 import CustomNiPype as cnp
 import nibabel as nib
 import nilearn as nil
-import nipype.pipeline.engine as eng
+import nipype.interfaces.io as nio
 import nipype.interfaces.spm as spm
 # import nipype.interfaces.freesurfer as fs
 # import nipype.interfaces.fsl as fsl
 import nipype.interfaces.utility as utl
-import nipype.interfaces.io as nio
+import nipype.pipeline.engine as eng
+
 # -------------------------------------------------------
 
 # -----------------Inputs--------------------------------

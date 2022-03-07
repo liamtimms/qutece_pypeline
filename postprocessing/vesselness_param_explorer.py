@@ -1,13 +1,14 @@
-import os
 import glob
+import os
+from multiprocessing import Pool
+
+import nibabel as nib
 import numpy as np
 import pandas as pd
-import nibabel as nib
+from nipype.utils.filemanip import split_filename
 from plotter import roi_cut
 from skimage.filters import frangi
-from skimage.morphology import skeletonize_3d, label
-from nipype.utils.filemanip import split_filename
-from multiprocessing import Pool
+from skimage.morphology import label, skeletonize_3d
 
 base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
