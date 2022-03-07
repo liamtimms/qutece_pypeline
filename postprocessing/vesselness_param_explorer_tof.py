@@ -206,15 +206,17 @@ def main():
         sigma_step_list = [1]
 
         # TODO: actual brain mask filename
-        ROI_dir = os.path.join(manualwork_dir, 'segmentations', 'brain_mask4bias',
-                               'sub-' + subject_num)
-        ROI_file_name = ('rrrsub-' + subject_num +
-                        '_ses-Precon_TOF_angio_corrected_Segmentation-label.nii')
+        ROI_dir = os.path.join(manualwork_dir, 'segmentations',
+                               'brain_mask4bias', 'sub-' + subject_num)
+        ROI_file_name = (
+            'rrrsub-' + subject_num +
+            '_ses-Precon_TOF_angio_corrected_Segmentation-label.nii')
         ROI_file = os.path.join(ROI_dir, ROI_file_name)
         ROI_file_nii = nib.load(ROI_file)
         mask_img = np.array(ROI_file_nii.get_fdata())
 
-        full_df, __, __ = parameter_test(scan_img, mask_img, suppressBlobs_list,
+        full_df, __, __ = parameter_test(scan_img, mask_img,
+                                         suppressBlobs_list,
                                          suppressPlates_list, gamma_list,
                                          sigma_max_list, sigma_step_list)
 

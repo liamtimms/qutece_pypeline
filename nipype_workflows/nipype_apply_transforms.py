@@ -335,8 +335,8 @@ def apply_linear_trans_morph(working_dir, subject_list, scan_type):
     scan_type = 'hr'
     subdirectory = os.path.join(temp_dir, scanfolder)
     filestart = 'sub-{subject_id}_ses-' + session + '_'
-    morph_files = os.path.join(
-        subdirectory, 'r' + filestart + '*' + scan_type + '*UTE*.nii')
+    morph_files = os.path.join(subdirectory,
+                               'r' + filestart + '*' + scan_type + '*UTE*.nii')
 
     templates = {
         'mni_head': MNI_file,
@@ -423,7 +423,7 @@ def apply_linear_trans_morph(working_dir, subject_list, scan_type):
         (selectfiles, apply_linear, [('mni_brain', 'reference'),
                                      ('linear_matrix', 'in_matrix_file')]),
         (selectfiles, applymask, [('mni_mask', 'mask_file')]),
-        (selectfiles, maths, [('morphometery',   'in_file')]),
+        (selectfiles, maths, [('morphometery', 'in_file')]),
         # (merge, apply_linear, [('out', 'in_file')]),
         (maths, apply_linear, [('out_file', 'in_file')]),
         (apply_linear, datasink, [('out_file', task + '.@con')]),
@@ -436,7 +436,8 @@ def apply_linear_trans_morph(working_dir, subject_list, scan_type):
     return trans_wf
 
 
-def apply_nonlinear_trans_morph(working_dir, subject_list, session_list, scan_type):
+def apply_nonlinear_trans_morph(working_dir, subject_list, session_list,
+                                scan_type):
 
     # -----------------Inputs--------------------------------
     output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(
@@ -589,6 +590,5 @@ def apply_nonlinear_trans_morph(working_dir, subject_list, session_list, scan_ty
         (plot_dist, datasink, [('out_fig', task + '_plots.@con')])
     ])
     # -------------------------------------------------------
-
 
     return trans_wf

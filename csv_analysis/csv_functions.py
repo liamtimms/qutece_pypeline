@@ -243,7 +243,6 @@ def subjects_summary(datasink_dir, subject_list, scan_type, seg_type):
     print(summary_post_df.head())
 
 
-
 def sub_stats(precon_df, postcon_df, atlas_df):
     postcon_df = postcon_df.merge(atlas_df,
                                   left_on='region',

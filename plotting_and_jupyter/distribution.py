@@ -89,8 +89,7 @@ def load_data(sub_num, session, scan_type, seg_type, region):
     if n != int(m):
         print(f"ERROR: n is {n}, m is {m}")
 
-    scans_df.rename(
-        columns={scans_df.columns[0]: "intensity"}, inplace=True)
+    scans_df.rename(columns={scans_df.columns[0]: "intensity"}, inplace=True)
 
     return scans_df
 
@@ -158,7 +157,7 @@ def plot_dis(full_df, t, save_name):
             element='step',
             palette=['darkorange', 'mediumseagreen'],
             # fill=False
-            )
+        )
         sns_fig.set(xscale='log')
         sns_fig.savefig(save_name, dpi=300)
 

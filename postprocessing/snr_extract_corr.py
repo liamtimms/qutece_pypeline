@@ -21,7 +21,10 @@ for sub_num in subject_list:
                                 'sub-' + sub_num)
     n = 0
 
-    sub_vals = [['Scan Name', 'Blood Intensity', 'SNR', 'CNR', 'Voxel Size', 'TE', 'TR', 'FA']]
+    sub_vals = [[
+        'Scan Name', 'Blood Intensity', 'SNR', 'CNR', 'Voxel Size', 'TE', 'TR',
+        'FA'
+    ]]
     for filename in os.listdir(data_dir):
         if filename.endswith(".nii"):
             scan_filename = os.path.join(data_dir, filename)

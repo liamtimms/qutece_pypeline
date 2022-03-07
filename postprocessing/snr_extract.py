@@ -82,7 +82,9 @@ for sub_num in subject_list:
             ish = blood_noise / blood_signal
             snr_tissue = tissue / noise
             cnr = snr - snr_tissue
-            scan_vals = [fname, blood_signal, ish, snr, cnr, voxelsize, TE, TR, FA]
+            scan_vals = [
+                fname, blood_signal, ish, snr, cnr, voxelsize, TE, TR, FA
+            ]
             sub_vals.append(scan_vals)
             print('for ' + snr_fname)
             print('SNR = ' + str(snr))  #+ '\n')

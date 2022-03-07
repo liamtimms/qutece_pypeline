@@ -95,12 +95,14 @@ normalize.inputs.write_interp = 7
 normalize.inputs.write_voxel_sizes = [1, 1, 1]
 normalize.inputs.sampling_distance = 2
 
+
 def factorlist1(f):
     matrix = [1, 1, 1, 1, 1]
     for i in matrix.size():
         factors = matrix(i) * f
 
-base_params=[0, 0.0001, 0.5, 0.005, 0.02]
+
+base_params = [0, 0.0001, 0.5, 0.005, 0.02]
 warp_list = []
 warp_list.append(base_params)
 for f in (.01, .1, 10, 100):

@@ -36,7 +36,7 @@ manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
 
 #------------------------------------------------------------------------------
 
-subject_list = ['02', '06','11']
+subject_list = ['02', '06', '11']
 session_list = ['Precon', 'Postcon']
 scan_type = 'hr'
 seg_type = 'nWM-WMH-vesselness'
@@ -49,4 +49,3 @@ for sub_num in subject_list:
     cf.sub_summary(sub_num, scan_type, seg_type)
 
 #cf.subjects_summary_alt(datasink_dir, subject_list, scan_type, seg_type)
-

@@ -43,6 +43,7 @@ def runner(subject_list, vessel_type, vessel_list):
 
     return Diameter_SUMMARY
 
+
 def centerline_load(file_name):
     # centerline reading
     centerlineReader = vmtkscripts.vmtkSurfaceReader()
@@ -59,6 +60,7 @@ def centerline_load(file_name):
     segPointIds = numpyCenterlines['CellData']['CellPointIds']
     numSegments = len(segPointIds)
     return
+
 
 def main():
     subject_list = ['03']

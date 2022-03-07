@@ -442,7 +442,7 @@ def plot_from_full():
     # threshold = '1.0'
     # session = 'Precon'
     # data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
-                            # 'ses-{}'.format(session), 'qutece')
+    # 'ses-{}'.format(session), 'qutece')
     csv_dir = 'csv_work_diam' + scan_type
 
     # if not os.path.exists(data_dir):

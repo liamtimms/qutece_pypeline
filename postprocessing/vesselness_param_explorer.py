@@ -188,7 +188,7 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
                 summary_df = vess_roi_extract(cropped_img, vessel_roi_img)
                 df = summary_df.T
 
-                __, unique_skele, __  = skeleton(vessel_roi_img, 2)
+                __, unique_skele, __ = skeleton(vessel_roi_img, 2)
 
                 df['gamma'] = gamma
                 df['suppressBlobs'] = suppressBlobs
@@ -202,7 +202,6 @@ def parameter_test(scan_img, mask_img, suppressBlobs_list, suppressPlates_list,
 
                 df_list.append(df)
                 print('FINISHED')
-
 
                 break
 

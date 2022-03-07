@@ -43,7 +43,7 @@ for sub_num in subject_list:
 
     # precon_scan = 'rmeansub-' + sub_num + '_ses-Precon_fast-task-rest_run-01_desc-unring_UTE_corrected.nii'
     brain_aves = [[0] * 2 for i in range(num_runs)]
-    print('sub-'+sub_num)
+    print('sub-' + sub_num)
     print(num_runs)
     for run_num in range(1, num_runs + 1):
         if run_num < 10:

@@ -361,9 +361,8 @@ def session_summary(in_folder, sub_num, session, scan_type, seg_type):
                 '_noise-Segmentation-label.nii')
         if scan_type == 'T1w':
             ROI_file_name = os.path.join(
-                roi_dir, 'T1w',
-                'rsub-' + sub_num + '_ses-Postcon_T1w_corrected' +
-                '_noise-Segmentation-label.nii')
+                roi_dir, 'T1w', 'rsub-' + sub_num +
+                '_ses-Postcon_T1w_corrected' + '_noise-Segmentation-label.nii')
 
     elif seg_type == 'tissue':
         ROI_file_name = os.path.join(

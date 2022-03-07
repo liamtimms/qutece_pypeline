@@ -12,8 +12,7 @@ image_dir = os.path.join(manualwork_dir, 'for_normalization', 'images')
 cropped_dir = os.path.join(manualwork_dir, 'for_normalization', 'crop')
 
 subject_list = [
-    '02', '03', '04', '05', '06', '08', '10', '11', '12', '13', '14',
-    '15'
+    '02', '03', '04', '05', '06', '08', '10', '11', '12', '13', '14', '15'
 ]
 
 

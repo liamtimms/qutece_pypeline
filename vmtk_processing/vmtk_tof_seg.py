@@ -35,8 +35,8 @@ def runner(subject_list, vessel_type, vessel_list):
 
     Diameter_SUMMARY = Centerline_SUMMARY.copy()
     Diameter_SUMMARY.set_index(['subject', 'vessel'], inplace=True)
-    Diameter_SUMMARY_csv = os.path.join(output_dir,
-                                        f"SUMMARY-diameter_of_{vessel_type}_TOF.csv")
+    Diameter_SUMMARY_csv = os.path.join(
+        output_dir, f"SUMMARY-diameter_of_{vessel_type}_TOF.csv")
     Diameter_SUMMARY.to_csv(Diameter_SUMMARY_csv)
     Diameter_SUMMARY['diameter'].groupby(level=[0, 1]).agg(['mean', 'std'])
     Diameter_SUMMARY['distance'].groupby(level=[0, 1]).agg(['max'])

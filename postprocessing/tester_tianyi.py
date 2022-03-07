@@ -8,12 +8,14 @@ base_dir = os.path.abspath('../..')
 datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')
 manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')
 
+
 def SetAlpha(suppressPlates):
     return 0.000 + 3.0 * pow(suppressPlates / 100.0, 2)
 
 
 def SetBeta(suppressBlobs):
     return 0.001 + 1.0 * pow((100.0 - suppressBlobs) / 100.0, 2)
+
 
 subject_list = ['02']
 for subject_num in subject_list:
@@ -49,7 +51,7 @@ for subject_num in subject_list:
         suppressPlates, suppressBlobs, gamma, sigma_max, sigma_step = params
         alpha = SetAlpha(suppressPlates)
         beta = SetBeta(suppressBlobs)
-        print('running frangi with gamma = ' + str(gamma) )
+        print('running frangi with gamma = ' + str(gamma))
         vesselness_img = frangi(scan_img,
                                 sigmas=range(1, sigma_max, sigma_step),
                                 alpha=alpha,
@@ -59,5 +61,7 @@ for subject_num in subject_list:
         print('finished')
 
 save_name = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc_maths_flirt_Vesselness.nii'
-save_nii = nib.Nifti1Image(vesselness_img, header=scan_nii.header, affine=scan_nii.affine)
+save_nii = nib.Nifti1Image(vesselness_img,
+                           header=scan_nii.header,
+                           affine=scan_nii.affine)
 nib.save(save_nii, save_name)

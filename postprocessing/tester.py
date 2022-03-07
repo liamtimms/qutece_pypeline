@@ -33,5 +33,7 @@ vesselness_img = frangi(scan_img,
                         black_ridges=False)
 
 save_name = 'rsub-02_ses-Postcon_hr_run-03_UTE_desc-preproc_maths_flirt_Vesselness_liam.nii'
-save_nii = nib.Nifti1Image(vesselness_img, header=scan_nii.header, affine=scan_nii.affine)
+save_nii = nib.Nifti1Image(vesselness_img,
+                           header=scan_nii.header,
+                           affine=scan_nii.affine)
 nib.save(save_nii, save_name)

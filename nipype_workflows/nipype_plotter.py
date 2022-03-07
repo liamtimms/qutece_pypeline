@@ -15,7 +15,8 @@ fsl.FSLCommand.set_default_output_type('NIFTI')
 def plots(working_dir, subject_list, scan_type):
 
     # -----------------Inputs--------------------------------
-    output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(working_dir)
+    output_dir, temp_dir, workflow_dir, fsl_dir, _ = cnp.set_common_dirs(
+        working_dir)
 
     MNI_file = os.path.join(fsl_dir, 'MNI152_T1_1mm.nii.gz')
     MNI_brain_file = os.path.join(fsl_dir, 'MNI152_T1_1mm_brain.nii.gz')

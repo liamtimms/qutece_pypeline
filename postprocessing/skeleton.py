@@ -57,8 +57,9 @@ def skeles(in_folder, sub_num, session, scan_type):
     # print('Selected files are: ')
     # print(nii_files)
 
-    data_dir = os.path.join(manualwork_dir, in_folder, 'sub-{}'.format(sub_num),
-                            'ses-{}'.format(session), 'qutece')
+    data_dir = os.path.join(manualwork_dir, in_folder,
+                            'sub-{}'.format(sub_num), 'ses-{}'.format(session),
+                            'qutece')
     if not os.path.exists(data_dir):
         data_dir = os.path.join(manualwork_dir, in_folder,
                                 'sub-{}'.format(sub_num),
