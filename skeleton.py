@@ -44,18 +44,35 @@ def skeletonize_nii(scan_nii, threshold):
 def skeles(in_folder, sub_num, session, scan_type):
     skele_dir = 'skeletonized'
 
-    data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
+    # data_dir = os.path.join(datasink_dir, in_folder, 'sub-{}'.format(sub_num),
+    #                         'ses-{}'.format(session), 'qutece')
+    # if not os.path.exists(data_dir):
+    #     data_dir = os.path.join(datasink_dir, in_folder,
+    #                             'sub-{}'.format(sub_num),
+    #                             'ses-{}'.format(session))
+    # if not os.path.exists(data_dir):
+    #     data_dir = os.path.join(datasink_dir, in_folder,
+    #                             'sub-{}'.format(sub_num))
+
+    # session_pattern = '*' + session + '*' + scan_type + '*'
+    # path_pattern = os.path.join(data_dir, session_pattern)
+    # nii_files = glob.glob(path_pattern)
+    # print('Selected files are: ')
+    # print(nii_files)
+
+    data_dir = os.path.join(manualwork_dir, in_folder, 'sub-{}'.format(sub_num),
                             'ses-{}'.format(session), 'qutece')
     if not os.path.exists(data_dir):
-        data_dir = os.path.join(datasink_dir, in_folder,
+        data_dir = os.path.join(manualwork_dir, in_folder,
                                 'sub-{}'.format(sub_num),
                                 'ses-{}'.format(session))
     if not os.path.exists(data_dir):
-        data_dir = os.path.join(datasink_dir, in_folder,
+        data_dir = os.path.join(manualwork_dir, in_folder,
                                 'sub-{}'.format(sub_num))
 
     session_pattern = '*' + session + '*' + scan_type + '*'
-    path_pattern = os.path.join(data_dir, session_pattern)
+    vesselness_pattern = '*' + 'sb=25_sp=10' + '*'
+    path_pattern = os.path.join(data_dir, session_pattern + vesselness_pattern)
     nii_files = glob.glob(path_pattern)
     print('Selected files are: ')
     print(nii_files)
@@ -70,7 +87,7 @@ def skeles(in_folder, sub_num, session, scan_type):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        threshold = 2000
+        threshold = 0.15
         skele_nii = skeletonize_nii(scan_nii, threshold)
 
         save_name = (fname + '_skeleton-' + str(threshold) + '.nii')
@@ -80,10 +97,12 @@ def skeles(in_folder, sub_num, session, scan_type):
 
 
 def main():
-    in_folder = 'preprocessing'
-    sub_num = '15'
-    session = 'Postcon'
-    scan_type = 'hr'
+    # in_folder = 'preprocessing'
+    in_folder = 'vesselness_filtered_2'
+    # in_folder = 'intrasession_coregister'
+    sub_num = '14'
+    session = 'Precon'
+    scan_type = 'TOF'
     skeles(in_folder, sub_num, session, scan_type)
 
     # subject_list = [

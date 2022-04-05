@@ -284,7 +284,7 @@ def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
 
     sns.set_theme()
     filt_df = filt_df.reset_index()
-    a = filt_df['sub_num'].nunique() / 10
+    a = filt_df['sub_num'].nunique() / 15
     sns_plot = sns.catplot(
         x="sub_num",
         y=y_axis,
@@ -293,7 +293,7 @@ def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):
         # hue="session",
         # col="scan_type",
         kind="bar",
-        height=8,
+        height=6,
         aspect=a,
         data=filt_df)
 
@@ -915,9 +915,8 @@ def calc_cnr(signal_df, tissue_df, noise_df):
     signal_filt_df = signal_df.filter(
         items=['mean', 'std', 'session', 'file']).filter(regex='^1',
                                                          axis=0).reset_index()
-    tissue_filt_df = tissue_df.filter(
-        items=['mean', 'std', 'file']).filter(regex='^1',
-                                                         axis=0).reset_index()
+    tissue_filt_df = tissue_df.filter(items=['mean', 'std', 'file']).filter(
+        regex='^1', axis=0).reset_index()
     # Rename columns
     signal_filt_df.rename(columns={
         'mean': 'signal_mean',
@@ -1060,7 +1059,8 @@ def snr_compare():
     print(filt_df.head())
     print(filt_df.tail())
 
-    subjects = set(list(ute_df['sub_num'])).intersection(list(tof_df['sub_num']))
+    subjects = set(list(ute_df['sub_num'])).intersection(
+        list(tof_df['sub_num']))
     print(subjects)
 
     filt_df = filt_df[filt_df['sub_num'].isin(subjects)]
