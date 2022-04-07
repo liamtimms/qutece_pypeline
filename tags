@@ -135,6 +135,7 @@ atlas_runner	plotter.py	/^def atlas_runner(subject_list, scan_type):$/;"	f
 ave	snr_extract.py	/^                ave = np.nanmean(vals)$/;"	v
 ave	snr_extract_corr.py	/^                ave = np.nanmean(vals)$/;"	v
 ave_filename	time-series.py	/^    ave_filename = os.path.join($/;"	v
+base_dir	distibution.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
 base_dir	plotter.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
 base_dir	skeleton.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
 base_dir	tester_tianyi.py	/^base_dir = os.path.abspath('..\/..')$/;"	v
@@ -178,6 +179,8 @@ calc_snr	plotter.py	/^def calc_snr(signal_df, noise_df):$/;"	f
 calc_transforms	nipype_calc_transforms.py	/^def calc_transforms(working_dir, subject_list):$/;"	f
 calc_transforms_wf	nipype_controller_liam.py	/^calc_transforms_wf = calc_transforms(working_dir, subject_list)$/;"	v
 category_plot	plotter.py	/^def category_plot(postcon_df, precon_df, save_dir, sub_num, seg_type, x_axis,$/;"	f
+cleaning	plotting_snr_cnr_clean.py	/^def cleaning(df):$/;"	f
+cleaning_phantom	plotting_snr_cnr_clean.py	/^def cleaning_phantom(phantom_df):$/;"	f
 cmdVesselness	vmtk_vesselness_param_explorer.py	/^            cmdVesselness = ($/;"	v
 cnp	nipype_apply_transforms.py	/^import CustomNiPype as cnp$/;"	I
 cnp	nipype_cbv_whbrain.py	/^import CustomNiPype as cnp$/;"	I
@@ -205,6 +208,7 @@ command	bids_extraction.py	/^                command = 'dcm2bids -d ' + DICOM_DI
 command	bids_extraction.py	/^command = 'dcm2bids_scaffold'$/;"	v
 command	bids_extraction.py	/^command = 'gunzip -r ' + bids_dir$/;"	v
 compare	plotter.py	/^def compare():$/;"	f
+concat_and_merge_dfs	plotting_snr_cnr_clean.py	/^def concat_and_merge_dfs(hr_df, TOF_df, T1w_df, weight_df):$/;"	f
 contents	bids_extraction.py	/^    contents = os.listdir(pat_dir)$/;"	v
 coreg2_wf	nipype_controller_liam.py	/^coreg2_wf = pre_to_post_coregister(working_dir, subject_list)$/;"	v
 coreg_wf	nipype_controller_liam.py	/^coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)$/;"	v
@@ -220,6 +224,7 @@ data_dir	snr_extract_corr.py	/^    data_dir = os.path.join(base_path, 'derivativ
 datasink	nipype_fft.py	/^datasink = eng.Node(nio.DataSink(base_directory=output_dir,$/;"	v
 datasink	nipype_normalize_croppedbrain.py	/^datasink = eng.Node(nio.DataSink(base_directory=output_dir,$/;"	v
 datasink	nipype_preproc_kidney.py	/^datasink = eng.Node(nio.DataSink(base_directory=output_dir,$/;"	v
+datasink_dir	distibution.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
 datasink_dir	plotter.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
 datasink_dir	skeleton.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
 datasink_dir	tester_tianyi.py	/^datasink_dir = os.path.join(base_dir, 'derivatives', 'datasink')$/;"	v
@@ -286,6 +291,7 @@ filestart	nipype_fft.py	/^filestart = 'sub-{subject_id}_ses-' + session + '_'$/;
 filestart	nipype_normalize_croppedbrain.py	/^filestart = 'sub-{subject_id}_ses-' + session + '_'$/;"	v
 filestart	nipype_preproc_kidney.py	/^filestart = 'sub-{subject_id}_ses-{session_id}'$/;"	v
 filestart	nipype_reconall.py	/^filestart = 'sub-' + subject + '_ses-' + session + '_'$/;"	v
+filtering	plotting_snr_cnr_clean.py	/^def filtering(full_df):$/;"	f
 fname	fft-distance_refactor.py	/^                pth, fname, ext = split_filename(fft_filename)$/;"	v
 fname	snr_extract.py	/^            path, fname, ext = split_filename(filename)$/;"	v
 fname	snr_extract_corr.py	/^            fname = fname.replace('_corrected', '')$/;"	v
@@ -324,6 +330,7 @@ gamma_list	tester_tianyi.py	/^    gamma_list = [p * 177 for p in [0.25]]$/;"	v
 hist_plot_alt	plotter.py	/^def hist_plot_alt(df, seg_type, save_dir):$/;"	f
 hist_plots	plotter.py	/^def hist_plots(df, seg_type, save_dir):$/;"	f
 i	fft-distance_refactor.py	/^                                i = int(i)$/;"	v
+img_dir	distibution.py	/^img_dir = os.path.join(base_dir, 'renderings', 'figure-making', 'sub-02_hr_brain_thresholded_ren/;"	v
 inVesselness_list	vmtk_vesselness_param_explorer.py	/^    inVesselness_list = glob.glob(inVesselness_pattern)$/;"	v
 inVesselness_pattern	vmtk_vesselness_param_explorer.py	/^    inVesselness_pattern = os.path.join(basefolder, scanfolder,$/;"	v
 in_file	CustomNiPype.py	/^    in_file = File(exists=True, mandatory=True)$/;"	v	class:FFTInputSpec
@@ -366,12 +373,17 @@ j_obj	snr_extract_corr.py	/^                j_obj = json.load(json_file)$/;"	v
 json_dir	snr_extract_corr.py	/^    json_dir = os.path.join(base_path, 'sub-' + sub_num, 'ses-Post', 'qutece')$/;"	v
 jsonfilename	snr_extract.py	/^            jsonfilename = os.path.join(data_dir, fname + '.json')$/;"	v
 jsonfilename	snr_extract_corr.py	/^            jsonfilename = os.path.join(json_dir, fname + '.json')$/;"	v
+load_dfs	plotting_snr_cnr_clean.py	/^def load_dfs():$/;"	f
 load_full_summary_dfs	plotter.py	/^def load_full_summary_dfs(seg_type_list, scan_type):$/;"	f
+load_niis	distibution.py	/^def load_niis():$/;"	f
+load_phantom_df	plotting_snr_cnr_clean.py	/^def load_phantom_df():$/;"	f
 load_summary_dfs	plotter.py	/^def load_summary_dfs(csv_dir, sub_num, session, seg_type, scan_type):$/;"	f
 main	plotter.py	/^def main():$/;"	f
+main	plotting_snr_cnr_clean.py	/^def main():$/;"	f
 main	skeleton.py	/^def main():$/;"	f
 main	vesselness_param_explorer.py	/^def main():$/;"	f
 main	vesselness_param_explorer_tof.py	/^def main():$/;"	f
+manualwork_dir	distibution.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
 manualwork_dir	plotter.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
 manualwork_dir	skeleton.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
 manualwork_dir	tester_tianyi.py	/^manualwork_dir = os.path.join(base_dir, 'derivatives', 'manualwork')$/;"	v
@@ -390,6 +402,7 @@ n	snr_extract.py	/^    n = 0$/;"	v
 n	snr_extract_corr.py	/^            n = n + 1$/;"	v
 n	snr_extract_corr.py	/^    n = 0$/;"	v
 nib	CustomNiPype.py	/^import nibabel as nib$/;"	I
+nib	distibution.py	/^import nibabel as nib$/;"	I
 nib	fft-distance_refactor.py	/^import nibabel as nib$/;"	I
 nib	plotter.py	/^import nibabel as nib$/;"	I
 nib	skeleton.py	/^import nibabel as nib$/;"	I
@@ -502,13 +515,16 @@ pat_folders	bids_extraction.py	/^pat_folders = os.listdir(dcm_dir)$/;"	v
 path	snr_extract.py	/^            path, fname, ext = split_filename(filename)$/;"	v
 path	snr_extract_corr.py	/^            path, fname, ext = split_filename(filename)$/;"	v
 pd	CustomNiPype.py	/^import pandas as pd$/;"	I
+pd	distibution.py	/^import pandas as pd$/;"	I
 pd	fft-distance_refactor.py	/^import pandas as pd$/;"	I
 pd	plotter.py	/^import pandas as pd$/;"	I
+pd	plotting_snr_cnr_clean.py	/^import pandas as pd$/;"	I
 pd	snr_extract.py	/^import pandas as pd$/;"	I
 pd	snr_extract_corr.py	/^import pandas as pd$/;"	I
 pd	time-series.py	/^import pandas as pd$/;"	I
 pd	vesselness_param_explorer.py	/^import pandas as pd$/;"	I
 pd	vesselness_param_explorer_tof.py	/^import pandas as pd$/;"	I
+phantom_plot	plotting_snr_cnr_clean.py	/^def phantom_plot(filt_df, y_axis):$/;"	f
 pixdim	snr_extract.py	/^            pixdim = scan_hdr['pixdim']$/;"	v
 pixdim	snr_extract_corr.py	/^            pixdim = scan_hdr['pixdim']$/;"	v
 pixelspacing	vmtk_vesselness_param_explorer.py	/^        pixelspacing = GetPixelSpacing(inVesselness)$/;"	v
@@ -642,7 +658,9 @@ snr_subject_summary	plotter.py	/^def snr_subject_summary(sub_num, scan_type):$/;
 snr_tissue	snr_extract.py	/^            snr_tissue = tissue \/ noise$/;"	v
 snr_tissue	snr_extract_corr.py	/^            snr_tissue = tissue \/ noise$/;"	v
 sns	CustomNiPype.py	/^import seaborn as sns$/;"	I
+sns	distibution.py	/^import seaborn as sns$/;"	I
 sns	plotter.py	/^import seaborn as sns$/;"	I
+sns	plotting_snr_cnr_clean.py	/^import seaborn as sns$/;"	I
 spm	nipype_apply_transforms.py	/^import nipype.interfaces.spm as spm$/;"	I
 spm	nipype_csv_analysis.py	/^import nipype.interfaces.spm as spm$/;"	I
 spm	nipype_fft.py	/^import nipype.interfaces.spm as spm$/;"	I
@@ -696,6 +714,7 @@ subject_list	vmtk_vesselness_param_explorer.py	/^subject_list = [$/;"	v
 subject_num	bids_extraction.py	/^            subject_num = pat_folder[2:4]  # extract subject number$/;"	v
 subject_summary	plotter.py	/^def subject_summary(sub_num, scan_type, seg_type):$/;"	f
 subjects_plot	plotter.py	/^def subjects_plot(filt_df, save_dir, seg_type, y_axis):$/;"	f
+subjects_plot	plotting_snr_cnr_clean.py	/^def subjects_plot(filt_df, y_axis):$/;"	f
 subjects_plot_compare	plotter.py	/^def subjects_plot_compare(filt_df, save_dir, seg_type, y_axis):$/;"	f
 substitutions	nipype_fft.py	/^substitutions = [('_subject_id_', 'sub-')]$/;"	v
 substitutions	nipype_normalize_croppedbrain.py	/^substitutions = [('_subject_id_', 'sub-')]$/;"	v

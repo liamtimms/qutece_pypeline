@@ -671,12 +671,15 @@ def subject_summary(sub_num, scan_type, seg_type):
     session = 'Precon'
     precon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
                                       scan_type)
-    precon_df = pd.concat(precon_df_list)
+    print("precon list:")
     print(precon_df_list)
+    precon_df = pd.concat(precon_df_list)
 
     session = 'Postcon'
     postcon_df_list = load_summary_dfs(csv_dir, sub_num, session, seg_type,
                                        scan_type)
+    print("postcon list:")
+    print(postcon_df_list)
     postcon_df = pd.concat(postcon_df_list)
     # print(postcon_df_list)
     # if len(postcon_df_list) > 1:
@@ -799,8 +802,8 @@ def full_summary(datasink_dir, subject_list, scan_type, seg_type):
 
     save_dir = os.path.join(datasink_dir, plots_dir)
     y_axis = 'mean'
-    if seg_type != 'Neuromorphometrics':
-        subjects_plot(filt_df, save_dir, seg_type, y_axis)
+    # if seg_type != 'Neuromorphometrics':
+    #     subjects_plot(filt_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
     save_dir = os.path.join(datasink_dir, csv_dir)
@@ -848,12 +851,12 @@ def snr_full_summary(datasink_dir, subject_list, scan_type):
     print(full_df.head())
 
     save_dir = os.path.join(datasink_dir, plots_dir)
-    y_axis = 'SNR'
-    subjects_plot(full_df, save_dir, seg_type, y_axis)
-    y_axis = 'ISH'
-    subjects_plot(full_df, save_dir, seg_type, y_axis)
-    y_axis = 'CNR'
-    subjects_plot(full_df, save_dir, seg_type, y_axis)
+    # y_axis = 'SNR'
+    # subjects_plot(full_df, save_dir, seg_type, y_axis)
+    # y_axis = 'ISH'
+    # subjects_plot(full_df, save_dir, seg_type, y_axis)
+    # y_axis = 'CNR'
+    # subjects_plot(full_df, save_dir, seg_type, y_axis)
 
     save_name = ('FULL_SUMMARY_seg-{}.csv').format(seg_type)
     save_dir = os.path.join(datasink_dir, csv_dir)
@@ -1184,7 +1187,11 @@ def tissue_runner(subject_list, scan_type):
 
 def brain_runner(subject_list, scan_type):
     seg_type = 'brain_preFLIRT'
-    folder_post = 'preprocessing'
+    if scan_type == 'hr':
+        folder_post = 'preprocessing'
+    elif scan_type == 'T1w':
+        folder_post = 'intrasession_coregister'
+
     folder_pre = 'pre_to_post_coregister'
     base_runner(subject_list, seg_type, scan_type, folder_post, folder_pre)
 
@@ -1258,6 +1265,7 @@ def tof_runner():
 #     return summary_df
 
 
+
 def main():
 
     subject_list = [
@@ -1266,16 +1274,16 @@ def main():
     ]
     # subject_list = ['10', '11', '12', '13', '14', '15']
     # subject_list = ['02', '03', '04', '05', '06', '07', '08']
-    subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11']
+    # subject_list = ['02', '03', '04', '05', '06', '07', '08', '10', '11']
     # scan_type = 'hr'
-    # subject_list = ['11']
+    # subject_list = ['14']
     scan_type = 'T1w'
     # vesselness_runner(subject_list, scan_type)
     # tissue_runner(subject_list, scan_type)
     # noise_runner(subject_list, scan_type)
+    brain_runner(subject_list, scan_type)
     # tof_runner()
-    # brain_runner(subject_list, scan_type)
-    snr_runner(subject_list, scan_type)
+    # snr_runner(subject_list, scan_type)
     # snr_compare()
     # atlas_runner(subject_list, scan_type)
     # compare()
