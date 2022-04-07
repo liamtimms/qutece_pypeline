@@ -29,9 +29,6 @@ session_list = ['Post']
 subdirectory = os.path.join('sub-{subject_id}', 'ses-{session_id}')
 filestart = 'sub-{subject_id}_ses-{session_id}'
 
-# TODO: probably best to run all of the non-UTE scans through these
-# same corrections makes it more fair and also might technically help coreg
-
 scantype = 'qutece'
 qutece_highres_files = os.path.join(subdirectory, scantype,
                                     filestart + '_SPIRiT_norm_HR_UTE.nii')
@@ -43,6 +40,10 @@ qutece_breathhold_files = os.path.join(subdirectory, scantype,
 
 qutece_files = os.path.join(subdirectory, scantype, filestart + '_*UTE.nii')
 templates = {'qutece': qutece_files}
+
+# ROI
+roi_files = os.path.join(output_dir, 'manual-work', 'snr', 'sub-{subject_id}',
+                         'SNR_' + filestart + '_*UTE_Segmentation-label.nii')
 
 # Infosource - a function free node to iterate over the list of subject names
 infosource = eng.Node(
@@ -61,38 +62,39 @@ selectfiles = eng.Node(nio.SelectFiles(templates,
 
 # -----------------------NoiseAdder----------------------
 noise_adder = eng.MapNode(cnp.LowerSNRNii(),
-                     name = 'noise_adder', iterfield=['in_file'])
+                          name='noise_adder',
+                          iterfield=['in_file'])
 noise_adder.inputs.std = 100
 # -------------------------------------------------------
 
 # ------------------------Output-------------------------
 # Datasink - creates output folder for important outputs
 datasink = eng.Node(nio.DataSink(base_directory=output_dir,
-                         container=temp_dir),
-                name="datasink")
+                                 container=temp_dir),
+                    name="datasink")
 # Use the following DataSink output substitutions
 substitutions = [('_subject_id_', 'sub-'), ('_session_id_', 'ses-')]
-subjFolders = [('ses-%ssub-%s' % (ses, sub), ('sub-%s/ses-%s/'+scantype) % (sub, ses))
-               for ses in session_list
-               for sub in subject_list]
+subjFolders = [('ses-%ssub-%s' % (ses, sub),
+                ('sub-%s/ses-%s/' + scantype) % (sub, ses))
+               for ses in session_list for sub in subject_list]
 substitutions.extend(subjFolders)
 datasink.inputs.substitutions = substitutions
-datasink.inputs.regexp_substitutions = [('_noise_adder.','')]
+datasink.inputs.regexp_substitutions = [('_noise_adder.', '')]
 # -------------------------------------------------------
 
 # -----------------PreprocWorkflow------------------------
 task = 'LowerSNR'
-preproc_wf = eng.Workflow(name = task, base_dir = working_dir + '/workflow')
+preproc_wf = eng.Workflow(name=task, base_dir=working_dir + '/workflow')
 preproc_wf.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),
-                                             ('session_id', 'session_id')]),
-                  (selectfiles, noise_adder, [('qutece', 'in_file')]),
-                  (noise_adder, datasink,  [('out_file', task+'.@con')])])
+                                               ('session_id', 'session_id')]),
+                    (selectfiles, noise_adder, [('qutece', 'in_file')]),
+                    (noise_adder, datasink, [('out_file', task + '.@con')])])
 # -------------------------------------------------------
 
 # -------------------WorkflowPlotting--------------------
 preproc_wf.write_graph(graph2use='flat')
 from IPython.display import Image
-Image(filename=working_dir + "/workflow/"+ task + "/graph_detailed.png")
+Image(filename=working_dir + "/workflow/" + task + "/graph_detailed.png")
 # -------------------------------------------------------
 
 #preproc_wf.run()

@@ -3,7 +3,6 @@ from nipype.interfaces.base import TraitedSpec, \
     BaseInterface, BaseInterfaceInputSpec, File, traits
 import os
 from string import Template
-# import re
 import numpy as np
 import pandas as pd
 import nibabel as nib
@@ -85,7 +84,7 @@ class DiffNii(BaseInterface):
         file1_img = np.array(file1_nii.get_fdata())
         file2_img = np.array(file2_nii.get_fdata())
 
-        #if file1_img.size()~=file2_img.size():
+        # if file1_img.size()~=file2_img.size():
         #    nii2 = nil.resample_to_img(nii2, nii1)
 
         diff_img = file2_img - file1_img
@@ -213,7 +212,7 @@ class FFTNii(BaseInterface):
 # -----------------------------------------------
 
 
-# -------------- ROI Anlayze --------------------
+# -------------- ROI Analyze --------------------
 class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
     roi_file = File(exists=True, mandatory=True)
     scan_file = File(exists=True, mandatory=True)
@@ -247,44 +246,45 @@ class ROIAnalyze(BaseInterface):
 
             crop_img = np.multiply(scan_img, roi)
             vals = np.reshape(crop_img, -1)
+            numpoints = np.count_nonzero(~np.isnan(vals))
             ave = np.nanmean(vals)
             std = np.nanstd(vals)
-            out_data[n][1] = r
-            out_data[n][2] = ave
-            out_data[n][3] = std
+            out_data[n][0] = r
+            out_data[n][1] = ave
+            out_data[n][2] = std
+            out_data[n][3] = numpoints
             n = n + 1
 
-        pth, fname, ext = split_filename(scan_file_name)
-        out_file_name = os.path.join(fname + '_fft.nii')
-        pd.DataFrame(out_data).to_csv(out_file_name)
+        pth, fname1, ext = split_filename(scan_file_name)
+        pth, fname2, ext = split_filename(ROI_file_name)
+        out_file_name = os.path.join(fname1 + '_DataFrom_' + fname2 + '.csv')
+        pd.DataFrame(out_data).to_csv(out_file_name, index=False)
 
-        # nib.save(fft_nii, fft_file_name)
         setattr(self, '_out_file', out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        roi_file_name = self.inputs.roi_file
-        pth, fname, ext = split_filename(roi_file_name)
-        fft_file_name = os.path.join(fname + '_fft.nii')
-        outputs['out_file'] = os.path.abspath(fft_file_name)
+        scan_file_name = self.inputs.scan_file
+        ROI_file_name = self.inputs.roi_file
+        pth, fname1, ext = split_filename(scan_file_name)
+        pth, fname2, ext = split_filename(ROI_file_name)
+        out_file_name = os.path.join(fname1 + '_DataFrom_' + fname2 + '.csv')
+        outputs['out_file'] = os.path.abspath(out_file_name)
         return outputs
 
 
 # -----------------------------------------------
 
 
-
-# -----------------------------------------------
+# ----------------LowerSNRNii--------------------
 class LowerSNRInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
     std = traits.Float(mandatory=True, desc='std of noise to add')
 
 
-
 class LowerSNROutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='Adding Gaussian Noise')
-
 
 
 class LowerSNRNii(BaseInterface):
@@ -301,7 +301,7 @@ class LowerSNRNii(BaseInterface):
         noisey_img = in_file_img + noise
 
         noisey_nii = nib.Nifti1Image(noisey_img, in_file_nii.affine,
-                                  in_file_nii.header)
+                                     in_file_nii.header)
         noisey_nii.set_data_dtype(np.double)
 
         pth, fname, ext = split_filename(in_file_name)
@@ -318,5 +318,6 @@ class LowerSNRNii(BaseInterface):
         noisey_file_name = os.path.join(fname + '_noisey.nii')
         outputs['out_file'] = os.path.abspath(noisey_file_name)
         return outputs
+
 
 # -----------------------------------------------

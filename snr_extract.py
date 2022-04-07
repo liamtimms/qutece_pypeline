@@ -7,8 +7,6 @@ from nipype.utils.filemanip import split_filename
 
 base_path = '../..'
 subject_list = ['3', '4', '5', '6']
-subject_list = ['8']
-#subject_list = ['3', '4']
 
 for sub_num in subject_list:
     data_dir = os.path.join(base_path, 'sub-' + sub_num, 'ses-Post', 'qutece')
@@ -131,6 +129,6 @@ for sub_num in subject_list:
             n = n + 1
 
         scan_vals_csv_filename = os.path.join(
-            av_mask_dir, 'snr_arteryvein_sub-' + sub_num + '.csv')
+            av_mask_dir, 'sub-' + sub_num + '_snr_arteryvein.csv')
         export = pd.DataFrame(sub_vals)
         export.to_csv(scan_vals_csv_filename, index=False)
