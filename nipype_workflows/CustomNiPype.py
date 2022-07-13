@@ -18,12 +18,12 @@ from nipype.utils.filemanip import split_filename
 # -------------------WorkflowRunner--------------
 def workflow_runner(workflow, num_cores):
 
-    workflow.write_graph(graph2use='flat')
+    workflow.write_graph(graph2use="flat")
 
     if num_cores < 2:
         workflow.run()
     else:
-        workflow.run(plugin='MultiProc', plugin_args={'n_procs': num_cores})
+        workflow.run(plugin="MultiProc", plugin_args={"n_procs": num_cores})
 
     os.system("notify-send " + workflow.name + " done")
 
@@ -33,11 +33,11 @@ def workflow_runner(workflow, num_cores):
 
 # -------------------WorkflowRunner--------------
 def set_common_dirs(working_dir):
-    output_dir = os.path.join(working_dir, 'derivatives/')
-    temp_dir = os.path.join(output_dir, 'datasink/')
-    workflow_dir = working_dir + '/workflow'
-    fsl_dir = '/opt/fsl/data/standard/'
-    spm_dir = '/opt/spm12/tpm/'
+    output_dir = os.path.join(working_dir, "derivatives/")
+    temp_dir = os.path.join(output_dir, "datasink/")
+    workflow_dir = working_dir + "/workflow"
+    fsl_dir = "/opt/fsl/data/standard/"
+    spm_dir = "/opt/spm12/tpm/"
 
     return output_dir, temp_dir, workflow_dir, fsl_dir, spm_dir
 
@@ -51,7 +51,7 @@ class UnringNiiInputSpec(BaseInterfaceInputSpec):
 
 
 class UnringNiiOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='the unringed file')
+    out_file = File(exists=True, desc="the unringed file")
 
 
 class UnringNii(BaseInterface):
@@ -61,10 +61,10 @@ class UnringNii(BaseInterface):
     def _run_interface(self, runtime):
         in_file_name = self.inputs.in_file
 
-        out_file_name = in_file_name.split('_')
-        out_file_name.insert(-1, 'desc-unring')
-        out_file_name = '_'.join(out_file_name)
-        setattr(self, '_out_file', out_file_name)
+        out_file_name = in_file_name.split("_")
+        out_file_name.insert(-1, "desc-unring")
+        out_file_name = "_".join(out_file_name)
+        setattr(self, "_out_file", out_file_name)
         d = dict(in_file=self.inputs.in_file, out_file=out_file_name)
 
         # This is your MATLAB code template
@@ -89,7 +89,7 @@ class UnringNii(BaseInterface):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['out_file'] = getattr(self, '_out_file')
+        outputs["out_file"] = getattr(self, "_out_file")
         return outputs
 
 
@@ -103,7 +103,7 @@ class DiffInputSpec(BaseInterfaceInputSpec):
 
 
 class DiffOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='file2 minus file1')
+    out_file = File(exists=True, desc="file2 minus file1")
 
 
 class DiffNii(BaseInterface):
@@ -130,9 +130,9 @@ class DiffNii(BaseInterface):
         # nipype.readthedocs.io/en/latest/devel/python_interface_devel.html
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
-        diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
+        diff_file_name = os.path.join(fname2 + "_minus_" + fname1 + ".nii")
         nib.save(diff_nii, diff_file_name)
-        setattr(self, '_out_file', diff_file_name)
+        setattr(self, "_out_file", diff_file_name)
         return runtime
 
     def _list_outputs(self):
@@ -141,9 +141,9 @@ class DiffNii(BaseInterface):
         file2_name = self.inputs.file2
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
-        diff_file_name = os.path.join(fname2 + '_minus_' + fname1 + '.nii')
+        diff_file_name = os.path.join(fname2 + "_minus_" + fname1 + ".nii")
         # outputs['out_file'] = getattr(self, '_out_file')
-        outputs['out_file'] = os.path.abspath(diff_file_name)
+        outputs["out_file"] = os.path.abspath(diff_file_name)
         return outputs
 
 
@@ -157,7 +157,7 @@ class DivInputSpec(BaseInterfaceInputSpec):
 
 
 class DivOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='file1 divided by file2')
+    out_file = File(exists=True, desc="file1 divided by file2")
 
 
 class DivNii(BaseInterface):
@@ -182,9 +182,9 @@ class DivNii(BaseInterface):
 
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
-        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        div_file_name = os.path.join(fname1 + "_divby_" + fname2 + ".nii")
         nib.save(div_nii, div_file_name)
-        setattr(self, '_out_file', div_file_name)
+        setattr(self, "_out_file", div_file_name)
         return runtime
 
     def _list_outputs(self):
@@ -193,9 +193,9 @@ class DivNii(BaseInterface):
         file2_name = self.inputs.file2
         pth, fname1, ext = split_filename(file1_name)
         pth, fname2, ext = split_filename(file2_name)
-        div_file_name = os.path.join(fname1 + '_divby_' + fname2 + '.nii')
+        div_file_name = os.path.join(fname1 + "_divby_" + fname2 + ".nii")
         # outputs['out_file'] = getattr(self, '_out_file')
-        outputs['out_file'] = os.path.abspath(div_file_name)
+        outputs["out_file"] = os.path.abspath(div_file_name)
         return outputs
 
 
@@ -208,7 +208,7 @@ class FFTInputSpec(BaseInterfaceInputSpec):
 
 
 class FFTOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Fast Fourier Transform')
+    out_file = File(exists=True, desc="Fast Fourier Transform")
 
 
 class FFTNii(BaseInterface):
@@ -231,17 +231,17 @@ class FFTNii(BaseInterface):
 
         pth, fname, ext = split_filename(in_file_name)
 
-        fft_file_name = os.path.join(fname + '_fft.nii')
+        fft_file_name = os.path.join(fname + "_fft.nii")
         nib.save(fft_nii, fft_file_name)
-        setattr(self, '_out_file', fft_file_name)
+        setattr(self, "_out_file", fft_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        fft_file_name = os.path.join(fname + '_fft.nii')
-        outputs['out_file'] = os.path.abspath(fft_file_name)
+        fft_file_name = os.path.join(fname + "_fft.nii")
+        outputs["out_file"] = os.path.abspath(fft_file_name)
         return outputs
 
 
@@ -254,7 +254,7 @@ class ResampInputSpec(BaseInterfaceInputSpec):
 
 
 class ResampOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Resampled nii')
+    out_file = File(exists=True, desc="Resampled nii")
 
 
 class ResampNii(BaseInterface):
@@ -266,7 +266,7 @@ class ResampNii(BaseInterface):
         in_file_nii = nib.load(in_file_name)
 
         # Rescale affine and feed into resample function
-        in_file_voxdim = in_file_nii.header['pixdim'][1:4]
+        in_file_voxdim = in_file_nii.header["pixdim"][1:4]
         resamp_file_voxdim = np.array([1, 1, 1])
         target_affine = nib.affines.rescale_affine(in_file_nii.affine,
                                                    in_file_voxdim,
@@ -276,18 +276,18 @@ class ResampNii(BaseInterface):
         # resamp_img = np.array(resamp_nii.get_fdata())
 
         pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_resamp.nii')
+        out_file_name = os.path.join(fname + "_resamp.nii")
         # nib.save(trimmed_nii, out_file_name)
         nib.save(resamp_nii, out_file_name)
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_resamp.nii')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_file_name = os.path.join(fname + "_resamp.nii")
+        outputs["out_file"] = os.path.abspath(out_file_name)
         return outputs
 
 
@@ -298,11 +298,11 @@ class ResampNii(BaseInterface):
 class TrimInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
     trim_width = traits.Int(default_value=2,
-                            desc='Width of image edge to be cut')
+                            desc="Width of image edge to be cut")
 
 
 class TrimOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Trimmed nii')
+    out_file = File(exists=True, desc="Trimmed nii")
 
 
 class TrimNii(BaseInterface):
@@ -339,20 +339,20 @@ class TrimNii(BaseInterface):
             1,
         ])
         dim_in_header = dim_in_header.astype(int)
-        in_file_nii.header['dim'] = dim_in_header
+        in_file_nii.header["dim"] = dim_in_header
 
         pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_trimmed.nii')
+        out_file_name = os.path.join(fname + "_trimmed.nii")
         nib.save(trimmed_nii, out_file_name)
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_trimmed.nii')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_file_name = os.path.join(fname + "_trimmed.nii")
+        outputs["out_file"] = os.path.abspath(out_file_name)
         return outputs
 
 
@@ -366,7 +366,7 @@ class ROIAnalyzeInputSpec(BaseInterfaceInputSpec):
 
 
 class ROIAnalyzeOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='file with statistical data')
+    out_file = File(exists=True, desc="file with statistical data")
 
 
 class ROIAnalyze(BaseInterface):
@@ -390,7 +390,7 @@ class ROIAnalyze(BaseInterface):
             # n counts for number of labels
 
             roi = (ROI_file_img == r).astype(int)
-            roi = roi.astype('float')
+            roi = roi.astype("float")
             # zero can be a true value so mask with nan
             roi[roi == 0] = np.nan
 
@@ -409,15 +409,15 @@ class ROIAnalyze(BaseInterface):
         #  out_file_name = os.path.join(fname + '.csv')
         pth, scan_fname, ext = split_filename(scan_file_name)
         pth, roi_fname, ext = split_filename(ROI_file_name)
-        out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
+        out_file_name = os.path.join(scan_fname + "_ROI-" + roi_fname + ".csv")
         if len(out_file_name) > 200:
-            out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
-                                         roi_fname + '.csv')
+            out_file_name = os.path.join(scan_fname[0:50] + "_ROI-" +
+                                         roi_fname + ".csv")
 
         pd.DataFrame(out_data).to_csv(out_file_name)
 
         # nib.save(fft_nii, fft_file_name)
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
@@ -427,11 +427,11 @@ class ROIAnalyze(BaseInterface):
         scan_file_name = self.inputs.scan_file
         pth, scan_fname, ext = split_filename(scan_file_name)
         pth, roi_fname, ext = split_filename(ROI_file_name)
-        out_file_name = os.path.join(scan_fname + '_ROI-' + roi_fname + '.csv')
+        out_file_name = os.path.join(scan_fname + "_ROI-" + roi_fname + ".csv")
         if len(out_file_name) > 200:
-            out_file_name = os.path.join(scan_fname[0:50] + '_ROI-' +
-                                         roi_fname + '.csv')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+            out_file_name = os.path.join(scan_fname[0:50] + "_ROI-" +
+                                         roi_fname + ".csv")
+        outputs["out_file"] = os.path.abspath(out_file_name)
 
         # scan_file_name = self.inputs.scan_file
         # pth, fname, ext = split_filename(scan_file_name)
@@ -448,14 +448,14 @@ class ROIAnalyze(BaseInterface):
 class CSVConcatenateInputSpec(BaseInterfaceInputSpec):
     in_files = InputMultiObject(exists=True,
                                 mandatory=True,
-                                desc='list of csvs')
+                                desc="list of csvs")
 
 
 class CSVConcatenateOutputSpec(TraitedSpec):
-    out_csv = File(exists=True, desc='concatenated csv')
-    out_mean_csv = File(exists=True, desc='mean csv')
-    out_std_csv = File(exists=True, desc='std csv')
-    out_fig = File(exists=True, disc='timeseries plots')
+    out_csv = File(exists=True, desc="concatenated csv")
+    out_mean_csv = File(exists=True, desc="mean csv")
+    out_std_csv = File(exists=True, desc="std csv")
+    out_fig = File(exists=True, disc="timeseries plots")
 
 
 class CSVConcatenate(BaseInterface):
@@ -466,59 +466,59 @@ class CSVConcatenate(BaseInterface):
         in_files = self.inputs.in_files
         df_from_each_in_file = (pd.read_csv(in_file) for in_file in in_files)
         concatenated_df = pd.concat(df_from_each_in_file, ignore_index=True)
-        concatenated_df.columns = ['ind', 'label', 'mean', 'std', 'N']
-        concatenated_df = concatenated_df.astype({'label': 'int'})
-        mean_df = concatenated_df.groupby(by='label').mean()
-        std_df = concatenated_df.groupby(by='label').std()
+        concatenated_df.columns = ["ind", "label", "mean", "std", "N"]
+        concatenated_df = concatenated_df.astype({"label": "int"})
+        mean_df = concatenated_df.groupby(by="label").mean()
+        std_df = concatenated_df.groupby(by="label").std()
 
         # grab fname info from first file in the input list
         pth, fname, ext = split_filename(in_files[0])
-        out_csv_name = os.path.join(fname + '_concatenated.csv')
+        out_csv_name = os.path.join(fname + "_concatenated.csv")
         concatenated_df.to_csv(out_csv_name)
 
-        out_mean_csv_name = os.path.join(fname + '_mean.csv')
+        out_mean_csv_name = os.path.join(fname + "_mean.csv")
         mean_df.to_csv(out_mean_csv_name)
 
-        out_std_csv_name = os.path.join(fname + '_std.csv')
+        out_std_csv_name = os.path.join(fname + "_std.csv")
         std_df.to_csv(out_std_csv_name)
 
         # plot time series
-        unique_label = np.unique(concatenated_df['label'])
+        unique_label = np.unique(concatenated_df["label"])
         fig = plt.figure(figsize=(6, 4))
         ax = fig.add_subplot(111)
         for n in unique_label:
-            condition = concatenated_df['label'] == n
-            mean = concatenated_df[condition]['mean']
-            std = concatenated_df[condition]['std']
+            condition = concatenated_df["label"] == n
+            mean = concatenated_df[condition]["mean"]
+            std = concatenated_df[condition]["std"]
             plt.errorbar(range(1,
                                len(mean) + 1),
                          mean,
                          yerr=std,
-                         label='label = ' + str(n))
-            ax.set_xlabel('Index of runs')
-            ax.set_ylabel('S.I.')
+                         label="label = " + str(n))
+            ax.set_xlabel("Index of runs")
+            ax.set_ylabel("S.I.")
             ax.legend()
-        out_fig_name = os.path.join(fname + '_timeseries.png')
-        plt.savefig(out_fig_name, bbox_inches='tight')
+        out_fig_name = os.path.join(fname + "_timeseries.png")
+        plt.savefig(out_fig_name, bbox_inches="tight")
 
-        setattr(self, '_out_csv', out_csv_name)
-        setattr(self, '_out_mean_csv', out_mean_csv_name)
-        setattr(self, '_out_std_csv', out_std_csv_name)
-        setattr(self, '_out_fig', out_fig_name)
+        setattr(self, "_out_csv", out_csv_name)
+        setattr(self, "_out_mean_csv", out_mean_csv_name)
+        setattr(self, "_out_std_csv", out_std_csv_name)
+        setattr(self, "_out_fig", out_fig_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
-        out_csv_name = os.path.join(fname + '_concatenated.csv')
-        out_mean_csv_name = os.path.join(fname + '_mean.csv')
-        out_std_csv_name = os.path.join(fname + '_std.csv')
-        out_fig_name = os.path.join(fname + '_timeseries.png')
-        outputs['out_csv'] = os.path.abspath(out_csv_name)
-        outputs['out_mean_csv'] = os.path.abspath(out_mean_csv_name)
-        outputs['out_std_csv'] = os.path.abspath(out_std_csv_name)
-        outputs['out_fig'] = os.path.abspath(out_fig_name)
+        out_csv_name = os.path.join(fname + "_concatenated.csv")
+        out_mean_csv_name = os.path.join(fname + "_mean.csv")
+        out_std_csv_name = os.path.join(fname + "_std.csv")
+        out_fig_name = os.path.join(fname + "_timeseries.png")
+        outputs["out_csv"] = os.path.abspath(out_csv_name)
+        outputs["out_mean_csv"] = os.path.abspath(out_mean_csv_name)
+        outputs["out_std_csv"] = os.path.abspath(out_std_csv_name)
+        outputs["out_fig"] = os.path.abspath(out_fig_name)
         return outputs
 
 
@@ -527,12 +527,12 @@ class CSVConcatenate(BaseInterface):
 
 # -------------- CBV whole brain ------------------
 class CBVwhBrainInputSpec(BaseInterfaceInputSpec):
-    brain_csv = File(exists=True, mandatory=True, desc='csv of brain')
-    blood_csv = File(exists=True, mandatory=True, desc='csv of blood')
+    brain_csv = File(exists=True, mandatory=True, desc="csv of brain")
+    blood_csv = File(exists=True, mandatory=True, desc="csv of blood")
 
 
 class CBVwhBrainOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='calculated CBV')
+    out_file = File(exists=True, desc="calculated CBV")
 
 
 class CBVwhBrain(BaseInterface):
@@ -545,44 +545,44 @@ class CBVwhBrain(BaseInterface):
         df_brain = pd.read_csv(brain_csv_file)
         df_blood = pd.read_csv(blood_csv_file)
 
-        df_brain.columns = ['ind1', 'ind2', 'label', 'mean', 'std']
-        df_blood.columns = ['ind1', 'ind2', 'label', 'mean', 'std']
-        df_brain = df_brain.astype({'label': 'int'})
-        df_blood = df_blood.astype({'label': 'int'})
-        isbrain = df_brain['label'] == 1
-        isblood = df_blood['label'] == 1
+        df_brain.columns = ["ind1", "ind2", "label", "mean", "std"]
+        df_blood.columns = ["ind1", "ind2", "label", "mean", "std"]
+        df_brain = df_brain.astype({"label": "int"})
+        df_blood = df_blood.astype({"label": "int"})
+        isbrain = df_brain["label"] == 1
+        isblood = df_blood["label"] == 1
 
-        deltaSIbrain = df_brain[isbrain]['mean'].to_numpy()
-        std_deltaSIbrain = df_brain[isbrain]['std'].to_numpy()
-        deltaSIblood = df_blood[isblood]['mean'].to_numpy()
-        std_deltaSIblood = df_blood[isblood]['std'].to_numpy()
+        deltaSIbrain = df_brain[isbrain]["mean"].to_numpy()
+        std_deltaSIbrain = df_brain[isbrain]["std"].to_numpy()
+        deltaSIblood = df_blood[isblood]["mean"].to_numpy()
+        std_deltaSIblood = df_blood[isblood]["std"].to_numpy()
         cbv = deltaSIbrain / deltaSIblood
         err_cbv = np.sqrt(
             np.square(std_deltaSIbrain / deltaSIbrain) +
             np.square(std_deltaSIblood / deltaSIblood))
 
         df_CBV = pd.DataFrame({
-            'deltaSIbrain': deltaSIbrain,
-            'std_deltaSIbrain': std_deltaSIbrain,
-            'deltaSIblood': deltaSIblood,
-            'std_deltaSIblood': std_deltaSIblood,
-            'CBV': cbv,
-            'err_CBV': err_cbv
+            "deltaSIbrain": deltaSIbrain,
+            "std_deltaSIbrain": std_deltaSIbrain,
+            "deltaSIblood": deltaSIblood,
+            "std_deltaSIblood": std_deltaSIblood,
+            "CBV": cbv,
+            "err_CBV": err_cbv,
         })
 
         pth, fname, ext = split_filename(brain_csv_file)
-        out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
+        out_file_name = os.path.join(fname[0:8] + "_CBV_WholeBrain.csv")
         df_CBV.to_csv(out_file_name)
 
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         brain_csv_file = self.inputs.brain_csv
         pth, fname, ext = split_filename(brain_csv_file)
-        out_file_name = os.path.join(fname[0:8] + '_CBV_WholeBrain.csv')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_file_name = os.path.join(fname[0:8] + "_CBV_WholeBrain.csv")
+        outputs["out_file"] = os.path.abspath(out_file_name)
         return outputs
 
 
@@ -593,12 +593,12 @@ class CBVwhBrain(BaseInterface):
 class CBVmapInputSpec(BaseInterfaceInputSpec):
     difference = File(exists=True,
                       mandatory=True,
-                      desc='post minus pre scan nii')
-    blood_mask = File(exists=True, mandatory=True, desc='mask of blood')
+                      desc="post minus pre scan nii")
+    blood_mask = File(exists=True, mandatory=True, desc="mask of blood")
 
 
 class CBVmapOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='calculated CBV map')
+    out_file = File(exists=True, desc="calculated CBV map")
 
 
 class CBVmap(BaseInterface):
@@ -614,7 +614,7 @@ class CBVmap(BaseInterface):
         ROI_file_nii = nib.load(ROI_file_name)
         ROI_file_img = np.array(ROI_file_nii.get_fdata())
         roi = (ROI_file_img == 1).astype(int)
-        roi = roi.astype('float')
+        roi = roi.astype("float")
         # zero can be a true value so mask with nan
         roi[roi == 0] = np.nan
         crop_img = np.multiply(difference_img, roi)
@@ -626,17 +626,17 @@ class CBVmap(BaseInterface):
                                   difference_file_nii.header)
 
         pth, fname, ext = split_filename(difference_file_name)
-        out_file_name = os.path.join(fname + '_CBVmap.nii')
+        out_file_name = os.path.join(fname + "_CBVmap.nii")
         nib.save(cbv_nii, out_file_name)
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
         difference_file_name = self.inputs.difference
         outputs = self._outputs().get()
         pth, fname, ext = split_filename(difference_file_name)
-        out_file_name = os.path.join(fname + '_CBVmap.nii')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_file_name = os.path.join(fname + "_CBVmap.nii")
+        outputs["out_file"] = os.path.abspath(out_file_name)
         return outputs
 
 
@@ -646,11 +646,11 @@ class CBVmap(BaseInterface):
 # -----------------------------------------------
 class LowerSNRInputSpec(BaseInterfaceInputSpec):
     in_file = File(exists=True, mandatory=True)
-    std = traits.Float(mandatory=True, desc='std of noise to add')
+    std = traits.Float(mandatory=True, desc="std of noise to add")
 
 
 class LowerSNROutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='Adding Gaussian Noise')
+    out_file = File(exists=True, desc="Adding Gaussian Noise")
 
 
 class LowerSNRNii(BaseInterface):
@@ -672,17 +672,17 @@ class LowerSNRNii(BaseInterface):
 
         pth, fname, ext = split_filename(in_file_name)
 
-        noisey_file_name = os.path.join(fname + '_noisey.nii')
+        noisey_file_name = os.path.join(fname + "_noisey.nii")
         nib.save(noisey_nii, noisey_file_name)
-        setattr(self, '_out_file', noisey_file_name)
+        setattr(self, "_out_file", noisey_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        noisey_file_name = os.path.join(fname + '_noisey.nii')
-        outputs['out_file'] = os.path.abspath(noisey_file_name)
+        noisey_file_name = os.path.join(fname + "_noisey.nii")
+        outputs["out_file"] = os.path.abspath(noisey_file_name)
         return outputs
 
 
@@ -693,14 +693,14 @@ class LowerSNRNii(BaseInterface):
 class PlotDistributionInputSpec(BaseInterfaceInputSpec):
     in_files = InputMultiObject(exists=True,
                                 mandatory=True,
-                                desc='list of niis')
-    plot_xlim_min = traits.Float(mandatory=True, desc='x-axis limit min')
-    plot_xlim_max = traits.Float(mandatory=True, desc='x-axis limit max')
-    plot_bins = traits.Int(mandatory=True, desc='number of bins in histogram')
+                                desc="list of niis")
+    plot_xlim_min = traits.Float(mandatory=True, desc="x-axis limit min")
+    plot_xlim_max = traits.Float(mandatory=True, desc="x-axis limit max")
+    plot_bins = traits.Int(mandatory=True, desc="number of bins in histogram")
 
 
 class PlotDistributionOutputSpec(TraitedSpec):
-    out_fig = File(exists=True, disc='distribution plot')
+    out_fig = File(exists=True, disc="distribution plot")
 
 
 class PlotDistribution(BaseInterface):
@@ -720,36 +720,38 @@ class PlotDistribution(BaseInterface):
             img = np.array(nii.get_fdata())
             vals = np.reshape(img, -1)
             vals[vals == 0] = np.nan
-            np.warnings.filterwarnings('ignore')
-            sns.distplot(vals,
-                         bins=plot_bins,
-                         kde=False,
-                         norm_hist=True,
-                         ax=ax,
-                         hist_kws={
-                             'histtype': 'step',
-                             'linewidth': 1
-                         })
+            np.warnings.filterwarnings("ignore")
+            sns.distplot(
+                vals,
+                bins=plot_bins,
+                kde=False,
+                norm_hist=True,
+                ax=ax,
+                hist_kws={
+                    "histtype": "step",
+                    "linewidth": 1
+                },
+            )
 
-        ax.set_title('Distribution')
-        ax.set_xlabel('Values')
-        ax.set_ylabel('Normalized Voxel Count')
+        ax.set_title("Distribution")
+        ax.set_xlabel("Values")
+        ax.set_ylabel("Normalized Voxel Count")
         ax.set_xlim([plot_xlim_min, plot_xlim_max])
 
         # matplotlib.rcParams.update({'font.size': 16})
         pth, fname, ext = split_filename(in_files[0])
-        out_fig_name = os.path.join(fname + '_DistributionPlot.png')
-        plt.savefig(out_fig_name, dpi=300, bbox_inches='tight')
+        out_fig_name = os.path.join(fname + "_DistributionPlot.png")
+        plt.savefig(out_fig_name, dpi=300, bbox_inches="tight")
 
-        setattr(self, '_out_fig', out_fig_name)
+        setattr(self, "_out_fig", out_fig_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
-        out_fig_name = os.path.join(fname + '_DistributionPlot.png')
-        outputs['out_fig'] = os.path.abspath(out_fig_name)
+        out_fig_name = os.path.join(fname + "_DistributionPlot.png")
+        outputs["out_fig"] = os.path.abspath(out_fig_name)
         return outputs
 
 
@@ -763,7 +765,7 @@ class ImageRescaleInputSpec(BaseInterfaceInputSpec):
 
 
 class ImageRescaleOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc='rescale intensity in mask by average')
+    out_file = File(exists=True, desc="rescale intensity in mask by average")
 
 
 class ImageRescale(BaseInterface):
@@ -787,17 +789,17 @@ class ImageRescale(BaseInterface):
         out_file_nii = nib.Nifti1Image(out_file_img, in_file_nii.affine,
                                        in_file_nii.header)
         pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_rescaled.nii')
+        out_file_name = os.path.join(fname + "_rescaled.nii")
         nib.save(out_file_nii, out_file_name)
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_file_name = self.inputs.in_file
         pth, fname, ext = split_filename(in_file_name)
-        out_file_name = os.path.join(fname + '_rescaled.nii')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_file_name = os.path.join(fname + "_rescaled.nii")
+        outputs["out_file"] = os.path.abspath(out_file_name)
         return outputs
 
 
@@ -808,11 +810,11 @@ class ImageRescale(BaseInterface):
 class FakeRealignInputSpec(BaseInterfaceInputSpec):
     in_file = InputMultiObject(exists=True,
                                mandatory=True,
-                               desc='nii to cp and treat as mean')
+                               desc="nii to cp and treat as mean")
 
 
 class FakeRealignOutputSpec(TraitedSpec):
-    out_file = File(exists=True, disc='copied file to mimix mean from spm')
+    out_file = File(exists=True, disc="copied file to mimix mean from spm")
 
 
 class FakeRealign(BaseInterface):
@@ -823,17 +825,17 @@ class FakeRealign(BaseInterface):
         in_file = self.inputs.in_file
 
         pth, fname, ext = split_filename(in_file)
-        out_file_name = os.path.join('rmean' + fname[1:] + ext)
+        out_file_name = os.path.join("rmean" + fname[1:] + ext)
 
-        setattr(self, '_out_fig', out_file_name)
+        setattr(self, "_out_fig", out_file_name)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         in_files = self.inputs.in_files
         pth, fname, ext = split_filename(in_files[0])
-        out_fig_name = os.path.join(fname + '_DistributionPlot.png')
-        outputs['out_fig'] = os.path.abspath(out_fig_name)
+        out_fig_name = os.path.join(fname + "_DistributionPlot.png")
+        outputs["out_fig"] = os.path.abspath(out_fig_name)
         return outputs
 
 
@@ -842,16 +844,16 @@ class FakeRealign(BaseInterface):
 
 # ------------- Combine Labels ------------------
 class CombineLabelsInputSpec(BaseInterfaceInputSpec):
-    in_file_fixed = File(exists=True, mandatory=True, desc='label to be added')
+    in_file_fixed = File(exists=True, mandatory=True, desc="label to be added")
     in_file_modifier = File(exists=True,
                             mandatory=True,
-                            desc='label to be multiplied and added')
+                            desc="label to be multiplied and added")
     multiplication_factor = traits.Int(mandatory=True,
-                                       desc='factor of multiplication')
+                                       desc="factor of multiplication")
 
 
 class CombineLabelsOutputSpec(TraitedSpec):
-    out_file = File(exists=True, disc='output combined label')
+    out_file = File(exists=True, disc="output combined label")
 
 
 class CombineLabels(BaseInterface):
@@ -865,17 +867,17 @@ class CombineLabels(BaseInterface):
 
         nii1 = nib.load(in_file_fixed)
         nii2 = nib.load(in_file_modifier)
-        out_nii = nilimg.math_img('nii1 + nii2 * {}'.format(factor),
+        out_nii = nilimg.math_img("nii1 + nii2 * {}".format(factor),
                                   nii1=nii1,
                                   nii2=nii2)
 
         pth, nii1_fname, ext = split_filename(in_file_fixed)
         pth, nii2_fname, ext = split_filename(in_file_modifier)
-        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname[20:] +
-                                     '.nii')
+        out_file_name = os.path.join(nii1_fname + "-ADD-" + nii2_fname[20:] +
+                                     ".nii")
         nib.save(out_nii, out_file_name)
 
-        setattr(self, '_out_file', out_file_name)
+        setattr(self, "_out_file", out_file_name)
         return runtime
 
     def _list_outputs(self):
@@ -884,9 +886,9 @@ class CombineLabels(BaseInterface):
         in_file_modifier = self.inputs.in_file_modifier
         pth, nii1_fname, ext = split_filename(in_file_fixed)
         pth, nii2_fname, ext = split_filename(in_file_modifier)
-        out_file_name = os.path.join(nii1_fname + '-ADD-' + nii2_fname[20:] +
-                                     '.nii')
-        outputs['out_file'] = os.path.abspath(out_file_name)
+        out_file_name = os.path.join(nii1_fname + "-ADD-" + nii2_fname[20:] +
+                                     ".nii")
+        outputs["out_file"] = os.path.abspath(out_file_name)
         return outputs
 
 

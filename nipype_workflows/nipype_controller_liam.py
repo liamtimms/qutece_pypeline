@@ -21,7 +21,7 @@ from nipype_wm_analysis import wm_analysis
 
 
 def get_preproc_wfs(working_dir):
-    session_list = ['Precon', 'Postcon']
+    session_list = ["Precon", "Postcon"]
     workflow_list = []
     subject_list = []
     # Subjects with both hr and fast scans
@@ -45,16 +45,16 @@ def get_preproc_wfs(working_dir):
 
     # Subjects with Fast Scans but only one precon scan
     # subject_list = ['08', '13', '14']
-    session_list = ['Postcon']
+    session_list = ["Postcon"]
     preproc_wf = preproc(working_dir, subject_list, session_list)
     # workflow_list.append(preproc_wf)
-    session_list = ['Precon']
+    session_list = ["Precon"]
     preproc_08_wf = preproc_08(working_dir, subject_list, session_list)
     # workflow_list.append(preproc_08_wf)
 
     # Subject with only one precon scan, also missing Fast
     # subject_list = ['10']
-    session_list = ['Precon']
+    session_list = ["Precon"]
     preproc_10_pre_wf = preproc_10(working_dir, subject_list, session_list)
     # workflow_list.append(preproc_10_pre_wf)
 
@@ -72,14 +72,14 @@ def get_coreg_wfs(working_dir):
     # # subject_list = ['05', '07', '09']
     # subject_list = ['14']
 
-    session_list = ['Precon']
+    session_list = ["Precon"]
     coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
     # workflow_list.append(coreg_wf)
 
     # # Subjects with nonT1w postcon scans
     # subject_list = ['02', '03', '04', '05', '06', '07', '08', '11']
     # # subject_list = ['05', '07', '09']
-    session_list = ['Postcon']
+    session_list = ["Postcon"]
     # coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
     # workflow_list.append(coreg_wf)
 
@@ -115,8 +115,8 @@ def get_norm_wfs(working_dir):
     calc_transforms_wf = calc_transforms(working_dir, subject_list)
     # workflow_list.append(calc_transforms_wf)
 
-    session_list = ['Precon', 'Postcon']
-    scan_type = 'hr'
+    session_list = ["Precon", "Postcon"]
+    scan_type = "hr"
 
     apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list,
                                                 scan_type)
@@ -130,11 +130,11 @@ def get_norm_wfs(working_dir):
         working_dir, subject_list, scan_type)
     workflow_list.append(apply_transforms_morph_wf)
 
-    scan_type = 'fast'
+    scan_type = "fast"
     # apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
     # scan_type)
 
-    scan_type = 'fast'
+    scan_type = "fast"
     apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
                                                   scan_type)
     # workflow_list.append(apply_transforms_fast_wf)
@@ -156,8 +156,8 @@ def get_proc_wfs(working_dir):
     # ]
     diff_wf = post_pre_difference(working_dir,
                                   subject_list,
-                                  scan_type='hr',
-                                  scanfolder='nonlinear_transfomed_hr')
+                                  scan_type="hr",
+                                  scanfolder="nonlinear_transfomed_hr")
     # workflow_list.append(diff_wf)
 
     # subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
@@ -180,7 +180,7 @@ def get_proc_wfs(working_dir):
 
 def main():
     # The github repository must be cloned
-    upper_dir = os.path.realpath('../../../../')
+    upper_dir = os.path.realpath("../../../../")
     working_dir = os.path.abspath(upper_dir)
     print(f"Working BIDS directory is {working_dir}")
 
