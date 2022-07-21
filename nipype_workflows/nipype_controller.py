@@ -1,4 +1,8 @@
+import glob
 import os
+from multiprocessing import cpu_count
+
+import pandas as pd
 
 import CustomNiPype as cnp
 from nipype_apply_transforms import (apply_linear_trans,
@@ -19,8 +23,73 @@ from nipype_tissue_wmh_analysis import tissue_wmh_analysis
 from nipype_vessel_density import vessel_density
 from nipype_wm_analysis import wm_analysis
 
+# Define some constants for the pipeline
+# First we construct a dictionary to select subjects for workflows
+SUBJECTS_DICT = {
+    "01": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "02": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "03": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "04": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "05": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "06": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "07": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "08": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "09": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "10": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "11": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "12": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "13": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "14": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+    "15": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
+}
 
-def get_preproc_wfs(working_dir):
+# need to navigate above to the BIDS root from the cloned repo
+UPPER_DIR = os.path.realpath("../../../")
+WORKING_DIR = os.path.abspath(UPPER_DIR)
+print(f"Working BIDS directory is {WORKING_DIR}")
+
+# leave at least one core open,
+num_cores = cpu_count() - 1  # restrict further as needed for RAM usage
+
+
+def get_scan_df(UPPER_DIR):
+    """Get a dataframe of all the scans in the BIDS directory"""
+
+    df = pd.DataFrame(columns=["sub_num", "session", "scantype", "scan_files"])
+
+    sub_dir_list = glob.glob(os.path.join(UPPER_DIR, "sub-[0-9][0-9]"))
+    print(f"Found {len(sub_dir_list)} subjects")
+    for sub_dir in sub_dir_list:
+        sub_num = sub_dir.split("-")[-1]
+
+        session_list = glob.glob(os.path.join(UPPER_DIR, sub_dir, "ses-*"))
+        for session_dir in session_list:
+            session = session_dir.split("-")[-1]
+
+            scan_types = glob.glob(
+                os.path.join(UPPER_DIR, sub_dir, session_dir, "*"))
+            for scan_dir in scan_types:
+                if os.path.isdir(scan_dir):
+                    scan_type = scan_dir
+                    scan_file_list = glob.glob(
+                        os.path.join(UPPER_DIR, sub_dir, session_dir,
+                                     scan_type, "*.nii"))
+                    entry = pd.DataFrame.from_dict({
+                        "sub_num":
+                        sub_num,
+                        "session":
+                        session,
+                        "scantype":
+                        scan_type,
+                        "scan_files":
+                        scan_file_list,
+                    })
+                    df = pd.concat([df, entry], ignore_index=True)
+
+    return df
+
+
+def get_preproc_wfs(WORKING_DIR):
     session_list = ["Precon", "Postcon"]
     workflow_list = []
     subject_list = []
@@ -29,39 +98,39 @@ def get_preproc_wfs(working_dir):
     #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
     #     '15'
     # ]
-    initial_braincrop_wf = initial_braincrop(working_dir, subject_list,
+    initial_braincrop_wf = initial_braincrop(WORKING_DIR, subject_list,
                                              session_list)
     # workflow_list.append(initial_braincrop_wf)
 
     # Subjects with all main scan types, pre and post
     # subject_list = ['02', '03', '04', '06', '11', '12', '15']
-    preproc_wf = preproc(working_dir, subject_list, session_list)
+    preproc_wf = preproc(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(preproc_wf)
 
     # Subjects without Fast Scans
     # subject_list = ['05', '07', '09']
-    preproc_nofast_wf = preproc_nofast(working_dir, subject_list, session_list)
+    preproc_nofast_wf = preproc_nofast(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(preproc_nofast_wf)
 
     # Subjects with Fast Scans but only one precon scan
     # subject_list = ['08', '13', '14']
     session_list = ["Postcon"]
-    preproc_wf = preproc(working_dir, subject_list, session_list)
+    preproc_wf = preproc(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(preproc_wf)
     session_list = ["Precon"]
-    preproc_08_wf = preproc_08(working_dir, subject_list, session_list)
+    preproc_08_wf = preproc_08(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(preproc_08_wf)
 
     # Subject with only one precon scan, also missing Fast
     # subject_list = ['10']
     session_list = ["Precon"]
-    preproc_10_pre_wf = preproc_10(working_dir, subject_list, session_list)
+    preproc_10_pre_wf = preproc_10(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(preproc_10_pre_wf)
 
     return workflow_list
 
 
-def get_coreg_wfs(working_dir):
+def get_coreg_wfs(WORKING_DIR):
     subject_list = []
     workflow_list = []
 
@@ -73,19 +142,19 @@ def get_coreg_wfs(working_dir):
     # subject_list = ['14']
 
     session_list = ["Precon"]
-    coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
+    coreg_wf = intrasession_coregister(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(coreg_wf)
 
     # # Subjects with nonT1w postcon scans
     # subject_list = ['02', '03', '04', '05', '06', '07', '08', '11']
     # # subject_list = ['05', '07', '09']
     session_list = ["Postcon"]
-    # coreg_wf = intrasession_coregister(working_dir, subject_list, session_list)
+    # coreg_wf = intrasession_coregister(WORKING_DIR, subject_list, session_list)
     # workflow_list.append(coreg_wf)
 
     # Subjects without nonT1w postcon scans
     # subject_list = ['12', '13', '14', '15']
-    coreg_wf = intrasession_coregister_onlyT1w(working_dir, subject_list,
+    coreg_wf = intrasession_coregister_onlyT1w(WORKING_DIR, subject_list,
                                                session_list)
     # workflow_list.append(coreg_wf)
 
@@ -96,15 +165,15 @@ def get_coreg_wfs(working_dir):
     # # subject_list = ['05', '07', '09']
 
     # # subject_list = ['02', '03', '04', '06', '11', '12', '15']
-    coreg2_wf = pre_to_post_coregister(working_dir, subject_list)
-    # workflow_list.append(coreg2_wf)
+    coreg2_wf = pre_to_post_coregister(WORKING_DIR, subject_list)
+    workflow_list.append(coreg2_wf)
 
-    braincrop_wf = braincrop(working_dir, subject_list)
-    # workflow_list.append(braincrop_wf)
+    braincrop_wf = braincrop(WORKING_DIR, subject_list)
+    workflow_list.append(braincrop_wf)
     return workflow_list
 
 
-def get_norm_wfs(working_dir):
+def get_norm_wfs(WORKING_DIR):
     workflow_list = []
     subject_list = []
     # AT THIS POINT MANUAL MASKS MUST BE COMPLETED ON THE BRAIN CROPPED IMAGES
@@ -112,41 +181,41 @@ def get_norm_wfs(working_dir):
     # subject_list =['02','03','04', '05', '06', '07', '08', '09', '10', '11']
 
     # subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
-    calc_transforms_wf = calc_transforms(working_dir, subject_list)
-    # workflow_list.append(calc_transforms_wf)
+    calc_transforms_wf = calc_transforms(WORKING_DIR, subject_list)
+    workflow_list.append(calc_transforms_wf)
 
     session_list = ["Precon", "Postcon"]
     scan_type = "hr"
 
-    apply_transforms_hr_wf = apply_linear_trans(working_dir, subject_list,
+    apply_transforms_hr_wf = apply_linear_trans(WORKING_DIR, subject_list,
                                                 scan_type)
-    # workflow_list.append(apply_transforms_hr_wf)
+    workflow_list.append(apply_transforms_hr_wf)
 
     apply_nonlinear_transforms_hr_wf = apply_nonlinear_trans(
-        working_dir, subject_list, session_list, scan_type)
-    # workflow_list.append(apply_nonlinear_transforms_hr_wf)
+        WORKING_DIR, subject_list, session_list, scan_type)
+    workflow_list.append(apply_nonlinear_transforms_hr_wf)
 
     apply_transforms_morph_wf = apply_linear_trans_morph(
-        working_dir, subject_list, scan_type)
+        WORKING_DIR, subject_list, scan_type)
     workflow_list.append(apply_transforms_morph_wf)
 
     scan_type = "fast"
-    # apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
+    # apply_transforms_fast_wf = apply_linear_trans(WORKING_DIR, subject_list,
     # scan_type)
 
     scan_type = "fast"
-    apply_transforms_fast_wf = apply_linear_trans(working_dir, subject_list,
+    apply_transforms_fast_wf = apply_linear_trans(WORKING_DIR, subject_list,
                                                   scan_type)
-    # workflow_list.append(apply_transforms_fast_wf)
+    workflow_list.append(apply_transforms_fast_wf)
 
     apply_nonlinear_transforms_fast_wf = apply_nonlinear_trans(
-        working_dir, subject_list, session_list, scan_type)
-    # workflow_list.append(apply_nonlinear_transforms_fast_wf)
+        WORKING_DIR, subject_list, session_list, scan_type)
+    workflow_list.append(apply_nonlinear_transforms_fast_wf)
 
     return workflow_list
 
 
-def get_proc_wfs(working_dir):
+def get_proc_wfs(WORKING_DIR):
     subject_list = []
     workflow_list = []
 
@@ -154,37 +223,31 @@ def get_proc_wfs(working_dir):
     #     '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
     #     '14', '15'
     # ]
-    diff_wf = post_pre_difference(working_dir,
+    diff_wf = post_pre_difference(WORKING_DIR,
                                   subject_list,
                                   scan_type="hr",
                                   scanfolder="nonlinear_transfomed_hr")
-    # workflow_list.append(diff_wf)
+    workflow_list.append(diff_wf)
 
     # subject_list = ['02', '03', '04', '06', '08', '11', '12', '13', '14', '15']
-    tissue_wf = tissue_wmh_analysis(working_dir, subject_list)
-    # workflow_list.append(tissue_wf)
+    tissue_wf = tissue_wmh_analysis(WORKING_DIR, subject_list)
+    workflow_list.append(tissue_wf)
 
     # subject_list = ['02', '06', '11']
-    wm_wf = wm_analysis(working_dir, subject_list)
-    # workflow_list.append(wm_wf)
+    wm_wf = wm_analysis(WORKING_DIR, subject_list)
+    workflow_list.append(wm_wf)
 
     # subject_list = [
     #     '02', '03', '04', '05', '06', '07', '08', '11', '12', '13', '14', '15'
     # ]
 
-    density_wf = vessel_density(working_dir, subject_list)
-    # workflow_list.append(density_wf)
+    density_wf = vessel_density(WORKING_DIR, subject_list)
+    workflow_list.append(density_wf)
 
     return workflow_list
 
 
-def main():
-    # The github repository must be cloned
-    upper_dir = os.path.realpath("../../../../")
-    working_dir = os.path.abspath(upper_dir)
-    print(f"Working BIDS directory is {working_dir}")
-
-    num_cores = 4  # a resonable default
+def main_2():
 
     # Define sections to define whether things have run correctly
     preprocessing = False
@@ -205,7 +268,7 @@ def main():
 
     if preprocessing:
         print("--- Starting PREPROCESSING ---")
-        preproc_workflows = get_preproc_wfs(working_dir)
+        preproc_workflows = get_preproc_wfs(WORKING_DIR)
         for workflow in preproc_workflows:
             cnp.workflow_runner(workflow, num_cores)
 
@@ -220,7 +283,7 @@ def main():
 
     if coregister and manual_manipulation:
         print("--- Starting COREGISTRATION ---")
-        coreg_workflows = get_coreg_wfs(working_dir)
+        coreg_workflows = get_coreg_wfs(WORKING_DIR)
         for workflow in coreg_workflows:
             cnp.workflow_runner(workflow, num_cores)
 
@@ -236,17 +299,29 @@ def main():
     if manual_masks_good and vesselness_segmented:
         if spatial_normalization:
             print("--- Starting NORMALIZATION ---")
-            normalization_workflows = get_norm_wfs(working_dir)
+            normalization_workflows = get_norm_wfs(WORKING_DIR)
             for workflow in normalization_workflows:
                 cnp.workflow_runner(workflow, num_cores)
 
         if processing:
             print("--- Starting PROCESSING ---")
-            processing_workflows = get_proc_wfs(working_dir)
+            processing_workflows = get_proc_wfs(WORKING_DIR)
             for workflow in processing_workflows:
                 cnp.workflow_runner(workflow, num_cores)
 
     return
+
+
+def main():
+    """TODO: Docstring for main.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    scans_df = get_scan_df(UPPER_DIR)
+    print(scans_df)
+    pass
 
 
 if __name__ == "__main__":
