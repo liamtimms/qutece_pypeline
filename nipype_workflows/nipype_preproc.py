@@ -18,18 +18,6 @@ import CustomNiPype as cnp
 fsl.FSLCommand.set_default_output_type("NIFTI")
 
 
-def decider(working_dir, subject_list, session_list):
-    """Decides which preproc workflow to use for each subject
-    currently a placeholder function only
-
-    :arg1: TODO
-    :returns: TODO
-
-    """
-
-    return
-
-
 def preproc(working_dir, subject_list, session_list):
 
     # -----------------Inputs--------------------------------
