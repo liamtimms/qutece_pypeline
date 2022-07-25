@@ -24,35 +24,16 @@ from nipype_vessel_density import vessel_density
 from nipype_wm_analysis import wm_analysis
 
 # Define some constants for the pipeline
-# First we construct a dictionary to select subjects for workflows
-SUBJECTS_DICT = {
-    "01": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "02": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "03": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "04": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "05": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "06": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "07": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "08": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "09": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "10": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "11": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "12": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "13": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "14": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-    "15": ["hr", "fast", "one_precon", "nonTw1_precon", "nonTw1_postcon"],
-}
-
 # need to navigate above to the BIDS root from the cloned repo
 UPPER_DIR = os.path.realpath("../../../")
 WORKING_DIR = os.path.abspath(UPPER_DIR)
 print(f"Working BIDS directory is {WORKING_DIR}")
 
 # leave at least one core open,
-num_cores = cpu_count() - 1  # restrict further as needed for RAM usage
+NUM_CORES = cpu_count() - 1  # restrict further as needed for RAM usage
 
 
-def get_scan_df(UPPER_DIR):
+def get_initial_scan_df(UPPER_DIR):
     """Get a dataframe of all the scans in the BIDS directory"""
 
     df = pd.DataFrame(columns=["sub_num", "session", "scantype", "scan_files"])
@@ -69,8 +50,8 @@ def get_scan_df(UPPER_DIR):
             scan_types = glob.glob(
                 os.path.join(UPPER_DIR, sub_dir, session_dir, "*"))
             for scan_dir in scan_types:
+                scan_type = scan_dir.split("/")[-1]
                 if os.path.isdir(scan_dir):
-                    scan_type = scan_dir
                     scan_file_list = glob.glob(
                         os.path.join(UPPER_DIR, sub_dir, session_dir,
                                      scan_type, "*.nii"))
@@ -89,43 +70,167 @@ def get_scan_df(UPPER_DIR):
     return df
 
 
-def get_preproc_wfs(WORKING_DIR):
-    session_list = ["Precon", "Postcon"]
+def count_sub_scans(scans_df, sub_num, session, scantype, scan_str):
+    """Count the number of scans of a given type for
+    a given subject and session"""
+
+    sub_scans = scans_df.loc[(scans_df["sub_num"] == sub_num)
+                             & (scans_df["session"] == session)
+                             & (scans_df["scantype"] == scantype)].loc[
+                                 scans_df["scan_files"].str.contains(scan_str)]
+    return len(sub_scans)
+
+
+def find_scan_stats(scans_df):
+    """Find the number of scans of each type for each subject"""
+
+    scanstype_mods_dict = {
+        "qutece": ["hr", "fast"],
+        "anat": ["T1w", "FLAIR", "TOF", "SWI"],
+        "fmap": ["FA"],
+        "func": ["bold"],
+    }
+
+    df = pd.DataFrame(
+        columns=["sub_num", "session", "scantype", "scan_str", "count"])
+    for sub_num in scans_df["sub_num"].unique():
+        for session in scans_df["session"].unique():
+            for scantype in scans_df["scantype"].unique():
+                for scan_str in scanstype_mods_dict[scantype]:
+                    counts = count_sub_scans(scans_df, sub_num, session,
+                                             scantype, scan_str)
+                    entry = pd.DataFrame.from_dict({
+                        "sub_num": sub_num,
+                        "session": session,
+                        "scantype": scantype,
+                        "scan_str": scan_str,
+                        "count": [counts],
+                    })
+                    df = pd.concat([df, entry], ignore_index=True)
+    return df
+
+
+def get_preproc_wfs(WORKING_DIR, scans_summary_df):
+    """Get the full list of preprocessing workflows,
+    selecting based on which scans are available in scans_summary_df"""
+
     workflow_list = []
-    subject_list = []
+
     # Subjects with both hr and fast scans
     # subject_list = [
-    #     '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
-    #     '15'
+    #   '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14',
+    #   '15'
     # ]
+
+    # Subjects with full qutece precon
+    both_precon_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Precon")
+        & ((scans_summary_df["scan_str"] == "hr")
+           | (scans_summary_df["scan_str"] == "fast"))]["sub_num"].unique()
+    # Subjects with full qutece postcon
+    both_postcon_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Postcon")
+        & ((scans_summary_df["scan_str"] == "hr")
+           | (scans_summary_df["scan_str"] == "fast"))]["sub_num"].unique()
+
+    subject_list = sorted(
+        list(set(both_precon_subjects).intersection(both_postcon_subjects)))
+
+    session_list = ["Precon", "Postcon"]
     initial_braincrop_wf = initial_braincrop(WORKING_DIR, subject_list,
                                              session_list)
-    # workflow_list.append(initial_braincrop_wf)
+    workflow_list.append(initial_braincrop_wf)
 
-    # Subjects with all main scan types, pre and post
+    # Subjects with hr and fast scan types, pre and post
     # subject_list = ['02', '03', '04', '06', '11', '12', '15']
+
+    multiple_precon_hr_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Precon")
+        & (scans_summary_df["scan_str"] == "hr")
+        & (scans_summary_df["count"] > 1)]["sub_num"].unique()
+
+    multiple_postcon_hr_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Postcon")
+        & (scans_summary_df["scan_str"] == "hr")
+        & (scans_summary_df["count"] > 1)]["sub_num"].unique()
+
+    # subjects with more than one hr scan in pre and post
+    multiple_pre_post_hr_subjects = sorted(
+        list(
+            set(multiple_precon_hr_subjects).intersection(
+                multiple_postcon_hr_subjects)))
+
+    multiple_precon_fast_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Precon")
+        & (scans_summary_df["scan_str"] == "fast")
+        & (scans_summary_df["count"] > 1)]["sub_num"].unique()
+
+    multiple_postcon_fast_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Postcon")
+        & (scans_summary_df["scan_str"] == "fast")
+        & (scans_summary_df["count"] > 1)]["sub_num"].unique()
+
+    # subjects with more than one fast scan in pre and post
+    multiple_pre_post_fast_subjects = sorted(
+        list(
+            set(multiple_precon_fast_subjects).intersection(
+                multiple_postcon_fast_subjects)))
+
+    # subjects with more than one hr scan and fast scan in pre and post
+    subject_list = sorted(
+        list(
+            set(multiple_pre_post_hr_subjects).intersection(
+                multiple_pre_post_fast_subjects)))
+
     preproc_wf = preproc(WORKING_DIR, subject_list, session_list)
-    # workflow_list.append(preproc_wf)
+    workflow_list.append(preproc_wf)
+
+    # required_strs = ["hr", "fast", "T1w", "FLAIR", "TOF", "SWI"]
 
     # Subjects without Fast Scans
     # subject_list = ['05', '07', '09']
+    no_precon_fast_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Precon")
+        & (scans_summary_df["scan_str"] == "fast")
+        & (scans_summary_df["count"] == 0)]["sub_num"].unique()
+
+    subject_list = sorted(
+        list(
+            set(no_precon_fast_subjects).intersection(
+                multiple_pre_post_hr_subjects)))
+
     preproc_nofast_wf = preproc_nofast(WORKING_DIR, subject_list, session_list)
-    # workflow_list.append(preproc_nofast_wf)
+    workflow_list.append(preproc_nofast_wf)
 
     # Subjects with Fast Scans but only one precon scan
     # subject_list = ['08', '13', '14']
+    one_precon_hr_subjects = scans_summary_df.loc[
+        (scans_summary_df["session"] == "Precon")
+        & (scans_summary_df["scan_str"] == "hr")
+        & (scans_summary_df["count"] == 1)]["sub_num"].unique()
+
+    subject_list = sorted(
+        list(
+            set(one_precon_hr_subjects).intersection(
+                multiple_pre_post_fast_subjects)))
+
     session_list = ["Postcon"]
     preproc_wf = preproc(WORKING_DIR, subject_list, session_list)
-    # workflow_list.append(preproc_wf)
+    workflow_list.append(preproc_wf)
     session_list = ["Precon"]
     preproc_08_wf = preproc_08(WORKING_DIR, subject_list, session_list)
-    # workflow_list.append(preproc_08_wf)
+    workflow_list.append(preproc_08_wf)
 
     # Subject with only one precon scan, also missing Fast
     # subject_list = ['10']
+    subject_list = sorted(
+        list(
+            set(one_precon_hr_subjects).intersection(no_precon_fast_subjects)))
+
+    print(subject_list)
     session_list = ["Precon"]
     preproc_10_pre_wf = preproc_10(WORKING_DIR, subject_list, session_list)
-    # workflow_list.append(preproc_10_pre_wf)
+    workflow_list.append(preproc_10_pre_wf)
 
     return workflow_list
 
@@ -270,7 +375,7 @@ def main_2():
         print("--- Starting PREPROCESSING ---")
         preproc_workflows = get_preproc_wfs(WORKING_DIR)
         for workflow in preproc_workflows:
-            cnp.workflow_runner(workflow, num_cores)
+            cnp.workflow_runner(workflow, NUM_CORES)
 
     # --------------------------------------------------------------------------
     # Manual manipulation here:
@@ -285,7 +390,7 @@ def main_2():
         print("--- Starting COREGISTRATION ---")
         coreg_workflows = get_coreg_wfs(WORKING_DIR)
         for workflow in coreg_workflows:
-            cnp.workflow_runner(workflow, num_cores)
+            cnp.workflow_runner(workflow, NUM_CORES)
 
     # --------------------------------------------------------------------------
     # Manual manipulation here:
@@ -301,13 +406,13 @@ def main_2():
             print("--- Starting NORMALIZATION ---")
             normalization_workflows = get_norm_wfs(WORKING_DIR)
             for workflow in normalization_workflows:
-                cnp.workflow_runner(workflow, num_cores)
+                cnp.workflow_runner(workflow, NUM_CORES)
 
         if processing:
             print("--- Starting PROCESSING ---")
             processing_workflows = get_proc_wfs(WORKING_DIR)
             for workflow in processing_workflows:
-                cnp.workflow_runner(workflow, num_cores)
+                cnp.workflow_runner(workflow, NUM_CORES)
 
     return
 
@@ -319,8 +424,18 @@ def main():
     :returns: TODO
 
     """
-    scans_df = get_scan_df(UPPER_DIR)
-    print(scans_df)
+    scans_df = get_initial_scan_df(UPPER_DIR)
+    scans_df.to_csv(os.path.join(WORKING_DIR, "scans_df.csv"))
+    scans_summary_df = find_scan_stats(scans_df)
+
+    # sub_num = "02"
+    # session = "Postcon"
+    # scantype = "qutece"
+    # scan_str = "hr"
+    # count_sub_scans(scans_df, sub_num, session, scantype, scan_str)
+
+    preproc_workflows = get_preproc_wfs(WORKING_DIR, scans_summary_df)
+
     pass
 
 
