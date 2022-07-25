@@ -1,0 +1,3 @@
+import nipype
+
+nipype.test()
