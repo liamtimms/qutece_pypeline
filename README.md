@@ -12,7 +12,7 @@ Timms L, Zhou T, Qiao J, Gharagouzloo C, Mishra V, Lahoud RM, Chen JW, Harisingh
 
 T. Zhou, "Clinical Translation of Quantitative Ultrashort Time-to-Echo Contrast-Enhanced MRA Technique in Renal Imaging." Order No. 31234958, Northeastern University, United States -- Massachusetts, 2024.
 
-Note that the unringing code carries its own citation and LISCENSE if using that submodule.
+Note that the unringing code carries its own citation and LICENSE if using that submodule.
 
 ## Description
 
