@@ -6,7 +6,7 @@ If any work here is used in whole or in part in research, you must cite:
 
 Timms L, Zhou T, Lyu Y, Qiao J, Mishra V, Lahoud RM, Jayaraman GV, Allegretti AS, Drew D, Seethamraju RT, Harisinghani M, Sridhar S. Ferumoxytol-enhanced ultrashort TE MRA and quantitative morphometry of the human kidney vasculature. Abdom Radiol (NY). 2021 Jul;46(7):3288-3300. doi: 10.1007/s00261-021-02984-2. Epub 2021 Mar 5. PMID: 33666735; PMCID: PMC8217117.
 
-L. Timms, "Preclinical Applications and Clinical Translation of QUTE-CE MRA Technique for Vascular Imaging." Order No. 28718349, Northeastern University, United States -- Massachusetts, 2021. 
+L. Timms, "Preclinical Applications and Clinical Translation of QUTE-CE MRA Technique for Vascular Imaging." Order No. 28718349, Northeastern University, United States -- Massachusetts, 2021. https://doi.org/10.17760/D20416618
 
 Timms L, Zhou T, Qiao J, Gharagouzloo C, Mishra V, Lahoud RM, Chen JW, Harisinghani M, Sridhar S. Super High Contrast USPIO-Enhanced Cerebrovascular Angiography Using Ultrashort Time-to-Echo MRI. Int J Biomed Imaging. 2024 Apr 13;2024:9763364. doi: 10.1155/2024/9763364. PMID: 38644981; PMCID: PMC11032209.
 
